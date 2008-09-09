@@ -103,6 +103,7 @@
 (insert ";;  . Lisp   .. buffer-menu++ -> Make the reload asynchronous\n")
 (insert ";;  . Code   .. Project view\n")
 (insert ";;  . Code   .. Edit multiple text area at once (using ctrl+mouse to highlight those area for example)\n")
+(insert ";;  .        .. Another option: select the text and press ctrl+enter to put the overlay on it. ctrl+enter without any selection remove them all\n")
 (insert ";;  . Mode   .. TODO mode\n")
 (insert ";;  . Mode   .. Log viewer (`-, ...)\n")
 (insert ";;  . Mode   .. Update git integration\n")
