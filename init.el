@@ -99,7 +99,6 @@
 (insert ";; Startup files loaded succesfully.\n")
 (insert ";;\n")
 (insert ";; TODO:\n")
-(insert ";;  . Config .. Put global-cwarn-mode in the C++-mode setup or as a hook function\n")
 (insert ";;  . Global .. Tree of undo\n")
 (insert ";;  . Lisp   .. buffer-menu++ -> Make the reload asynchronous\n")
 (insert ";;  . Code   .. Project view\n")

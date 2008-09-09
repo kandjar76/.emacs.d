@@ -109,10 +109,6 @@
 ;; Enable shift+key to select a region:
 (pc-selection-mode) ;; Could be disabled if CUA mode is activated
 
-;; Global cwarn mode on: highlight assignment within a if, if with no instruction...
-(when window-system
-  (global-cwarn-mode 1)) ;; -- 0.2s slowww!!!
-
 ;; Smaller delay before showing the tooltip.
 (setq tooltip-delay 0.3)
 

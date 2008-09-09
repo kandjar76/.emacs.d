@@ -237,4 +237,7 @@ This function just inhibate the extra indentation if that's the case."
 ;; '(("\\<\\(FIXME\\):" 1 font-lock-warning-face t)))
 
 (add-hook 'c++-mode-hook 'custom-c-setup)
+(add-hook 'c++-mode-hook 'turn-on-cwarn-mode)
+
 (add-hook 'c-mode-hook 'custom-c-setup)
+(add-hook 'c-mode-hook 'turn-on-cwarn-mode)
