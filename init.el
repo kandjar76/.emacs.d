@@ -101,6 +101,7 @@
 (insert ";; TODO:\n")
 (insert ";;  . Global .. Tree of undo\n")
 (insert ";;  . Lisp   .. buffer-menu++ -> Make the reload asynchronous\n")
+(insert ";;  . Lisp   .. c-~ -> highlight the current word globally (in every visible buffers)\n")
 (insert ";;  . Code   .. Project view\n")
 (insert ";;  . Code   .. Edit multiple text area at once (using ctrl+mouse to highlight those area for example)\n")
 (insert ";;  .        .. Another option: select the text and press ctrl+enter to put the overlay on it. ctrl+enter without any selection remove them all\n")
@@ -116,8 +117,8 @@
 (insert ";;  . C/C++  .. Thread comment minor mode for C/C++ (to tag RW flags on variables)\n")
 (insert ";;  . C/C++  .. Split C/C++ mode into two distinct modes instead of one my-cpp\n")
 (insert ";;  . C/C++  .. Function to add //----- above and below the case statement\n")
-(insert ";;  . C/C++  .. Better alignment macros (assignment, function, comment...)\n")
-(insert ";;  . C/C++  .. Fix indentation ('case', alignment, ...)\n")
+(insert ";;  . C/C++  .. Better alignment macros (assignment, function)\n")
+(insert ";;  . C/C++  .. Fix indentation for the comment around the 'case' statement\n")
 
 
 (when (> emacs-major-version 21)
