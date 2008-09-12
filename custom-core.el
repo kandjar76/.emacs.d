@@ -88,6 +88,7 @@
 ;(remove-hook 'write-file-hooks 'nuke-trailing-whitespace)
 
 ;; Display matching parentheses
+(setq show-paren-delay 0)
 (show-paren-mode t)
 
 ;; Number of buffers to display in buffer list ; nil = all
