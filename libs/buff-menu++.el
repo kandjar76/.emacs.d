@@ -59,7 +59,8 @@
   (when (not (eq major-mode 'Buffer-menu-mode))
       (error "Invalid Mode -- Expected: Buffer-menu-mode"))
   (save-excursion
-    (let ((buffer-read-only nil))
+    (let ((count 0)
+	  (buffer-read-only nil))
       (goto-char (point-min))
       (while (not (eobp))
 	(let* ((buf (Buffer-menu-buffer t))
@@ -68,8 +69,12 @@
 	       (df  (and wfi (file-exists-p wfi))))
 	  (when (and (not vis) df)
 	    (delete-char 1)
-	    (insert ?R))
-	(forward-line 1))))))
+	    (insert ?R)
+	    (setq count (1+ count)))
+	(forward-line 1)))
+      (if (interactive-p)
+	  (message "%i buffer%s marked. [revert]" count (or (and (> count 1) "s") "")))
+      )))
 
 ;;;###autoload
 (defun Buffer-menu-mark-every-files-to-delete()
@@ -78,15 +83,20 @@
   (when (not (eq major-mode 'Buffer-menu-mode))
       (error "Invalid Mode -- Expected: Buffer-menu-mode"))
   (save-excursion
-    (let ((buffer-read-only nil))
+    (let ((count 0)
+	  (buffer-read-only nil))
       (goto-char (point-min))
       (while (not (eobp))
 	(let* ((buf (Buffer-menu-buffer t))
 	       (wfi (save-excursion (set-buffer buf) buffer-file-name)))
 	  (when (and wfi (not (file-exists-p wfi)))
 	    (delete-char 1)
-	    (insert ?D))
-	(forward-line 1))))))
+	    (insert ?D)
+	    (setq count (1+ count)))
+	(forward-line 1)))
+      (if (interactive-p)
+	  (message "%i buffer%s marked. [delete]" count (or (and (> count 1) "s") "")))
+      )))
 
 ;;;###autoload
 (defun Buffer-menu-mark-every-files-to-save()
@@ -95,7 +105,8 @@
   (when (not (eq major-mode 'Buffer-menu-mode))
       (error "Invalid Mode -- Expected: Buffer-menu-mode"))
   (save-excursion
-    (let ((buffer-read-only nil))
+    (let ((count 0)
+	  (buffer-read-only nil))
       (goto-char (point-min))
       (while (not (eobp))
 	(let* ((buf (Buffer-menu-buffer t))
@@ -105,8 +116,12 @@
 	    (beginning-of-line)
 	    (forward-char 2)
 	    (delete-char 1)
-	    (insert ?S))
-	(forward-line 1))))))
+	    (insert ?S)
+	    (setq count (1+ count)))
+	(forward-line 1)))
+      (if (interactive-p)
+	  (message "%i buffer%s marked. [save]" count (or (and (> count 1) "s") "")))
+      )))
 
 
 ;;;###autoload
