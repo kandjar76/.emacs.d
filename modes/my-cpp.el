@@ -53,7 +53,7 @@ comment-starter.  If no comment is found, moves point to LIMIT
 and raises an error or returns nil if NOERROR is non-nil.")
 
 
-(defun c-indent-line-or-region-and-comment(arg region)
+(defun c-indent-line-or-region-and-comment(&optional arg region)
   (interactive
    (list current-prefix-arg (use-region-p)))
   (c-indent-line-or-region arg region)
@@ -194,13 +194,19 @@ This function just inhibate the extra indentation if that's the case."
 (defun custom-c-setup ()
   (c-set-style "gnu")
 
+;  (make-local-variable 'indent-region-function)
+;  (set 'indent-region-function 'c-indent-line-or-region-and-comment)
+
+  (when (> emacs-major-version 22)
+    ;(define-key c-mode-map "\t" 'c-indent-line-or-region-and-comment)
+    ;(define-key c++-mode-map "\t" 'c-indent-line-or-region-and-comment))
+    (local-set-key "\t" 'c-indent-line-or-region-and-comment))
+
   (local-set-key [(control ?c) (?m)] 'manual-entry)
   (local-set-key [(control ?c) (?a) (?a)] 'cpp-align-variable-assignment) 
   (local-set-key [(control ?c) (?a) (?f)] 'cpp-align-function-bracket)
   (local-set-key [(control ?c) (?a) (?c)] 'cpp-align-comment)
   (local-set-key [(control ?q)] 'cpp-comment-block)
-  (when (> emacs-major-version 22)
-    (local-set-key [(tab)] 'c-indent-line-or-region-and-comment))
 
   (local-set-key [(f4)] 'next-error)
   (local-set-key [(shift f4)] 'previous-error)
