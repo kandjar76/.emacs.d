@@ -42,7 +42,8 @@
 (setq mtpchat-login "Kandjar")
 
 (setq mtpchat-connection (make-new-record tcp-connection :server "mtpchat.melting-pot.org" 
-							 :port  4000))
+							 :port  4000
+							 :keep-alive t))
 
 (defun mtpchat-print(message)
   (log-printf mtpchat-buffer-name "%s" message))
