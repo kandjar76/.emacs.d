@@ -1,10 +1,10 @@
 ;;; tcp-client.el -- Providing a network interface
 ;;
 ;; Author: Cedric Lallain <kandjar76@hotmail.com>
-;; Version:  1.0
+;; Version:  1.1
 ;; Keywords: tcp network connection client
-;; Description: Provide a tcp client interface 
-;; Tested with: GNU Emacs 21.x and GNU Emacs 22.x
+;; Description: Provide a tcp client interface
+;; Tested with: GNU Emacs 21.x and GNU Emacs 22.x and GNU Emacs 23.x
 ;;
 ;; This file is *NOT* part of GNU Emacs.
 ;;
@@ -22,16 +22,20 @@
 ;;    along with this program; if not, write to the Free Software
 ;;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 ;; 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; Commentary:
+
 ;;
 ;; The purpose of this library is to provide a network interface to ease the
 ;; creation of network related script.
 ;; 
 ;; This library is dependending on record-type.el
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; Example:
+
 ;;
-;; Here is an example of how to use it: 
+;; Here is an example of how to use it:
 ;;
 ;;  (defun sample-error-report(buffer server port error)
 ;;    (save-excursion
@@ -59,59 +63,66 @@
 ;;      (insert (format "[got] %s" message))))
 ;;  
 ;;  
-;;  (tcp-connect "*ok*" 
+;;  (tcp-connect "*ok*"
 ;;  	     (make-new-tcp-connection :server "127.0.0.1" :port 1000)
-;;  	     (make-new-tcp-hooks 
+;;  	     (make-new-tcp-hooks
 ;;  			      :connection-failed-handler 'sample-error-report
 ;;  			      :connection-established-handler 'sample-connection-report
 ;;  			      :connection-abort-handler 'sample-abort-report))
 ;;  
-;;  (tcp-connect "*test*" 
+;;  (tcp-connect "*test*"
 ;;  	     (make-new-tcp-connection :server "127.0.0.1" :port 2000)
-;;  	     (make-new-tcp-hooks 
+;;  	     (make-new-tcp-hooks
 ;;  			      :connection-failed-handler 'sample-error-report
 ;;  			      :connection-established-handler 'sample-connection-report
 ;;  			      :connection-abort-handler 'sample-abort-report
 ;;  			      :sentinel-handler 'sample-sentinel-report
 ;;  			      :filter-handler 'sample-filter-report))
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;; History:
+
+;; 
+;; Revision 1.0: initial version
+;; Revision 1.1: fix formatting (using checkdoc) + added the keep-alive
+;;
 
 (require 'record-type)
 
 
+;;; Code:
 (defrecord tcp-hooks
   "TCP-Client Handlers"
   :connection-established-handler 'functionp ;; (<call> buffer server port)
   :connection-failed-handler      'functionp ;; (<call> buffer server port message)
   :connection-abort-handler       'functionp ;; (<call> buffer server port)
-  :sentinel-handler               'functionp ;; (<call> process event) 
+  :sentinel-handler               'functionp ;; (<call> process event)
   :filter-handler                 'functionp ;; (<call> process received-data)
 )
 
 (defrecord tcp-connection
   "Handle a tcp connection"
   :server 'stringp
-  :port 'integerp)
+  :port 'integerp
+  :keep-alive 'booleanp)
 
 (defun tcp-connect (buffer-name connection hooks)
-  "Try to established a connection on a specific server
+  "Try to established a connection on a specific server.
 
 BUFFER-NAME refers to the name of the current buffer to handle the connection.
 If the buffer exist, it's going to be displayed, if not, it's first going to be
 created and then displayed.
 
-CONNECTION is a record of the type tcp-connection which should contain 
+CONNECTION is a record of the type tcp-connection which should contain
 the connection information.
 
-HOOKS is also a record whose type is: tcp-hooks. It contains all different handlers 
-you may want to set to intercept the connection data."
-  (cond ((not (stringp          buffer-name))          (error "tcp-connect error: Invalid type -- BUFFER-NAME must be a string."))
-	((not (tcp-connection-p connection))           (error "tcp-connect error: Invalid type -- CONNECTION's type must be: tcp-connection"))
-	((not (tcp-hooks-p      hooks))                (error "tcp-connect error: Invalid type -- HOOKS's type must be: tcp-hooks"))
-	((null (get-tcp-connection-server connection)) (error "tcp-connect error: Invalid server name (nil)"))
-	((null (get-tcp-connection-port   connection)) (error "tcp-connect error: Invalid server port (nil)"))
+HOOKS is also a record whose type is: tcp-hooks.  It contains all different
+handlers you may want to set to intercept the connection data."
+  (cond ((not (stringp          buffer-name))          (error "Tcp-connect error: Invalid type -- BUFFER-NAME must be a string"))
+	((not (tcp-connection-p connection))           (error "Tcp-connect error: Invalid type -- CONNECTION's type must be: tcp-connection"))
+	((not (tcp-hooks-p      hooks))                (error "Tcp-connect error: Invalid type -- HOOKS's type must be: tcp-hooks"))
+	((null (get-tcp-connection-server connection)) (error "Tcp-connect error: Invalid server name (nil)"))
+	((null (get-tcp-connection-port   connection)) (error "Tcp-connect error: Invalid server port (nil)"))
 	(t (let* ((buffer             (get-buffer-create buffer-name))
 		  (process            (get-buffer-process buffer))
 		  (server             (get-tcp-connection-server connection))
@@ -143,7 +154,7 @@ you may want to set to intercept the connection data."
 					(and error-handler
 					(funcall error-handler buffer server port (cadr data)))
 				 (apply 'error data))))
-		    (if process 
+		    (if process
 			(progn (if sentinel-handler
 				   (set-process-sentinel process sentinel-handler))
 			       (if filter-handler
@@ -157,11 +168,11 @@ you may want to set to intercept the connection data."
 
 
 (defun tcp-send(process data)
-  "Send DATA to the connection using the process PROCESS"
+  "Send DATA to the connection using the process PROCESS."
   (process-send-string process data))
 
 (defun tcp-kill(process)
-  "Kill the network connection, killing the process PROCESS"
+  "Kill the network connection, killing the process PROCESS."
   (delete-process process))
 
 ;(defun tcp-default-keep-alive()
@@ -171,3 +182,7 @@ you may want to set to intercept the connection data."
 (provide 'tcp-client)
 
 
+
+(provide 'tcp-client)
+
+;;; tcp-client.el ends here
