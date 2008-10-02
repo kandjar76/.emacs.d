@@ -27,7 +27,7 @@
     (if (> emacs-major-version 21)
 	(if running-at-work
 	    (set-default-font "9x15")
-	    (set-default-font "Courier"))
+	    (set-default-font "9x15"))
 	(progn
 	  (create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
 	  (cond
