@@ -135,5 +135,4 @@
 
 (eval-after-load "git"
   '(progn
-     (define-key git-status-mode-map [?=] 'git-diff-current-file)
-     (define-key git-status-mode-map [(control ?=)] 'git-diff-file)))
+     (define-key git-status-mode-map [(control ?=)] 'git-diff-current-file)))
