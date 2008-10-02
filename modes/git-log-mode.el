@@ -1,15 +1,41 @@
-;; Author: Cedric Lallain (clallain@naughtydog.com) 
+;;; git-log.el --- A major mode for git log
+
+;; Copyright (C) 2008 Cedric Lallain <kandjar76@hotmail.com>
+
+;; Version: 1.1
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2 of
+;; the License, or (at your option) any later version.
 ;;
+;; This program is distributed in the hope that it will be
+;; useful, but WITHOUT ANY WARRANTY; without even the implied
+;; warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+;; PURPOSE.  See the GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public
+;; License along with this program; if not, write to the Free
+;; Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+;; MA 02111-1307 USA
+
+;;; Commentary:
+
 ;; This file provides a major mode to view the git logs
 
+;;; History:
 
-(require 'cl)
+;; 1.0: Initial version
+;; 1.1: Check doc run
 
-;;
-;;
-;;    Special faces:
-;;
-;;
+
+;;; Code:
+(eval-when-compile (require 'cl))
+(require 'git)
+
+;;;; Customizations
+;;;; ------------------------------------------------------------
+
 (setq git-log-files-list nil)
 
 (make-face 'git-log-commit-line-face)
@@ -26,11 +52,9 @@
 
 (setq git-log-header-color '(foreground-color . "red"))
 
-;;
-;;
-;;    GIT LOG Major-Mode definition:
-;;
-;;
+
+;;;;; GIT LOG Major-Mode definition:
+;;;;; ------------------------------------------------------------
 
 
 (defun git-log-next-commit-block()
@@ -50,13 +74,13 @@
   "Unmark all selected commit"
   (interactive)
   (let ((buffer-read-only nil))
-    (save-excursion 
+    (save-excursion
       (goto-char (point-min))
       (while (search-forward-regexp "^commit\\*" nil t)
 	(delete-char -1)))))
 
 (defun git-log-mark-commit()
-  "Mark/unmark the current commit 
+  "Mark/unmark the current commit
  (the function will also automatically unmark the previously marked commit)"
   (interactive)
   (let ((buffer-read-only nil))
@@ -139,7 +163,7 @@
 	)
     "Additional expressions to highlight in git-log mode.")
 
-;; Define the key mapping for the spu mode:
+;; Define the key mapping for the git log mode:
 (defvar git-log-mode-map
   (let ((git-log-mode-map (make-keymap)))
     (define-key git-log-mode-map [(?n)]    'git-log-next-commit-block)
@@ -157,9 +181,9 @@
 (defvar git-log-font-lock-keywords git-log-font-lock-keywords-1)
 
 
-;; Spu-mode entry function:
+;; git-log-mode entry function:
 (defun git-log-mode ()
-  "Major mode for editing SPU assembly code."
+  "Major mode for viewing git logs."
   (interactive)
   (setq buffer-read-only t)
   (kill-all-local-variables)
@@ -178,3 +202,5 @@
 
 
 (provide 'git-log-mode)
+
+;;; git-log-mode.el ends here
