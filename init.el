@@ -25,24 +25,9 @@
 ;; Set the default font:
 (if (eq window-system 'x)
     (if (> emacs-major-version 21)
-	(progn 
-	  ;;(set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1")
-	  (custom-set-faces
-	   '(default ((t (:stipple nil 
-			  :background "#F0F0F0" 
-			  :foreground "black" 
-			  :inverse-video nil 
-			  :box nil 
-			  :strike-through nil 
-			  :overline nil 
-			  :underline nil 
-			  :slant normal 
-			  :weight normal
-			  :height 102
-			  :width normal
-			  :family "adobe-courier"))))
-	   '(italic ((t (:slant oblique)))))
-	  )
+	(if running-at-work
+	    (set-default-font "9x15")
+	    (set-default-font "Courier"))
 	(progn
 	  (create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
 	  (cond
@@ -53,22 +38,7 @@
 	   ))))
 
 (when (eq window-system 'w32)
-  ;;(create-fontset-from-fontset-spec "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1"))
-  ;;(set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-15-90-96-96-c-*-iso8859-1"))
-  (custom-set-faces
-   '(default ((t (:stipple nil 
-		  :background "#F0F0F0" 
-		  :foreground "black" 
-		  :inverse-video nil 
-		  :box nil 
-		  :strike-through nil 
-		  :overline nil 
-		  :underline nil 
-		  :slant normal 
-		  :weight normal
-		  :height 122
-		  :width normal
-		  :family "adobe-courier")))))
+  (set-default-font "Courier")
 )
 
 
