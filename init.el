@@ -74,7 +74,6 @@
 (insert ";;\n")
 (insert ";; TODO:\n")
 (insert ";;  . Git    .. Put all the emacs backups in git\n")
-(insert ";;  . Git    .. Allow the git log for the current buffer and not only within the git buffer\n")
 (insert ";;  . Global .. Tree of undo\n")
 (insert ";;  . Global .. c-~ -> highlight the current word globally (in every visible buffers)\n")
 (insert ";;  . Global .. Edit multiple text area at once (using ctrl+mouse to highlight those area for example)\n")
