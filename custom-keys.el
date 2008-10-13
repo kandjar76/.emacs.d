@@ -3,7 +3,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Note:
-;;  So far, f5 -> f9 are available to be map (f6->other window/never used)
+;;  So far, f5, f6, f8, f9 are available to be map (f6->other window/never used)
 
 
 (define-key global-map [(control right)]         	'forward-word)
@@ -11,7 +11,6 @@
 (define-key global-map [(control prior)]               	'beginning-of-buffer)
 (define-key global-map [(control next)]                	'end-of-buffer)
 (define-key global-map [(control meta g)]        	'goto-line)
-(define-key global-map [(insert)]                	'overwrite-mode)
 (define-key global-map [(control backspace)]            'backward-delete-word)
 (define-key global-map [(control tab)]                  'dabbrev-expand)
 
