@@ -55,8 +55,12 @@ and raises an error or returns nil if NOERROR is non-nil.")
 
 (defun c-indent-line-or-region-and-comment(&optional arg region)
   (interactive
-   (list current-prefix-arg (use-region-p)))
-  (c-indent-line-or-region arg region)
+   (list current-prefix-arg (or (and (boundp 'use-region-p) 
+				     (use-region-p))
+				 mark-active)))
+  (if (> emacs-major-version 22)
+      (c-indent-line-or-region arg region)
+      (c-indent-line-or-region))
   (let ((comment-indent-only (lambda (bol eol &optional in-region)
 			       (goto-char bol)
 			       ;; Get the comment position...
