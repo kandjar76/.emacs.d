@@ -129,8 +129,10 @@ matches any of the individual token."
   "IDF syntax mode definition -- word and comments")
 
 ;; Spu-mode entry function:
+
+;;;###autoload
 (defun idf-mode ()
-  "Major mode for editing SPU assembly code."
+  "Major mode for editing IDF files."
   (interactive)
   (kill-all-local-variables)
   (set-syntax-table idf-syntax-table)
