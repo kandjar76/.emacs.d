@@ -73,6 +73,7 @@
 ;;        - Insert a properly-indented nop/lnop pair (C-c C-n for uncommented, C-c C-b for
 ;;          commented)
 
+(eval-when-compile (require 'cl))
 (require 'apply-on-region)
 
 ;;
@@ -763,7 +764,7 @@ Note: this function assume that this is a line with opcodes"
   (let ((even (spu-find-even-opcode))
 	(odd  (spu-find-odd-opcode))
 	(cur  (current-column))
-	instr)
+	instr wl)
     (if (or (and odd (>= cur odd))
 	    (not even))
 	(setq instr (buffer-substring-no-properties (spu-column-to-pos odd)
@@ -1215,7 +1216,7 @@ If the register already exist, edit the comment instead."
     (save-match-data
       (let ((curpt (point))
 	    (register-name (current-word)))
-	(beginning-of-buffer)
+	(goto-char (point-min))
 	(let ((known-register (search-forward-regexp (concat "^\\.reg[\t ]*\\<" register-name "\\>") nil t)))
 	  (if known-register
 	      (progn (goto-char known-register)
@@ -1242,7 +1243,7 @@ If the register already exist, edit the comment instead."
 					     (insert (concat " ; " comment))))))))
 	      (progn (goto-char curpt)
 		     (let ((comment (read-string (concat "[" register-name "] New register, Enter comment: "))))
-		       (beginning-of-buffer)
+		       (goto-char (point-min))
 		       (if (not (search-forward "<Registers>" nil t))
 			   (message "[error] Can't add the register, register list not found. Make sure you have the text: '<Registers>' in your file")
 			   (forward-line 1)
@@ -1287,8 +1288,10 @@ If the register already exist, edit the comment instead."
 				 (insert (concat "; " line)))
 			  (while reg-not-used
 			    (setq current (pop reg-not-used))
-			    (beginning-of-line)
-			    (replace-regexp (concat "\\<" current "\\>[ \t]*,?") "{\\&}" nil bol eol))))))))
+			    (goto-char (point-at-bol))
+			    (while (re-search-forward (concat "\\<" current "\\>[ \t]*,?") eol t)
+			      (replace-match "{\\&}" nil nil))
+			    )))))))
       (message "No Selected Region.")))
 
 
@@ -1390,6 +1393,8 @@ If the register already exist, edit the comment instead."
   "Spu syntax mode definition -- word and comments")
 
 ;; Spu-mode entry function:
+
+;;;###autoload
 (defun spu-mode ()
   "Major mode for editing SPU assembly code."
   (interactive)
