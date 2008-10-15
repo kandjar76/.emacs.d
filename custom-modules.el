@@ -27,14 +27,16 @@
 
 ;; Module: Bookmark
 ;; This library will emulate the visual studio's bookmark
-(when window-system
-  (require 'bm))
-
+(autoload 'bm-toggle     "bm" "Toggle bookmark at point." t nil)
+(autoload 'bm-next       "bm" "Goto next bookmark." t nil)
+(autoload 'bm-previous   "bm" "Goto previous bookmark." t nil)
+(autoload 'bm-remove-all "bm" "Delete all visible bookmarks in current buffer." t nil)
 
 ;; Module: ToolTip-Help
 ;; This library will enable tooltip using F1 key
 (when window-system
-  (require 'tooltip-help))
+  (global-set-key (kbd "<f1>") 'th-show-help))
+  (autoload 'th-show-help "tooltip-help" t nil))
 
 
 ;; Module: highlight-current-line
