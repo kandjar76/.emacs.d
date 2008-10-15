@@ -149,8 +149,10 @@ matches any of the individual token."
 
 
 ;; Spu-mode entry function:
+
+;;;###autoload
 (defun ddf-mode ()
-  "Major mode for editing SPU assembly code."
+  "Major mode for editing DDF files."
   (interactive)
   (kill-all-local-variables)
   (set-syntax-table ddf-syntax-table)
