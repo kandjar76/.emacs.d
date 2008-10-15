@@ -10,8 +10,6 @@
 
 (when window-system
   (require 'highlight-regexp))
-;(require 'p4)
-
 
 ;; Module: git
 (when window-system
