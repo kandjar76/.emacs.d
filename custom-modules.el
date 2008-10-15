@@ -58,20 +58,21 @@
 
 
 ;; Module: spu-mode
-(require 'spu-mode)
+(autoload 'spu-mode "spu-mode" "Major mode for editing SPU assembly code." t nil)
 (when window-system
-  (require 'spu-highlight-registers)
-  (require 'spu-highlight-stalls)
-  (require 'spu-tooltip)
-  (require 'spu-highlight-loop)
-  ;; Autoactivate the loading of the SPU registers:
-  (add-hook 'spu-mode-hook 'spu-highlight-registers-mode)
-  (add-hook 'spu-mode-hook 'spu-highlight-latency-mode)
-)
+  (eval-after-load "spu-mode"
+    '(progn
+       (require 'spu-highlight-registers)
+       (require 'spu-highlight-stalls)
+       (require 'spu-tooltip)
+       (require 'spu-highlight-loop)
+       ;; Autoactivate the loading of the SPU registers:
+       (add-hook 'spu-mode-hook 'spu-highlight-registers-mode)
+       (add-hook 'spu-mode-hook 'spu-highlight-latency-mode))))
 
 ;; Module: extra modes
-(require 'ddf-mode)
-(require 'idf-mode)
+(autoload 'ddf-mode "ddf-mode" "Major mode for editing DDF files." t nil)
+(autoload 'idf-mode "idf-mode" "Major mode for editing IDF files." t nil)
 
 
 ;; Module: dired
