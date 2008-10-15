@@ -35,7 +35,7 @@
 ;; Module: ToolTip-Help
 ;; This library will enable tooltip using F1 key
 (when window-system
-  (global-set-key (kbd "<f1>") 'th-show-help))
+  (global-set-key (kbd "<f1>") 'th-show-help)
   (autoload 'th-show-help "tooltip-help" t nil))
 
 
