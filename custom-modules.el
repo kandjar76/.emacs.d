@@ -221,12 +221,17 @@ if COUNT is nil, each number is increased by line number within the selection (s
 ;; Module: yas/snippet
 ;;
 
-;; SLOW TODO: Auto load this!!!
+(setq yas-initialize nil)
+(eval-after-load "yasnippet"
+  '(when (not yas-initialize)
+     (yas/initialize)
+     (yas/load-directory "~/.emacs.d/snippets/default")
+     (define-key yas/keymap (kbd "<S-kp-tab>") 'yas/prev-field-group)
+     (setq yas-initialize t)))
+
 (when window-system
-  (require 'yasnippet)
-  (yas/initialize)
-  (yas/load-directory "~/.emacs.d/snippets/default")
-  (define-key yas/keymap (kbd "<S-kp-tab>") 'yas/prev-field-group))
+  (add-hook 'c++-mode-hook '(lambda() (require 'yasnippet)))
+  (add-hook 'c-mode-hook ''(lambda() (require 'yasnippet))))
 
 
 ;;
