@@ -23,8 +23,6 @@
 ;; known undo function
 (require 'redo)
 
-;(load-file "~/.emacs.d/loaddefs.el")
-
 ;; Module: Bookmark
 ;; This library will emulate the visual studio's bookmark
 (autoload 'bm-toggle     "bm" "Toggle bookmark at point." t nil)
@@ -46,15 +44,38 @@
   (highlight-current-line-on t))
 
 
+
 ;; Module: dabbrev-highlight
 ; To highlight the keyword dabbrev used to complete the word:
 (when window-system
   (require 'dabbrev-highlight))
 
 
+
 ;; Module: cscope
-(when window-system
-  (require 'xcscope+))
+(autoload 'cscope-find-this-symbol-no-prompting-no-updates        "xcscope+"
+  "Locate a symbol in source code [no database update performed -- no user prompting]." t nil)
+(autoload 'cscope-find-global-definition-no-prompting-no-updates  "xcscope+"
+  "Find a symbol's global definition without prompting [no database update performed]." t nil)
+(autoload 'cscope-find-this-text-string-no-updates                "xcscope+"
+  "Locate where a text string occurs [no database update performed]." t nil)
+(autoload 'cscope-find-this-symbol-no-updates                     "xcscope+"  
+  "Locate a symbol in source code [no database update performed]." t nil)
+(autoload 'cscope-find-functions-calling-this-function-no-updates "xcscope+"
+  "Display functions calling a function [no database update performed]." t nil)
+(autoload 'cscope-find-global-definition-no-updates               "xcscope+"
+  "Find a symbol's global definition [no database update performed]." t nil)
+(autoload 'cscope-find-this-text-string                           "xcscope"
+  "Locate where a text string occurs." t nil)
+(autoload 'cscope-find-this-symbol                                "xcscope"
+  "Locate a symbol in source code." t nil)
+(autoload 'cscope-find-functions-calling-this-function            "xcscope"
+  "Display functions calling a function." t nil)
+(autoload 'cscope-find-global-definition                          "xcscope"
+  "Find a symbol's global definition." t nil)
+(autoload 'cscope-pop-mark                                        "xcscope"
+  "Pop back to where cscope was last invoked." t nil)
+
 
 
 ;; Module: spu-mode
