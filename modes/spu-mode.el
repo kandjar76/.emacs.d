@@ -73,7 +73,7 @@
 ;;        - Insert a properly-indented nop/lnop pair (C-c C-n for uncommented, C-c C-b for
 ;;          commented)
 
-(eval-when-compile (require 'cl))
+(require 'cl)
 (require 'apply-on-region)
 
 ;;
@@ -1341,7 +1341,7 @@ If the register already exist, edit the comment instead."
     (define-key spu-mode-map [(control c) (control f)]    'spu-reformat-region)
     (define-key spu-mode-map [(control c) (control d)]    'spu-rollup-dependency-report-region)
     (define-key spu-mode-map [(control c) (control r)]    'spu-rollup-fusion-region)
-    (define-key spu-mode-map [(tab)]                      'spu-indent)
+    ;(define-key spu-mode-map [(tab)]                      'spu-indent)
     (define-key spu-mode-map [(control >)]                'spu-next-opcode)
     (define-key spu-mode-map [(control <)]                'spu-previous-opcode)
     (define-key spu-mode-map [(shift meta down)]          'spu-swap-next-instruction)
@@ -1411,6 +1411,10 @@ If the register already exist, edit the comment instead."
   ;(setq case-fold-search t)
   (setq major-mode 'spu-mode)
   (setq mode-name "SPU Assembly Code")
+
+  (make-local-variable 'indent-line-function)
+  (set 'indent-line-function 'spu-indent)
+
   (run-hooks 'spu-mode-hook))
 
 (provide 'spu-mode)
