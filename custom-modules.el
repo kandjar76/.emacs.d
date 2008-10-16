@@ -4,52 +4,71 @@
 ;;
 
 
+;;
+;; Module: misc-tools
+;; 
 
-(when window-system
-  (require 'highlight-regexp))
+(require 'misc-tools)
 
+
+;;
 ;; Module: git
-(when window-system
-  (require 'git)
-  (require 'git-log-mode)
-  (require 'git+)
-  (require 'gitsum))
+;;
 
+(when window-system
+  ;;(require 'git)
+  (autoload 'git-status "git" "Entry point into git-status mode." t nil)
+  (eval-after-load "git"
+    '(progn
+       (require 'git-log-mode)
+       (require 'git+)
+       (require 'gitsum))))
+
+
+;;
 ;; Module: redo
+;;
+
 ;; This module enable a redo function which is the exact opposite of the well
 ;; known undo function
 (require 'redo)
 
+
+;;
 ;; Module: Bookmark
+;;
+
 ;; This library will emulate the visual studio's bookmark
 (autoload 'bm-toggle     "bm" "Toggle bookmark at point." t nil)
 (autoload 'bm-next       "bm" "Goto next bookmark." t nil)
 (autoload 'bm-previous   "bm" "Goto previous bookmark." t nil)
 (autoload 'bm-remove-all "bm" "Delete all visible bookmarks in current buffer." t nil)
 
+
+;;
 ;; Module: ToolTip-Help
+;;
+
 ;; This library will enable tooltip using F1 key
 (when window-system
-  (global-set-key (kbd "<f1>") 'th-show-help)
+  (define-key global-map [(f1)] 'th-show-help)
   (autoload 'th-show-help "tooltip-help" t nil))
 
 
-;; Module: highlight-current-line
-;; Module which add a feature: the current line will now be highlighted.
-(when window-system
-  (require 'highlight-current-line)
-  (highlight-current-line-on t))
-
-
-
+;;
 ;; Module: dabbrev-highlight
+;;
+
 ; To highlight the keyword dabbrev used to complete the word:
 (when window-system
-  (require 'dabbrev-highlight))
+  (let (current-load-list) (defadvice dabbrev-expand (after dabbrev-expand-highlight activate) "Advised by dabbrev-highlight.el.\nHighlight last expanded string." (dabbrev-highlight)))
+  (autoload 'dabbrev-highlight "dabbrev-highlight" "Not documented" nil nil))
 
 
-
+;;
 ;; Module: cscope
+;;
+
 (autoload 'cscope-find-this-symbol-no-prompting-no-updates        "xcscope+"
   "Locate a symbol in source code [no database update performed -- no user prompting]." t nil)
 (autoload 'cscope-find-global-definition-no-prompting-no-updates  "xcscope+"
@@ -75,7 +94,10 @@
 
 
 
+;;
 ;; Module: spu-mode
+;;
+
 (autoload 'spu-mode "spu-mode" "Major mode for editing SPU assembly code." t nil)
 (when window-system
   (eval-after-load "spu-mode"
@@ -93,26 +115,95 @@
 (autoload 'idf-mode "idf-mode" "Major mode for editing IDF files." t nil)
 
 
-;; Module: dired
-(when window-system
-  (require 'dired+)
-  (require 'dired++)
-  (put 'dired-find-alternate-file 'disabled nil))
+;;
+;; Module: highlight-current-line
+;;
 
+;; Module which add a feature: the current line will now be highlighted.
+(when window-system
+  (require 'highlight-current-line)
+  (highlight-current-line-on t))
+
+
+;;
+;; Module: dired
+;;
+
+(when window-system
+  (eval-after-load "dired"
+    '(progn (put 'dired-find-alternate-file 'disabled nil)
+	    (require 'dired+)))
+  (eval-after-load "dired+"
+    '(require 'dired++)))
+
+
+;;
+;; Module: buff-menu++
+;;
 
 (require 'buff-menu++)
-(require 'misc-tools)
-(require 'increment-numbers)
-(require 'replace-rect)
-(when window-system
-  (require 'quick-search)
-  (require 'highlight-current-word))
+
+
+;;
+;; Module: increment-numbers
+;;
+
+(autoload 'increment-numbers-multilines "increment-numbers" 
+  "Increment the value on each lines" t nil)
+(autoload 'increment-numbers-region "increment-numbers" 
+  "Increment each number in the selected region by 1 or by the value of the prefix argument" t nil)
+(autoload 'increase-numbers-on-rectangle "increment-numbers" 
+  "Increment each number in the selected rectangle depending on the prefix argument COUNT:
+if COUNT is integer value, each number is increased by COUNT
+if COUNT is a simple prefix value (C-U), each number is increased by 1
+if COUNT is nil, each number is increased by line number within the selection (starting at 0)" t nil)
+
+
+;;
+;; Module: replace-rect
+;;
+
+(autoload 'replace-string-rectangle "replace-rect"
+   "Replace the string FROM-STRING with the string TO-STRING in the rectangle delimited by START and END." t nil)
+(autoload 'replace-regexp-rectangle "replace-rect"
+   "Replace the regexp FROM-REGEXP with the string TO-STRING in the rectangle delimited by START and END." t nil)
+
+
+;;
+;; Module: quick-search
+;;
+
+(autoload 'quick-search-forward "quick-search" 
+  "Do a forward search using the word below the cursor. Store the current searched word in a global variable to allow a repeated search using the function repeat-search-current-word-forward or repeat-search-current-word-backward." t nil) 
+(autoload 'quick-search-backward "quick-search"
+  "Do a forward search using the word below the cursor. Store the current searched word in a global variable to allow a repeated search using the function repeat-search-current-word-forward or repeat-search-current-word-backward." t nil)
+(autoload 'repeat-quick-search-forward "quick-search"
+  "Repeat a forward research using the stored current word (cf: search-current-word-forward / search-current-word-backword)" t nil)
+(autoload 'repeat-quick-search-backward "quick-search"
+  "Repeat a forward research using the stored current word (cf: search-current-word-forward / search-current-word-backword)" t nil)
+
+
+;;
+;; Module: highlight-current-word
+;;
+
+(autoload 'highlight-current-word "highlight-current-word" 
+  "Use isearch library to highlight the current word" t nil)
+
+
+;;
+;; Module: find-dired++
+;;
 
 (when (< emacs-major-version 23)
-  (require 'find-dired++)) ;; -- doesn't work with emacs 23... 
+  (eval-after-load "find-dired"
+    '(require 'find-dired++))) ;; -- doesn't work with emacs 23... 
 
 
+;;
 ;; Module: iswitchb
+;;
+
 (require 'iswitchb)
 (iswitchb-default-keybindings)
 (setq iswitchb-prompt-newbuffer nil)
@@ -126,6 +217,11 @@
 (ad-activate 'iswitchb-visit-buffer)
 
 
+;;
+;; Module: yas/snippet
+;;
+
+;; SLOW TODO: Auto load this!!!
 (when window-system
   (require 'yasnippet)
   (yas/initialize)
@@ -133,8 +229,14 @@
   (define-key yas/keymap (kbd "<S-kp-tab>") 'yas/prev-field-group))
 
 
+;;
+;; Module: c-tooltip
+;;
+
 (when running-at-work
-  (require 'c-tooltip))
+  (eval-after-load "tooltip-help"
+    '(require 'c-tooltip)))
+
 
 ;;================================================================================
 
