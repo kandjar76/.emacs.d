@@ -23,22 +23,20 @@
 
 
 ;; Set the default font:
-(if (eq window-system 'x)
-    (if (> emacs-major-version 21)
-	(if running-at-work
-	    (set-default-font "9x15")
-	    (set-default-font "9x15"))
-	(progn
-	  (create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
-	  (cond
-	   ((x-list-fonts "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
-	    (set-face-font 'default "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*"))
-	   ((x-list-fonts "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*")
-	    (set-face-font 'default "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*"))
-	   ))))
-
-(when (eq window-system 'w32)
-  (set-default-font "Courier"))
+(cond 
+ ((eq window-system 'x)
+  (if (> emacs-major-version 21)
+      (set-default-font "9x15")
+      (progn
+	(create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
+	(cond
+	 ((x-list-fonts "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
+	  (set-face-font 'default "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*"))
+	 ((x-list-fonts "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*")
+	  (set-face-font 'default "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*"))
+	 ))))
+ ((eq window-system 'w32)
+  (set-default-font "Courier")))
 
 
 
@@ -52,13 +50,8 @@
 (load-library "custom-modules")                    ; load the external modules
 (setq time3 (current-time))
 
-(load-library "custom-awk-scripts")                ; bind the awk script to some lisp functions
 (load-library "custom-keys")                       ; setup the emacs keys
 (load-library "custom-colors")                     ; color customization
-
-
-(load-library "my-cpp") ;; slow in text mode
-(load-library "my-awk")
 
 (setq time4 (current-time))
 
@@ -113,7 +106,7 @@
   (insert (format "Font Setup     - %2is %06ius\n" (cadr time1) (caddr time1)))
   (insert (format "Core           - %2is %06ius\n" (cadr time2) (caddr time2)))
   (insert (format "Modules loaded - %2is %06ius\n" (cadr time3) (caddr time3)))
-  (insert (format "Other modules  - %2is %06ius\n" (cadr time4) (caddr time4))))
+  (insert (format "Custom key/col - %2is %06ius\n" (cadr time4) (caddr time4))))
 
 (set-buffer-modified-p nil)
 ;(custom-set-faces

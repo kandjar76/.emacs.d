@@ -238,5 +238,47 @@ if COUNT is nil, each number is increased by line number within the selection (s
     '(require 'c-tooltip)))
 
 
+;;
+;; Module: custom-awk-script
+;;
+
+(autoload 'cpp-align-comment "custom-awk-script"
+  "Align the eol comments within the selected region -- using a gawk script" t nil)
+(autoload 'cpp-align-variable-assignment "custom-awk-script"
+  "Align the variables and also the assignment symbol ('=')" t nil)
+(autoload 'cpp-align-function-bracket "custom-awk-script"
+  "Align the function name and also the open bracket symbols" t nil)
+(autoload 'cpp-comment-block "custom-awk-script"
+  "Comment/UnComment a block of code using the C++ type of comment '//'" t nil)
+(autoload 'awk-align-comment "custom-awk-script"
+  "Align the eol comments within the selected region -- using a gawk script" t nil)
+(autoload 'awk-comment-block "custom-awk-script"
+  "Comment/UnComment a block of code using the C++ type of comment '//'" t nil)
+(autoload 'spu-reformat-region "custom-awk-script"
+  "Reformat the current region of the code -- using a gawk script" t nil)
+(autoload 'spu-rollup-dependency-report-region "custom-awk-script"
+  "Report the dependency of a specific loop during a rollup process
+Those dependency must be filled up during the previous loop!" t nil)
+(autoload 'spu-rollup-fusion-region "custom-awk-script"
+  "Fusion several loop into the final rollup version!" t nil)
+(autoload 'spu-format-dump-file-region "custom-awk-script"
+  "Format generated dump spu file" t nil)
+
+
+;;
+;; Module: my-cpp/my-awk
+;;
+
+(autoload 'custom-c-setup    "my-cpp")
+(autoload 'custom-awk-setup  "my-awk")
+
+(add-hook 'c++-mode-hook 'custom-c-setup)
+(add-hook 'c++-mode-hook 'turn-on-cwarn-mode)
+(add-hook 'c-mode-hook 'custom-c-setup)
+(add-hook 'c-mode-hook 'turn-on-cwarn-mode)
+(add-hook 'awk-mode-hook 'custom-awk-setup)
+
+
+
 ;;================================================================================
 
