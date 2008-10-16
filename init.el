@@ -72,6 +72,8 @@
 (insert ";;  . Bug    .. Files containing defrecord statement don't compile!\n")
 (insert ";;\n")
 (insert ";; TODO:\n")
+(insert ";;  . Init   .. Find a solution to make yas/snippet faster to load -- at least under windows.\n")
+(insert ";;  . Init   .. Investigate CEDET.\n")
 (insert ";;  . Git    .. Put all the emacs backups in git\n")
 (insert ";;  . Git    .. Having a option to switch the view mode (with/out diffs)within git-log-mode\n")
 (insert ";;  . Global .. Tree of undo\n")
