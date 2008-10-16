@@ -103,10 +103,10 @@
   (setq time1 (time-subtract time1 orig-time))
 
   (insert "\n")
-  (insert (format "Font Setup     - %2is %06ius\n" (cadr time1) (caddr time1)))
-  (insert (format "Core           - %2is %06ius\n" (cadr time2) (caddr time2)))
-  (insert (format "Modules loaded - %2is %06ius\n" (cadr time3) (caddr time3)))
-  (insert (format "Custom key/col - %2is %06ius\n" (cadr time4) (caddr time4))))
+  (insert (format "Font Setup     - %2is %06ius\n" (cadr time1) (car (cdr (cdr time1)))))
+  (insert (format "Core           - %2is %06ius\n" (cadr time2) (car (cdr (cdr time2)))))
+  (insert (format "Modules loaded - %2is %06ius\n" (cadr time3) (car (cdr (cdr time3)))))
+  (insert (format "Custom key/col - %2is %06ius\n" (cadr time4) (car (cdr (cdr time4))))))
 
 (set-buffer-modified-p nil)
 ;(custom-set-faces
