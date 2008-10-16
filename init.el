@@ -38,8 +38,7 @@
 	   ))))
 
 (when (eq window-system 'w32)
-  (set-default-font "Courier")
-)
+  (set-default-font "Courier"))
 
 
 
