@@ -15,14 +15,12 @@
 ;; Module: git
 ;;
 
-(when window-system
-  ;;(require 'git)
-  (autoload 'git-status "git" "Entry point into git-status mode." t nil)
-  (eval-after-load "git"
-    '(progn
-       (require 'git-log-mode)
-       (require 'git+)
-       (require 'gitsum))))
+(autoload 'git-status "git" "Entry point into git-status mode." t nil)
+(eval-after-load "git"
+  '(progn
+     (require 'git-log-mode)
+     (require 'git+)
+     (require 'gitsum)))
 
 
 ;;
