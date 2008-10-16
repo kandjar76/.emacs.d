@@ -5,9 +5,6 @@
 
 
 
-; Doesn't seems to be loaded by default with emacs.
-(require 'cl) 
-
 (when window-system
   (require 'highlight-regexp))
 
