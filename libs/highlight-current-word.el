@@ -36,6 +36,10 @@
 (set-face-foreground 'highlight-selected-word-face "blue")
 (defvar highlight-selected-word-face 'highlight-selected-word-face
   "Font used to highlight the selected / current word.")
+ 
+(setq highlight-regexp-faces '(secondary-selection
+			       highlight-selected-word-face))
+
 
 (defun highlight-current-word()
   "Use isearch library to highlight the current word"
