@@ -217,7 +217,8 @@
 
 
 
-(defun mtpchat-start()
+(defun mtpchat()
+  "Entry point to start the MtpChat client"
   (interactive)
   (let ((mtpchat-hooks (make-new-record tcp-hooks
 					:connection-established-handler 'mtpchat-connection-established
@@ -229,6 +230,10 @@
     (tcp-connect mtpchat-buffer-name mtpchat-connection mtpchat-hooks)
     (save-excursion 
       (set-buffer mtpchat-buffer-name)
+      ;; Get rid of the ^M at the end of the lines:
+      (setq buffer-display-table (make-display-table))
+      (aset buffer-display-table ?\r [])
+      ;; Setup the mtpchat-mode
       (mtpchat-mode))))
 
 (provide 'mtpchat)
