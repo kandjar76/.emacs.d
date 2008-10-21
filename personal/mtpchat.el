@@ -211,10 +211,13 @@
   (setq major-mode 'mtpchat-mode)
   (setq mode-line-process '(":%s"))
   (use-local-map mtpchat-mode-map)
+
+  ;; Get rid of the ^M at the end of the lines:
+  (setq buffer-display-table (make-display-table))
+  (aset buffer-display-table ?\r [])
+
   (set (make-local-variable 'font-lock-defaults) '(mtpchat-font-lock-keywords nil t))
   (set (make-local-variable 'truncate-lines) nil))
-
-
 
 
 (defun mtpchat()
@@ -230,9 +233,6 @@
     (tcp-connect mtpchat-buffer-name mtpchat-connection mtpchat-hooks)
     (save-excursion 
       (set-buffer mtpchat-buffer-name)
-      ;; Get rid of the ^M at the end of the lines:
-      (setq buffer-display-table (make-display-table))
-      (aset buffer-display-table ?\r [])
       ;; Setup the mtpchat-mode
       (mtpchat-mode))))
 
