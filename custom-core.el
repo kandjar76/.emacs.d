@@ -34,6 +34,10 @@
 ;; Set default tab width
 (setq tab-width 4)
 
+;; Copy/paste use the clipboard...
+;;x-select-enable-clipboard
+
+
 ;; Inihibit the splash screen:
 (setq inhibit-startup-message t)
 
