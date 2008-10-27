@@ -4,236 +4,272 @@
 
 
 (require 'tcp-client)
-(require 'log-buffer)
 
-;; Create faces for various opcode classes.
-(make-face 'mtpchat-mtp-face)
-(set-face-foreground 'mtpchat-mtp-face "red")
-(defvar mtpchat-mtp-face 'mtpchat-mtp-face
-  "Font to highlight mtp messages.")
+;;
+;; Variables: 
+;;
 
-(make-face  'mtpchat-emacs-face)
-(set-face-foreground 'mtpchat-emacs-face "cornflowerblue")
-(defvar mtpchat-emacs-face 'mtpchat-emacs-face
-  "Font to highlight emacs messages.")
+(defvar mtpchat--main-buffer-name "*mtpchat*"
+  "Name of the MtpChat main buffer")
 
-(make-face  'mtpchat-your-line-face)
-(set-face-foreground 'mtpchat-your-line-face "blue")
-(defvar mtpchat-your-line-face 'mtpchat-your-line-face
-  "Font to highlight a mtp chat line you sent.")
+(defvar mtpchat--marker nil 
+  "Marker for mtpchat")
+(make-variable-buffer-local 'mtpchat--marker)
 
-(make-face  'mtpchat-your-name-face)
-(set-face-foreground 'mtpchat-your-name-face "darkslateblue")
-(defvar mtpchat-your-name-face 'mtpchat-your-name-face
-  "Font to highlight a mtpchat line with your name in it.")
+(defvar mtpchat--incomplete-line-save nil 
+  "Store the incomplete line here waiting for the rest")
+(make-variable-buffer-local 'mtpchat-newline-insert)
 
-(make-face 'mtpchat-you-tell-face)
-(set-face-foreground 'mtpchat-you-tell-face "cadet blue")
-(defvar mtpchat-you-tell-face 'mtpchat-you-tell-face
-  "Font to highlight a private msg you sent on mtpchat.")
+(defvar mtpchat--history nil 
+  "Input history")
 
-(make-face 'mtpchat-private-tell-face)
-(set-face-foreground 'mtpchat-private-tell-face "forest green")
-(defvar mtpchat-private-tell-face 'mtpchat-private-tell-face
-  "Font to highlight a private msg you received on mtpchat.")
+(defvar mtpchat--connection 
+  (make-new-record tcp-connection :server "mtpchat.melting-pot.org" 
+				  :port  4000
+				  :keep-alive t)
+  "MtpChat Connection Settings")
 
+(defvar mtpchat--input-prefix "MTP> "
+  "Prompt for entering a mtpchat text...")
 
-(setq mtpchat-buffer-name "*mtpchat*")
-(setq mtpchat-login "Kandjar")
+(defvar mtpchat--input-start-marker nil)
 
-(setq mtpchat-connection (make-new-record tcp-connection :server "mtpchat.melting-pot.org" 
-							 :port  4000
-							 :keep-alive t))
+;;
+;; Network handlers:
+;;
 
-(defun mtpchat-print(message)
-  (log-printf mtpchat-buffer-name "%s" message))
+(defun mtpchat--connection-established(buffer server port)
+  (setq mtpchat--incomplete-line-save nil) ;; new connection -- no incomplete lines...
+  (mtpchat--insert 'mtpchat-system (format "<Emacs> Connection established to %s:%i\n" server port)))
 
-(defun mtpchat-connection-established(buffer server port)
-  (mtpchat-print (format "<Emacs> Connection established to %s:%i\n" server port)))
+(defun mtpchat--connection-abort(buffer server port)
+  (mtpchat--insert 'mtpchat-system (format "<Emacs> Connection abort (%s:%i)\n" server port)))
 
-(defun mtpchat-connection-abort(buffer server port)
-  (mtpchat-print (format "<Emacs> Connection abort (%s:%i)\n" server port)))
+(defun mtpchat--connection-failed(buffer server port error)
+  (mtpchat--insert 'mtpchat-system (format "<Emacs> Connection failed (%s:%i) -- %s\n" server port error)))
 
-(defun mtpchat-connection-failed(buffer server port error)
-  (mtpchat-print (format "<Emacs> Connection failed (%s:%i) -- %s\n" server port error)))
+(defun mtpchat--sentinel(process event)
+  (mtpchat--insert 'mtpchat-system (format "<Emacs> Sentinel report: %s" event)))
 
-(defun mtpchat-sentinel(process event)
-  (mtpchat-print (format "<Emacs> Sentinel report: %s" event)))
+(defun mtpchat--filter(process message)
+  (mtpchat--insert-data message))
 
 
-(defun mtpchat-filter(process message)
-  (mtpchat-print message))
+;;
+;; MtpChat Hooks:
+;;
 
-(defvar mtpchat-history nil)
 
-(defun mtpchat-send(&optional message)
+(defgroup mtpchat-group nil
+  "Group for the mtpchat variables...")
+
+(defcustom mtpchat--validate-message-hook nil
+  "Hook called before inserting the message into the buffer; 
+this hook allow the filtering of displayed text by setting 
+the variable mtpchat--valid-message to t or nil."
+  :group 'mtpchat-group
+  :type 'hook)
+
+
+(defcustom mtpchat--modify-hook nil
+  "Hook called once the text has been inserted inside 
+the buffer; the purpose of these hooks is to modify the 
+appearance and content of the inserted text"
+ :group 'mtpchat-group
+ :type 'hook)
+
+;; fill: reformat the long lines...
+;    (erc-put-text-property 0 (length mark-s) 'face msg-face str)
+;   (erc-put-text-property (length mark-s) (+ (length mark-s) (length nick))
+;			   'face nick-face str)
+;    (erc-put-text-property (+ (length mark-s) (length nick)) (length str)
+;			   'face msg-face str)
+;; control-highlight: remote key code...
+;; button...
+;; add time stamp  (read-nonsticky t) (intangible t)
+;;  --LEFT OR RIGHT
+
+(defcustom mtpchat--post-insert-hook nil
+  "Hook called after the modify hook, at this point the
+text is finalized. No more modification should be done here."
+  :group 'mtpchat-group
+  :type 'hook)
+;; read-only
+;; modeline track
+
+;; (set-window-dedicated-p window t)
+
+(defcustom mtpchat-mode-hook nil
+  "Hook run after `mtpchat-mode' setup is complete."
+  :group 'mtpchat-group
+  :type 'hook)
+
+;;
+;; Utility functions:
+;;
+
+
+(defun mtpchat--insert-data(message)
+  "Receiving data from the server, this function will cut these data 
+into full lines. Non-full lines will not be processed for now."
+  (let* ((strlist (split-string (concat mtpchat--incomplete-line-save message) "\n\r?")))
+    (setq mtpchat--incomplete-line-save nil)
+    (while (and strlist (cdr strlist))
+      (when (> (length (car strlist)) 0)
+	(mtpchat--insert 'mtpchat-data (car strlist)))
+      (setq strlist (cdr strlist)))
+    ;; Last line is incomplete; stored for later...
+    ;; exception: "<Mtp> Login:" or "<Mtp> Password:"
+    (if (or (string-match "^<Mtp> Login: $" message)
+	    (string-match "<Mtp> Password: $" message))
+	(mtpchat--insert 'mtpchat-data (car strlist))
+	(setq mtpchat--incomplete-line-save (car strlist)))
+	))
+
+(defun mtpchat--insert(type message)
+  "Display the message MESSAGE in a mtpchat buffer, 
+TYPE reprensents the type of message, currently two type are
+supported:
+ 'mtpchat-system (internal display) and 'mtpchat-data (data
+ received from the server)."
+  (let ((mtpchat-buffer (get-buffer mtpchat--main-buffer-name)))
+    (when (bufferp mtpchat-buffer)
+      (with-current-buffer mtpchat-buffer
+	(save-excursion
+	  (goto-char (marker-position mtpchat--marker))
+	  (let ((mtpchat--skip-message nil)
+		(start-pos (marker-position mtpchat--marker)))
+	    (run-hook-with-args 'mtpchat--validate-message-hook type message)
+	    (when (null mtpchat--skip-message)
+	      (when (not (string-match "\n\r?$" message))
+		(setq message (concat message "\n")))
+	      (let ((inhibit-read-only t))
+		(insert-before-markers message))
+	      (let ((end-pos (point)))
+		(save-restriction
+		  (narrow-to-region start-pos end-pos)
+		  (run-hooks 'mtpchat--modify-hook)
+		  (run-hooks 'mtpchat--post-insert-hook))))))))))
+
+(defun mtpchat--make-read-only()
+  "Post insert hook functions: set the text property to be read-only"
+  (add-text-properties (point-min) (point-max)
+		       '(read-only t front-sticky t rear-nonsticky t)))
+
+
+(defun mtpchat--send ()
   (interactive)
-  (if (not message)
-      (progn (setq message (concat (read-from-minibuffer "Text to send: " nil nil nil 'mtpchat-history nil t) "\n"))
-	     (display-buffer mtpchat-buffer-name)))
-  (tcp-send (get-buffer-process mtpchat-buffer-name) message))
+  (let ((to-send (buffer-substring-no-properties (marker-position mtpchat--input-start-marker)
+						 (point-max))))
+    (when (> (length to-send) 0)
+      (delete-region (marker-position mtpchat--input-start-marker) (point-max))
+      ;(mtpchat--insert 'mtpchat to-send)
+      (tcp-send (get-buffer-process mtpchat--main-buffer-name) (concat to-send "\n"))
+      )))
 
-(defun mtpchat-query(&optional initial-context)
-  (interactive)
-  (let (message)
-    (setq message (concat (read-from-minibuffer "Text to send: " initial-context nil nil 'mtpchat-history nil t) "\n"))
-    (display-buffer mtpchat-buffer-name)
-    (set-buffer mtpchat-buffer-name)
-    (tcp-send (get-buffer-process mtpchat-buffer-name) message)))
-
-(defun mtpchat-reply()  (interactive) (mtpchat-query "reply "))
-(defun mtpchat-whoall() (interactive) (mtpchat-send "who all\n"))
-(defun mtpchat-tell()   (interactive) (mtpchat-query "tell "))
-
-;; Define the key mapping for the spu mode:
+;; Define the key mapping for the mtpchat mode:
 (defvar mtpchat-mode-map
   (let ((mtpchat-mode-map (make-keymap)))
-    (define-key mtpchat-mode-map [(control ?x) ?r] 'mtpchat-reply)
-    (define-key mtpchat-mode-map [(control ?x) ?t] 'mtpchat-tell)
-    (define-key mtpchat-mode-map [(control ?x) ?w] 'mtpchat-whoall)
+    (define-key mtpchat-mode-map [return] 'mtpchat--send)
 
     ;(define-key hexl-mode-map [remap self-insert-command] 'hexl-self-insert-command)
 
-    (define-key mtpchat-mode-map [?A] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "A")))
-    (define-key mtpchat-mode-map [?B] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "B")))
-    (define-key mtpchat-mode-map [?C] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "C")))
-    (define-key mtpchat-mode-map [?D] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "D")))
-    (define-key mtpchat-mode-map [?E] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "E")))
-    (define-key mtpchat-mode-map [?F] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "F")))
-    (define-key mtpchat-mode-map [?G] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "G")))
-    (define-key mtpchat-mode-map [?H] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "H")))
-    (define-key mtpchat-mode-map [?I] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "I")))
-    (define-key mtpchat-mode-map [?J] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "J")))
-    (define-key mtpchat-mode-map [?K] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "K")))
-    (define-key mtpchat-mode-map [?L] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "L")))
-    (define-key mtpchat-mode-map [?M] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "M")))
-    (define-key mtpchat-mode-map [?N] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "N")))
-    (define-key mtpchat-mode-map [?O] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "O")))
-    (define-key mtpchat-mode-map [?P] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "P")))
-    (define-key mtpchat-mode-map [?Q] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "Q")))
-    (define-key mtpchat-mode-map [?R] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "R")))
-    (define-key mtpchat-mode-map [?S] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "S")))
-    (define-key mtpchat-mode-map [?T] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "T")))
-    (define-key mtpchat-mode-map [?U] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "U")))
-    (define-key mtpchat-mode-map [?V] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "V")))
-    (define-key mtpchat-mode-map [?W] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "W")))
-    (define-key mtpchat-mode-map [?X] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "X")))
-    (define-key mtpchat-mode-map [?Y] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "Y")))
-    (define-key mtpchat-mode-map [?Z] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "Z")))
-					
-    (define-key mtpchat-mode-map [?a] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "a")))
-    (define-key mtpchat-mode-map [?b] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "b")))
-    (define-key mtpchat-mode-map [?c] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "c")))
-    (define-key mtpchat-mode-map [?d] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "d")))
-    (define-key mtpchat-mode-map [?e] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "e")))
-    (define-key mtpchat-mode-map [?f] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "f")))
-    (define-key mtpchat-mode-map [?g] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "g")))
-    (define-key mtpchat-mode-map [?h] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "h")))
-    (define-key mtpchat-mode-map [?i] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "i")))
-    (define-key mtpchat-mode-map [?j] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "j")))
-    (define-key mtpchat-mode-map [?k] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "k")))
-    (define-key mtpchat-mode-map [?l] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "l")))
-    (define-key mtpchat-mode-map [?m] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "m")))
-    (define-key mtpchat-mode-map [?n] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "n")))
-    (define-key mtpchat-mode-map [?o] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "o")))
-    (define-key mtpchat-mode-map [?p] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "p")))
-    (define-key mtpchat-mode-map [?q] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "q")))
-    (define-key mtpchat-mode-map [?r] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "r")))
-    (define-key mtpchat-mode-map [?s] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "s")))
-    (define-key mtpchat-mode-map [?t] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "t")))
-    (define-key mtpchat-mode-map [?u] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "u")))
-    (define-key mtpchat-mode-map [?v] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "v")))
-    (define-key mtpchat-mode-map [?w] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "w")))
-    (define-key mtpchat-mode-map [?x] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "x")))
-    (define-key mtpchat-mode-map [?y] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "y")))
-    (define-key mtpchat-mode-map [?z] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "z")))
-					
-    (define-key mtpchat-mode-map [?0] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "0")))
-    (define-key mtpchat-mode-map [?1] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "1")))
-    (define-key mtpchat-mode-map [?2] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "2")))
-    (define-key mtpchat-mode-map [?3] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "3")))
-    (define-key mtpchat-mode-map [?4] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "4")))
-    (define-key mtpchat-mode-map [?5] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "5")))
-    (define-key mtpchat-mode-map [?6] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "6")))
-    (define-key mtpchat-mode-map [?7] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "7")))
-    (define-key mtpchat-mode-map [?8] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "8")))
-    (define-key mtpchat-mode-map [?9] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "9")))
-
-    (define-key mtpchat-mode-map [?!] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "!")))
-    (define-key mtpchat-mode-map [?@] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "@")))
-    (define-key mtpchat-mode-map [?#] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "#")))
-    (define-key mtpchat-mode-map [?$] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "$")))
-    (define-key mtpchat-mode-map [?%] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "%")))
-    (define-key mtpchat-mode-map [?^] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "^")))
-    (define-key mtpchat-mode-map [?&] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "&")))
-    (define-key mtpchat-mode-map [?*] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "*")))
-    (define-key mtpchat-mode-map [?\(] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "(")))
-    (define-key mtpchat-mode-map [?\)] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query ")")))
-
-    (define-key mtpchat-mode-map [?:] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query ":")))
-    (define-key mtpchat-mode-map [?\;] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query ";")))
-    (define-key mtpchat-mode-map [?,] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query ",")))
-    (define-key mtpchat-mode-map [?.] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query ".")))
-
-    (define-key mtpchat-mode-map [?<] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "<")))
-    (define-key mtpchat-mode-map [?>] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query ">")))
-    (define-key mtpchat-mode-map [?/] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "/")))
-    (define-key mtpchat-mode-map [??] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "?")))
-
-    (define-key mtpchat-mode-map [?-] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "-")))
-    (define-key mtpchat-mode-map [?_] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "_")))
-    (define-key mtpchat-mode-map [?+] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "+")))
-    (define-key mtpchat-mode-map [?=] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "=")))
-
-    (define-key mtpchat-mode-map [?\[] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "[")))
-    (define-key mtpchat-mode-map [?\]] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "]")))
-    (define-key mtpchat-mode-map [?{] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "{")))
-    (define-key mtpchat-mode-map [?}] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "}")))
-
-    (define-key mtpchat-mode-map [?'] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "'")))
-    (define-key mtpchat-mode-map [?\"] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "\"")))
-
     mtpchat-mode-map))
 
-(defconst mtpchat-font-lock-keywords
-  (list '("^<Mtp> You \\(tell\\|ask\\|reply\\).*$" . mtpchat-you-tell-face)
-	'("^<Mtp> \\w+ \\(tells\\|asks\\|replies\\).*$" . mtpchat-private-tell-face)
-        '("^<Mtp>.*$" . mtpchat-mtp-face)
-	'("^<Emacs>.*$" . mtpchat-emacs-face)
-	(cons (concat "^<" mtpchat-login ">.*$" ) 'mtpchat-your-line-face)
-	(cons mtpchat-login 'mtpchat-your-name-face))
-  "Additional expressions to highlight in MtpChat lines mode.")
+;(defconst mtpchat-font-lock-keywords
+;  (list '("^<Mtp> You \\(tell\\|ask\\|reply\\).*$" . mtpchat-you-tell-face)
+;	'("^<Mtp> \\w+ \\(tells\\|asks\\|replies\\).*$" . mtpchat-private-tell-face)
+;        '("^<Mtp>.*$" . mtpchat-mtp-face)
+;	'("^<Emacs>.*$" . mtpchat-emacs-face)
+;	(cons (concat "^<" mtpchat-login ">.*$" ) 'mtpchat-your-line-face)
+;	(cons mtpchat-login 'mtpchat-your-name-face))
+;  "Additional expressions to highlight in MtpChat lines mode.")
+;
+
+(defun mtpchat--scroll-to-bottom (window display-start)
+  "Scroll to the bottom of the display when the user is typing some texts...
+Function added to `window-scroll-functions' by mtpchat-mode"
+  (if (window-live-p window)
+      (if (> (point) mtpchat--marker)
+	  (save-excursion
+	    (goto-char (point-max))
+	    (recenter (- (window-body-height window) 3))
+	    (sit-for 0)))))
 
 
-(defun mtpchat-mode()
+(defun mtpchat-mode(&optional prompt)
   (kill-all-local-variables)
+  (goto-char (point-max))
+
+
+  ;; Mode definition:
   (setq mode-name "MtpChat")
   (setq major-mode 'mtpchat-mode)
   (setq mode-line-process '(":%s"))
   (use-local-map mtpchat-mode-map)
+  (set (make-local-variable 'truncate-lines) nil)
+
+  ;; Buffer Local
+  (make-variable-buffer-local 'mtpchat--incomplete-line-save)
 
   ;; Get rid of the ^M at the end of the lines:
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\r [])
 
-  (set (make-local-variable 'font-lock-defaults) '(mtpchat-font-lock-keywords nil t))
-  (set (make-local-variable 'truncate-lines) nil))
+  ;; Marker creation:
+  (setq mtpchat--marker (make-marker))
+  (setq mtpchat--input-start-marker (make-marker))
 
 
+  ;; We may want ot check if we already are running a previously open session 
+  ;(forward-line 0)
+  ;(when (get-text-property (point) 'mtp-prompt)...
+  (let ((start-pos (point)))
+    (insert "\n") ;; it also solve the issue where the prompt is at the beginning of the buffer --> doesn't scroll!!!
+    (add-text-properties start-pos (point) 
+			 '(read-only t rear-nonsticky t)))
+
+  ;; Setup the output markers:
+  (set-marker mtpchat--marker (point-max))
+
+  ;; Set the prompt:
+  (insert (or prompt mtpchat--input-prefix))
+  (add-text-properties (marker-position mtpchat--marker)
+		       (point-max)
+		       '(read-only t intangible t rear-nonsticky t mtp-prompt t front-sticky t))
+ 
+  ;; Setup the input marker:
+  (set-marker mtpchat--input-start-marker (point-max))
+  
+  ;; Make sure we always try to scroll to the bottom of the screen
+  (add-hook 'window-scroll-functions 'mtpchat--scroll-to-bottom nil t)
+
+  ;; Now let setup the mtpchat-hooks:
+  (make-local-hook 'mtpchat--post-insert-hook)
+  (make-local-hook 'mtpchat--modify-hook)
+  (make-local-hook 'mtpchat--validate-message-hook)
+
+  (add-hook 'mtpchat--post-insert-hook 'mtpchat--make-read-only)
+  ;; 
+
+  ;; Finally, let's run the user mode-hooks 
+  )
+
+;;;###autoload
 (defun mtpchat()
   "Entry point to start the MtpChat client"
   (interactive)
   (let ((mtpchat-hooks (make-new-record tcp-hooks
-					:connection-established-handler 'mtpchat-connection-established
-					:connection-abort-handler 'mtpchat-connection-abort
-					:connection-failed-handler 'mtpchat-connection-failed
-					:sentinel-handler 'mtpchat-sentinel
-					:filter-handler 'mtpchat-filter)))
-    (make-new-log-buffer mtpchat-buffer-name)
-    (tcp-connect mtpchat-buffer-name mtpchat-connection mtpchat-hooks)
+					:connection-established-handler 'mtpchat--connection-established
+					:connection-abort-handler 'mtpchat--connection-abort
+					:connection-failed-handler 'mtpchat--connection-failed
+					:sentinel-handler 'mtpchat--sentinel
+					:filter-handler 'mtpchat--filter)))
+    (get-buffer-create mtpchat--main-buffer-name)
     (save-excursion 
-      (set-buffer mtpchat-buffer-name)
+      (set-buffer mtpchat--main-buffer-name)
       ;; Setup the mtpchat-mode
-      (mtpchat-mode))))
+      (mtpchat-mode)
+      (tcp-connect mtpchat--main-buffer-name mtpchat--connection mtpchat-hooks))))
 
 (provide 'mtpchat)
