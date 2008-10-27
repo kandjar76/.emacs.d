@@ -11,7 +11,7 @@
 ;; -- button --> finger on user // url!
 ;; -- show-msg/wall more coloring!
 ;; -- autocompletion of nicks!
-;; -- accent!!!!!
+;; -- history of the prompt!
 
 (require 'tcp-client)
 
@@ -111,6 +111,7 @@
   (setq mtpchat--incomplete-line-save nil) ;; new connection -- no incomplete lines...
   (with-current-buffer buffer 
     (add-hooks 'mtpchat--validate-message-hook 'mtpchat--auto-login))
+  (set-process-coding-system (get-buffer-process mtpchat--main-buffer-name) 'iso-latin-1)
   (mtpchat--insert 'mtpchat-system (format "<Emacs> Connection established to %s:%i\n" server port)))
 
 (defun mtpchat--connection-abort(buffer server port)
