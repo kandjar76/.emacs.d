@@ -3,8 +3,33 @@
 			       (list
 				(list (list 'margin 'left-margin)
 				      "ok") )))
+(add-text-properties 2 3 '(display
+		((margin left-margin) "HI!")))
+
+;; Adding the margin text:
+
+(put-text-property 1 2 'display
+		'((margin left-margin) "HI!"))
+(overlay-put (make-overlay 2 3 (current-buffer)) 'before-string "s")
+
+;; Removed it:
+(remove-text-properties 1 2 '(display))
+(delete-overlay ...)
+
+====
+
+;; SOLUTION:
+(setq left-margin-width 5)
+
+(setq o (make-overlay 2 3 (current-buffer)))
+(overlay-put o
+	     'before-string (propertize "x" 'display
+					'((margin left-margin) "HI!")))
+(delete-overlay o)
 
 
+
+(setq left-margin-width 3)
 
 ;;********************************************************************************
 ;;********************************************************************************
