@@ -126,6 +126,12 @@
 (defun mtpchat--filter(process message)
   (mtpchat--insert-data message))
 
+;;
+;; Regular expression:
+;;
+
+(defvar mtpchat-regexp--mail "^ ?[0-9]+ [0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\w+ :")
+(defvar mtpchat-regexp--wall "^[0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\w+ ")
 
 ;;
 ;; Fontification structure:
@@ -334,6 +340,42 @@ supported:
   (when (looking-at "^\d\d:\d\d:\d\d ")
     (delete-char 9)))
 
+
+(defun mtpchat--reformat-mail-line()
+  (goto-char (point-min))
+  (when (looking-at mtpchat-regexp--mail)
+    ;; By default they consider a maximum of 99 mails for alignment, increase the limit to 999
+    (if (not (looking-at "^[0-9][0-9][0-9]"))
+	(insert " "))
+    ;; Align the ':'
+    (search-forward-regexp " :")
+    (let ((missing-spaces (- 32 (current-column))))
+      (when (> missing-spaces 0)
+	(move-to-column 22)
+	(insert (make-string missing-spaces 32))))
+    ;; Fill the region:
+    (let ((fill-column 80)
+	  (fill-prefix (make-string 33 32))) ; 34 alignment + 10 timestamps
+      (fill-region (point-min) (point-max) t t))
+    ;;
+    ))
+
+(defun mtpchat--reformat-wall-line()
+  (goto-char (point-min))
+  (if (looking-at mtpchat-regexp--wall)
+      (let ((fill-column 80)
+	    (fill-prefix (make-string 27 32))) ; 34 alignment + 10 timestamps
+	(fill-region (point-min) (point-max) t t))))
+
+(defun mtpchat--reformat-chat-line()
+  (goto-char (point-min))
+  (when (looking-at "^<\\w+> ")
+    (search-forward "> ")
+    (let ((fill-column 80)
+	  (fill-prefix (make-string (current-column) 32))) ; 34 alignment + 10 timestamps
+      (fill-region (point-min) (point-max) t t))))
+
+
 (defun mtpchat--add-local-time()
   (goto-char (point-min))
   (let ((curtime (current-time))
@@ -456,6 +498,9 @@ Function added to `window-scroll-functions' by mtpchat-mode"
   (aset buffer-display-table ?\r [])
   ;(aset buffer-display-table ?\240 ?\a)
 
+  ;; Indent with space only:
+  (setq indent-tabs-mode nil)
+
   ;; Marker creation:
   (setq mtpchat--marker (make-marker))
   (setq mtpchat--input-start-marker (make-marker))
@@ -496,6 +541,9 @@ Function added to `window-scroll-functions' by mtpchat-mode"
 
   (add-hook 'mtpchat--modify-hook 'mtpchat--remove-away-time)
   (add-hook 'mtpchat--modify-hook 'mtpchat--fontify)
+  (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-mail-line t)
+  (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-wall-line t)
+  (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-chat-line t)
   (add-hook 'mtpchat--modify-hook 'mtpchat--add-local-time t)
   (add-hook 'mtpchat--post-insert-hook 'mtpchat--make-read-only)
   ;; 
