@@ -244,7 +244,6 @@ appearance and content of the inserted text"
  :group 'mtpchat-group
  :type 'hook)
 
-;; fill: reformat the long lines...
 ;    (erc-put-text-property 0 (length mark-s) 'face msg-face str)
 ;   (erc-put-text-property (length mark-s) (+ (length mark-s) (length nick))
 ;			   'face nick-face str)
@@ -252,7 +251,7 @@ appearance and content of the inserted text"
 ;			   'face msg-face str)
 ;; control-highlight: remote key code...
 ;; button...
-;; add time stamp  (read-nonsticky t) (intangible t)
+;; add time stamp 
 ;;  --LEFT OR RIGHT
 
 (defcustom mtpchat--post-insert-hook nil
