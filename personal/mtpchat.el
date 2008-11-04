@@ -344,6 +344,20 @@ supported:
     (insert " ")
     (add-text-properties (point-min) (point)
 			 '(intangible t front-sticky t rear-nonsticky t))
+    (forward-line 1)
+    (while (not (equal (point) (point-max)))
+      (forward-line 0)
+      (insert fts)
+      (add-text-properties (point-at-bol) (point)
+			   '(face mtpchat-time-stamp-face))
+      (insert " ")
+      (add-text-properties (point-at-bol) (point)
+			   '(intangible t front-sticky t rear-nonsticky t))
+
+      ;(insert (make-string 11 32))
+      ;(add-text-properties (point-at-bol) (point)
+      ;		   '(intangible t front-sticky t rear-nonsticky t))
+      (forward-line 1))
 ))
   
 
