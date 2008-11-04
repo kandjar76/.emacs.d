@@ -449,6 +449,7 @@ supported:
 (defvar mtpchat-mode-map
   (let ((mtpchat-mode-map (make-keymap)))
     (define-key mtpchat-mode-map [return] 'mtpchat--send)
+    (define-key mtpchat-mode-map [?\r] 'mtpchat--send)
 
     ;(define-key hexl-mode-map [remap self-insert-command] 'hexl-self-insert-command)
 
