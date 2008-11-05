@@ -5,7 +5,6 @@
 
 ;; TODO:
 ;; -- knowing who's connected
-;; -- setup title bar (user/channel/topic/away?/nb users/...)
 ;; -- notification in the main line
 ;; -- private tell window
 ;; -- button --> finger on user // url!
@@ -45,6 +44,13 @@
 (defvar mtpchat--input-prefix "MTP> "
   "Prompt for entering a mtpchat text...")
 (defvar mtpchat--input-start-marker nil)
+
+
+(defvar mtpchat--header-line ""
+  "Header line displayed on top of the MtpChat buffer")
+
+(defvar mtpchat--topic ""
+  "Topic of MtpChat")
 
 ;;
 ;; Fonts:
@@ -130,8 +136,11 @@
 ;; Regular expression:
 ;;
 
-(defvar mtpchat-regexp--mail "^ ?[0-9]+ [0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\w+ :")
-(defvar mtpchat-regexp--wall "^[0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\w+ ")
+(defvar mtpchat-regexp--mail      "^ ?[0-9]+ [0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\w+ :")
+(defvar mtpchat-regexp--wall      "^[0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\w+ ")
+
+(defvar mtpchat-regexp--topic     "^<Mtp> \\w+ topic : ")
+(defvar mtpchat-regexp--topic-set "^<Mtp> \\w+ set channel \\w+ topic to ")
 
 ;;
 ;; Fontification structure:
@@ -340,6 +349,41 @@ supported:
     (delete-char 9)))
 
 
+(defun mtpchat--update-topic()
+  (goto-char (point-min))
+  (let ((offset (or (and (= (char-before (point-at-eol)) 13) -1) 0))
+	channel nick)
+    (cond 
+     ((looking-at mtpchat-regexp--topic)
+      (forward-char 6)
+      (setq channel (current-word))
+      (search-forward "topic : ")
+      ;; Hack 1- is to get rid of the ^M 
+      (setq mtpchat--topic (buffer-substring-no-properties (point) (+ (point-at-eol) offset))))
+     ((looking-at mtpchat-regexp--topic-set)
+      (forward-char 6)
+      (setq nick (current-word))
+      (search-forward "set channel ")
+      (setq channel (current-word))
+      (search-forward "topic to ")
+      ;; Hack 1- is to get rid of the ^M 
+      (setq mtpchat--topic (buffer-substring-no-properties (point) (+ (point-at-eol) offset))))
+     )
+    (when channel
+      ;; Topic set!!! 
+      (setq mtpchat--header-line (concat channel " topic: " mtpchat--topic))
+      (when nick
+	(setq mtpchat--header-line (concat mtpchat--header-line " (set by " nick ")")))
+
+      ;; Update of the top line
+      (setq header-line-format (concat (propertize " "
+						   'display
+						   '(space :align-to 0))
+				       mtpchat--header-line))
+      )))
+      
+
+
 (defun mtpchat--reformat-mail-line()
   (goto-char (point-min))
   (when (looking-at mtpchat-regexp--mail)
@@ -410,7 +454,7 @@ supported:
 	     mtpchat--passwd)
     (tcp-send (get-buffer-process mtpchat--main-buffer-name) (concat mtpchat--passwd "\n")))
   (when (string-match "^<Mtp> Welcome, " msg)
-    (tcp-send (get-buffer-process mtpchat--main-buffer-name) "set client zzz .o(v0.2)\n")
+    (tcp-send (get-buffer-process mtpchat--main-buffer-name) "set client zzz .o(v0.3)\n")
     (remove-hook 'mtpchat--validate-message-hook 'mtpchat--auto-login)))
 
 
@@ -540,6 +584,7 @@ Function added to `window-scroll-functions' by mtpchat-mode"
   (add-hook 'mtpchat--validate-message-hook 'mtpchat--auto-login)
 
   (add-hook 'mtpchat--modify-hook 'mtpchat--remove-away-time)
+  (add-hook 'mtpchat--modify-hook 'mtpchat--update-topic)
   (add-hook 'mtpchat--modify-hook 'mtpchat--fontify)
   (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-mail-line t)
   (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-wall-line t)
