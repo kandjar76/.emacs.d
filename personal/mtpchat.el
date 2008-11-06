@@ -108,6 +108,17 @@
 (defvar mtpchat-away-face 'mtpchat-away-face
   "Font to highlight away messages.")
 
+(make-face 'mtpchat-wall-star)
+(set-face-foreground 'mtpchat-wall-star "gray")
+(defvar mtpchat-wall-star 'mtpchat-wall-star
+  "Font to highlight the '*' displayed with the wall data .")
+
+(make-face 'mtpchat-wall-mail-nick)
+(set-face-foreground 'mtpchat-wall-mail-nick "blue")
+(defvar mtpchat-wall-mail-nick 'mtpchat-wall-mail-nick
+  "Font to highlight the nicknames displayed with the wall and mail data .")
+
+
 
 ;;
 ;; Network handlers:
@@ -405,10 +416,18 @@ supported:
 
 (defun mtpchat--reformat-wall-line()
   (goto-char (point-min))
-  (if (looking-at mtpchat-regexp--wall)
-      (let ((fill-column 80)
-	    (fill-prefix (make-string 27 32))) ; 34 alignment + 10 timestamps
-	(fill-region (point-min) (point-max) t t))))
+  (when (looking-at mtpchat-regexp--wall)
+    (add-text-properties (point-min) (+ (point-min) 17)
+			 (list 'display "*"
+			       'help-echo (buffer-substring-no-properties (point-min) (+ (point-min) 17))
+			       'face mtpchat-wall-star))
+    (add-text-properties (+ (point-min) 17)
+			 (+ (point-min) 25)
+			 (list 'face mtpchat-wall-mail-nick))
+
+    (let ((fill-column 80)
+	  (fill-prefix (make-string 11 32))) ; Nick size + '*' + 2 spaces 
+      (fill-region (point-min) (point-max) t t))))
 
 (defun mtpchat--reformat-chat-line()
   (goto-char (point-min))
