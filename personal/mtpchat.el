@@ -8,7 +8,6 @@
 ;; -- notification in the main line
 ;; -- private tell window
 ;; -- button --> finger on user // url!
-;; -- show-msg/wall more coloring!
 ;; -- autocompletion of nicks!
 ;; -- history of the prompt!
 
@@ -129,10 +128,10 @@
 ;;
 
 (defun mtpchat--connection-established(buffer server port)
-  (setq mtpchat--incomplete-line-save nil) ;; new connection -- no incomplete lines...
+  (setq mtpchat--incomplete-line-save nil) ;; new connection -- no incomplete lines... 
+  (set-process-coding-system (get-buffer-process mtpchat--main-buffer-name) 'iso-latin-1)
   (with-current-buffer buffer 
     (add-hooks 'mtpchat--validate-message-hook 'mtpchat--auto-login))
-  (set-process-coding-system (get-buffer-process mtpchat--main-buffer-name) 'iso-latin-1)
   (mtpchat--insert 'mtpchat-system (format "<Emacs> Connection established to %s:%i\n" server port)))
 
 (defun mtpchat--connection-abort(buffer server port)
@@ -490,7 +489,7 @@ supported:
 	     mtpchat--passwd)
     (tcp-send (get-buffer-process mtpchat--main-buffer-name) (concat mtpchat--passwd "\n")))
   (when (string-match "^<Mtp> Welcome, " msg)
-    (tcp-send (get-buffer-process mtpchat--main-buffer-name) "set client zzz .o(v0.3)\n")
+    (tcp-send (get-buffer-process mtpchat--main-buffer-name) "set client zzz .o(v0.4)\n")
     (remove-hook 'mtpchat--validate-message-hook 'mtpchat--auto-login)))
 
 
