@@ -114,10 +114,14 @@
   "Font to highlight the '*' displayed with the wall data .")
 
 (make-face 'mtpchat-wall-mail-nick)
-(set-face-foreground 'mtpchat-wall-mail-nick "blue")
+(set-face-foreground 'mtpchat-wall-mail-nick "DarkGoldenrod")
 (defvar mtpchat-wall-mail-nick 'mtpchat-wall-mail-nick
   "Font to highlight the nicknames displayed with the wall and mail data .")
 
+(make-face 'mtpchat-mail-number)
+(set-face-foreground 'mtpchat-mail-number "darkgray")
+(defvar mtpchat-mail-number 'mtpchat-mail-number
+  "Font to highlight the '*' displayed with the mail number .")
 
 
 ;;
@@ -407,9 +411,22 @@ supported:
       (when (> missing-spaces 0)
 	(move-to-column 22)
 	(insert (make-string missing-spaces 32))))
+    ;; Remove the date/time + add tooltip on the #
+    (add-text-properties (point-min) (+ (point-min) 3)
+			 (list 'help-echo 
+			       (buffer-substring-no-properties (+ (point-min) 4)
+							       (+ (point-min) 22))
+			       'face mtpchat-mail-number))
+    (add-text-properties (+ (point-min) 4) (+ (point-min) 22)
+			 (list 'invisible t))
+    ;; Change the face of the nickname:
+    (add-text-properties (+ (point-min) 23) (+ (point-min) 31)
+			 (list 'face mtpchat-wall-mail-nick))
+			       
+
     ;; Fill the region:
     (let ((fill-column 80)
-	  (fill-prefix (make-string 33 32))) ; 34 alignment + 10 timestamps
+	  (fill-prefix (make-string 15 32)))
       (fill-region (point-min) (point-max) t t))
     ;;
     ))
