@@ -437,8 +437,9 @@ supported:
 			 (list 'display "*"
 			       'help-echo (buffer-substring-no-properties (point-min) (+ (point-min) 17))
 			       'face mtpchat-wall-star))
+    (forward-char 18)
     (add-text-properties (+ (point-min) 17)
-			 (+ (point-min) 25)
+			 (+ (point-min) 18 (length (current-word)))
 			 (list 'face mtpchat-wall-mail-nick))
 
     (let ((fill-column 80)
