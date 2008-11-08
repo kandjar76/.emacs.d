@@ -131,20 +131,24 @@
   (setq mtpchat--incomplete-line-save nil) ;; new connection -- no incomplete lines... 
   (set-process-coding-system (get-buffer-process mtpchat--main-buffer-name) 'iso-latin-1)
   (with-current-buffer buffer 
-    (add-hooks 'mtpchat--validate-message-hook 'mtpchat--auto-login))
-  (mtpchat--insert 'mtpchat-system (format "<Emacs> Connection established to %s:%i\n" server port)))
+    (add-hook 'mtpchat--validate-message-hook 'mtpchat--auto-login))
+  (let ((mtpchat-buffer (get-buffer mtpchat--main-buffer-name)))
+    (mtpchat--insert mtpchat-buffer 'mtpchat-system (format "<Emacs> Connection established to %s:%i\n" server port))))
 
 (defun mtpchat--connection-abort(buffer server port)
-  (mtpchat--insert 'mtpchat-system (format "<Emacs> Connection abort (%s:%i)\n" server port)))
+  (let ((mtpchat-buffer (get-buffer mtpchat--main-buffer-name)))
+    (mtpchat--insert mtpchat-buffer 'mtpchat-system (format "<Emacs> Connection abort (%s:%i)\n" server port))))
 
 (defun mtpchat--connection-failed(buffer server port error)
-  (mtpchat--insert 'mtpchat-system (format "<Emacs> Connection failed (%s:%i) -- %s\n" server port error)))
+  (let ((mtpchat-buffer (get-buffer mtpchat--main-buffer-name)))
+    (mtpchat--insert mtpchat-buffer 'mtpchat-system (format "<Emacs> Connection failed (%s:%i) -- %s\n" server port error))))
 
 (defun mtpchat--sentinel(process event)
-  (mtpchat--insert 'mtpchat-system (format "<Emacs> Sentinel report: %s" event)))
+  (let ((mtpchat-buffer (get-buffer mtpchat--main-buffer-name)))
+    (mtpchat--insert mtpchat-buffer 'mtpchat-system (format "<Emacs> Sentinel report: %s" event))))
 
 (defun mtpchat--filter(process message)
-  (mtpchat--insert-data message))
+  (mtpchat--display message))
 
 ;;
 ;; Regular expression:
@@ -298,47 +302,51 @@ text is finalized. No more modification should be done here."
 ;;
 
 
-(defun mtpchat--insert-data(message)
+(defun mtpchat--insert-data(mtpchat-buffer message)
   "Receiving data from the server, this function will cut these data 
 into full lines. Non-full lines will not be processed for now."
   (let* ((strlist (split-string (concat mtpchat--incomplete-line-save message) "\n\r?")))
     (setq mtpchat--incomplete-line-save nil)
     (while (and strlist (cdr strlist))
       (when (> (length (car strlist)) 0)
-	(mtpchat--insert 'mtpchat-data (car strlist)))
+	(mtpchat--insert mtpchat-buffer 'mtpchat-data (car strlist)))
       (setq strlist (cdr strlist)))
     ;; Last line is incomplete; stored for later...
     ;; exception: "<Mtp> Login:" or "<Mtp> Password:"
     (if (or (string-match "^<Mtp> Login: $" message)
 	    (string-match "<Mtp> Password: $" message))
-	(mtpchat--insert 'mtpchat-data (car strlist))
+	(mtpchat--insert mtpchat-buffer 'mtpchat-data (car strlist))
 	(setq mtpchat--incomplete-line-save (car strlist)))
 	))
 
-(defun mtpchat--insert(type message)
-  "Display the message MESSAGE in a mtpchat buffer, 
+(defun mtpchat--insert(mtpchat-buffer type message)
+  "Display the message MESSAGE in MTPCHAT-BUFFER, 
 TYPE reprensents the type of message, currently two type are
 supported:
  'mtpchat-system (internal display) and 'mtpchat-data (data
  received from the server)."
+  (when (bufferp mtpchat-buffer)
+    (with-current-buffer mtpchat-buffer
+      (save-excursion
+	(goto-char (marker-position mtpchat--marker))
+	(let ((mtpchat--skip-message nil)
+	      (start-pos (marker-position mtpchat--marker)))
+	  (run-hook-with-args 'mtpchat--validate-message-hook type message)
+	  (when (null mtpchat--skip-message)
+	    (when (not (string-match "\n\r?$" message))
+	      (setq message (concat message "\n")))
+	    (let ((inhibit-read-only t))
+	      (insert-before-markers message))
+	    (let ((end-pos (point)))
+	      (save-restriction
+		(narrow-to-region start-pos end-pos)
+		(run-hooks 'mtpchat--modify-hook)
+		(run-hooks 'mtpchat--post-insert-hook)))))))))
+
+(defun mtpchat--display(message)
   (let ((mtpchat-buffer (get-buffer mtpchat--main-buffer-name)))
-    (when (bufferp mtpchat-buffer)
-      (with-current-buffer mtpchat-buffer
-	(save-excursion
-	  (goto-char (marker-position mtpchat--marker))
-	  (let ((mtpchat--skip-message nil)
-		(start-pos (marker-position mtpchat--marker)))
-	    (run-hook-with-args 'mtpchat--validate-message-hook type message)
-	    (when (null mtpchat--skip-message)
-	      (when (not (string-match "\n\r?$" message))
-		(setq message (concat message "\n")))
-	      (let ((inhibit-read-only t))
-		(insert-before-markers message))
-	      (let ((end-pos (point)))
-		(save-restriction
-		  (narrow-to-region start-pos end-pos)
-		  (run-hooks 'mtpchat--modify-hook)
-		  (run-hooks 'mtpchat--post-insert-hook))))))))))
+    (mtpchat--insert-data mtpchat-buffer message)))
+
 
 (defun mtpchat--make-read-only()
   "Post insert hook functions: set the text property to be read-only"
@@ -556,7 +564,7 @@ Function added to `window-scroll-functions' by mtpchat-mode"
 	    (sit-for 0)))))
 
 
-(defun mtpchat-mode(&optional prompt)
+(defun mtpchat-mode(&optional prompt private)
   (kill-all-local-variables)
   (goto-char (point-max))
 
@@ -617,13 +625,15 @@ Function added to `window-scroll-functions' by mtpchat-mode"
   (make-local-hook 'mtpchat--modify-hook)
   (make-local-hook 'mtpchat--validate-message-hook)
 
-  (add-hook 'mtpchat--validate-message-hook 'mtpchat--auto-login)
-
   (add-hook 'mtpchat--modify-hook 'mtpchat--remove-away-time)
-  (add-hook 'mtpchat--modify-hook 'mtpchat--update-topic)
+  (when (not private)
+    (add-hook 'mtpchat--modify-hook 'mtpchat--update-topic))
   (add-hook 'mtpchat--modify-hook 'mtpchat--fontify)
-  (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-mail-line t)
-  (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-wall-line t)
+
+  (when (not private)
+    (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-mail-line t)
+    (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-wall-line t))
+
   (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-chat-line t)
   (add-hook 'mtpchat--modify-hook 'mtpchat--add-local-time t)
   (add-hook 'mtpchat--post-insert-hook 'mtpchat--make-read-only)
