@@ -154,11 +154,16 @@
 ;; Regular expression:
 ;;
 
-(defvar mtpchat-regexp--mail      "^ ?[0-9]+ [0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\w+ :")
-(defvar mtpchat-regexp--wall      "^[0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\w+ ")
+(defvar mtpchat-regexp--mail         "^ ?[0-9]+ [0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\w+ :")
+(defvar mtpchat-regexp--wall         "^[0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\w+ ")
 
-(defvar mtpchat-regexp--topic     "^<Mtp> \\w+ topic : ")
-(defvar mtpchat-regexp--topic-set "^<Mtp> \\w+ set channel \\w+ topic to ")
+(defvar mtpchat-regexp--topic        "^<Mtp> \\w+ topic : ")
+(defvar mtpchat-regexp--topic-set    "^<Mtp> \\w+ set channel \\w+ topic to ")
+
+(defvar mtpchat-regexp--you-tell     "^<Mtp> You \\(tell\\|ask\\|reply to\\) \\w+: ")
+(defvar mtpchat-regexp--private-tell "^<Mtp> \\w+ \\(tells you\\|asks you\\|replies\\): ")
+(defvar mtpchat-regexp--tell-away    "^<Mtp> \\w+ is away and may not be hearing you")
+
 
 ;;
 ;; Fontification structure:
@@ -505,16 +510,16 @@ supported:
 
 (defun mtpchat--fontify ()
   (goto-char (point-min))
-  (cond ((looking-at "^<Mtp> You \\(tell\\|ask\\|reply\\)") 
+  (cond ((looking-at mtpchat-regexp--you-tell) 
 	 (add-text-properties (point-min) (point-max) '(face mtpchat-you-tell-face)))
 	
-	((looking-at "^<Mtp> \\w+ \\(tells\\|asks\\|replies\\)") 
+	((looking-at mtpchat-regexp--private-tell) 
 	 (add-text-properties (point-min) (point-max) '(face mtpchat-private-tell-face)))
 
 	((looking-at "^<Mtp> \\*")
 	 (add-text-properties (point-min) (point-max) '(face mtpchat-emote-face)))
 
-	((looking-at "^<Mtp> \\w+ is away and may not be hearing you")
+	((looking-at mtpchat-regexp--tell-away)
 	 (add-text-properties (point-min) (point-max) '(face mtpchat-away-face)))
 
 	((looking-at "^<Mtp>")
