@@ -51,6 +51,10 @@
 (defvar mtpchat--topic ""
   "Topic of MtpChat")
 
+(defvar mtpchat--buffer-list nil
+  "List of mtpchat's buffer")
+
+
 ;;
 ;; Fonts:
 ;;
@@ -348,9 +352,18 @@ supported:
 		(run-hooks 'mtpchat--modify-hook)
 		(run-hooks 'mtpchat--post-insert-hook)))))))))
 
+(defun mtpchat--message-to-buffer-list(message)
+  "Return a list of buffer to display MESSAGE. 
+This function may create new buffers."
+  (list (get-buffer mtpchat--main-buffer-name))
+)
+
 (defun mtpchat--display(message)
-  (let ((mtpchat-buffer (get-buffer mtpchat--main-buffer-name)))
-    (mtpchat--insert-data mtpchat-buffer message)))
+  (let ((buffer-list (mtpchat--message-to-buffer-list message)))
+    (while buffer-list
+;	(mtpchat-buffer (get-buffer mtpchat--main-buffer-name)))
+      (mtpchat--insert-data (car buffer-list) message)
+      (setq buffer-list (cdr buffer-list)))))
 
 
 (defun mtpchat--make-read-only()
@@ -641,8 +654,12 @@ Function added to `window-scroll-functions' by mtpchat-mode"
 
   (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-chat-line t)
   (add-hook 'mtpchat--modify-hook 'mtpchat--add-local-time t)
+
   (add-hook 'mtpchat--post-insert-hook 'mtpchat--make-read-only)
   ;; 
+
+  (add-to-list 'mtpchat--buffer-list (buffer-name))
+  ;; (member/delete/add-to-list)
 
   ;; Finally, let's run the user mode-hooks 
   )
@@ -665,6 +682,8 @@ Function added to `window-scroll-functions' by mtpchat-mode"
     (setq mtpchat--login  login)
     (setq mtpchat--passwd pwd)
     (get-buffer-create mtpchat--main-buffer-name)
+    ;; Clear the list of buffer... 
+    (setq mtpchat--buffer-list nil)
     (save-excursion 
       (set-buffer mtpchat--main-buffer-name)
       ;; Setup the mtpchat-mode
