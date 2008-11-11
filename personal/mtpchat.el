@@ -662,6 +662,7 @@ Function added to `window-scroll-functions' by mtpchat-mode"
   ;; (member/delete/add-to-list)
 
   ;; Finally, let's run the user mode-hooks 
+  (run-hooks 'mtpchat-mode-hook)
   )
 
 ;;;###autoload
