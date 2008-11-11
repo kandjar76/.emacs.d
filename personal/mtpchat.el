@@ -367,7 +367,7 @@ supported:
 
 (defun mtpchat--remove-away-time()
   (goto-char (point-min))
-  (when (looking-at "^\d\d:\d\d:\d\d ")
+  (when (looking-at "^[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ")
     (delete-char 9)))
 
 
@@ -625,10 +625,10 @@ Function added to `window-scroll-functions' by mtpchat-mode"
   (make-local-hook 'mtpchat--modify-hook)
   (make-local-hook 'mtpchat--validate-message-hook)
 
-  (add-hook 'mtpchat--modify-hook 'mtpchat--remove-away-time)
+  (add-hook 'mtpchat--modify-hook 'mtpchat--fontify)
   (when (not private)
     (add-hook 'mtpchat--modify-hook 'mtpchat--update-topic))
-  (add-hook 'mtpchat--modify-hook 'mtpchat--fontify)
+  (add-hook 'mtpchat--modify-hook 'mtpchat--remove-away-time)
 
   (when (not private)
     (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-mail-line t)
