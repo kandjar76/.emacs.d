@@ -26,7 +26,7 @@
 (cond 
  ((eq window-system 'x)
   (if (> emacs-major-version 21)
-      (set-default-font "9x15")
+      (set-default-font "6x13")
       (progn
 	(create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
 	(cond
