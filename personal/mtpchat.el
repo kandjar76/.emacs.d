@@ -51,6 +51,9 @@
 (defvar mtpchat--topic ""
   "Topic of MtpChat")
 
+(defvar mtpchat--prefix nil 
+  "Marker for prefix message to append to messages to be sent")
+
 (defvar mtpchat--buffer-list nil
   "List of mtpchat's buffer")
 
@@ -361,7 +364,6 @@ This function may create new buffers."
 (defun mtpchat--display(message)
   (let ((buffer-list (mtpchat--message-to-buffer-list message)))
     (while buffer-list
-;	(mtpchat-buffer (get-buffer mtpchat--main-buffer-name)))
       (mtpchat--insert-data (car buffer-list) message)
       (setq buffer-list (cdr buffer-list)))))
 
@@ -379,7 +381,7 @@ This function may create new buffers."
     (when (> (length to-send) 0)
       (delete-region (marker-position mtpchat--input-start-marker) (point-max))
       ;(mtpchat--insert 'mtpchat to-send)
-      (tcp-send (get-buffer-process mtpchat--main-buffer-name) (concat to-send "\n"))
+      (tcp-send (get-buffer-process mtpchat--main-buffer-name) (concat mtpchat--prefix to-send "\n"))
       )))
 
 
@@ -480,6 +482,42 @@ This function may create new buffers."
     (let ((fill-column 80)
 	  (fill-prefix (make-string (current-column) 32))) ; 34 alignment + 10 timestamps
       (fill-region (point-min) (point-max) t t))))
+
+
+(defun mtpchat--intercept-private-message()
+  (goto-char (point-min))
+  (let (nick user msg-eol buf-name buffer)
+    (cond ((looking-at mtpchat-regexp--you-tell) 
+	   (search-forward ":")
+	   (setq nick (current-word))
+	   (setq user (or mtpchat--login "You"))
+	   (forward-char 1)
+	   (setq msg-eol (buffer-substring-no-properties (point) (point-max))))
+	  ((looking-at mtpchat-regexp--private-tell)
+	   (forward-char 6)
+	   (setq nick (current-word))
+	   (setq user nick)
+	   (search-forward ":")
+	   (forward-char 1)
+	   (setq msg-eol (buffer-substring-no-properties (point) (point-max))))
+	  ((looking-at mtpchat-regexp--tell-away)
+	   (forward-char 6)
+	   (setq nick (current-word))
+	  ))
+    (when nick
+      (setq buf-name (concat "*mtp-" (downcase nick) "*"))
+      (setq buffer (get-buffer buf-name)))
+    (when (and nick msg-eol)
+      (when (not buffer)
+	(setq buffer (get-buffer-create buf-name))
+	(save-excursion 
+	  (set-buffer buffer)
+	  ;; Setup the mtpchat-mode
+	  (mtpchat-mode "PRIV> " (concat "tell " nick " "))))
+      (delete-region (point-min) (point-max))
+      (mtpchat--insert-data buffer (concat "<" user "> " msg-eol))
+      )))
+
 
 
 (defun mtpchat--add-local-time()
@@ -584,7 +622,7 @@ Function added to `window-scroll-functions' by mtpchat-mode"
 	    (sit-for 0)))))
 
 
-(defun mtpchat-mode(&optional prompt private)
+(defun mtpchat-mode(&optional prompt prefix)
   (kill-all-local-variables)
   (goto-char (point-max))
 
@@ -599,7 +637,11 @@ Function added to `window-scroll-functions' by mtpchat-mode"
   ;; Buffer Local
   (make-variable-buffer-local 'mtpchat--incomplete-line-save)
   (make-variable-buffer-local 'mtpchat--marker)
+  (make-variable-buffer-local 'mtpchat--prefix)
   (make-variable-buffer-local 'mtpchat--input-start-marker)
+
+  ;; Private buffer has a prefix
+  (setq mtpchat--prefix prefix)
 
   ;; Get rid of the ^M at the end of the lines:
   (setq buffer-display-table (make-display-table))
@@ -646,11 +688,12 @@ Function added to `window-scroll-functions' by mtpchat-mode"
   (make-local-hook 'mtpchat--validate-message-hook)
 
   (add-hook 'mtpchat--modify-hook 'mtpchat--fontify)
-  (when (not private)
-    (add-hook 'mtpchat--modify-hook 'mtpchat--update-topic))
+  (when (not prefix)
+    (add-hook 'mtpchat--modify-hook 'mtpchat--update-topic)
+    (add-hook 'mtpchat--modify-hook 'mtpchat--intercept-private-message))
   (add-hook 'mtpchat--modify-hook 'mtpchat--remove-away-time)
 
-  (when (not private)
+  (when (not prefix)
     (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-mail-line t)
     (add-hook 'mtpchat--modify-hook 'mtpchat--reformat-wall-line t))
 
