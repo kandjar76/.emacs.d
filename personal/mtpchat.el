@@ -6,10 +6,14 @@
 ;; TODO:
 ;; -- knowing who's connected
 ;; -- notification in the main line
-;; -- private tell window
 ;; -- button --> finger on user // url!
 ;; -- autocompletion of nicks!
 ;; -- history of the prompt!
+
+;; BUG:
+;; -- infinite loop if bad pwd
+;; -- multiline in private tell window doesn't worked properly.. :)
+
 
 (require 'tcp-client)
 
