@@ -391,36 +391,37 @@ This function may create new buffers."
 
 (defun mtpchat--update-topic()
   (goto-char (point-min))
-  (let ((offset (or (and (= (char-before (point-at-eol)) 13) -1) 0))
-	channel nick)
-    (cond 
-     ((looking-at mtpchat-regexp--topic)
-      (forward-char 6)
-      (setq channel (current-word))
-      (search-forward "topic : ")
-      ;; Hack 1- is to get rid of the ^M 
-      (setq mtpchat--topic (buffer-substring-no-properties (point) (+ (point-at-eol) offset))))
-     ((looking-at mtpchat-regexp--topic-set)
-      (forward-char 6)
-      (setq nick (current-word))
-      (search-forward "set channel ")
-      (setq channel (current-word))
-      (search-forward "topic to ")
-      ;; Hack 1- is to get rid of the ^M 
-      (setq mtpchat--topic (buffer-substring-no-properties (point) (+ (point-at-eol) offset))))
-     )
-    (when channel
-      ;; Topic set!!! 
-      (setq mtpchat--header-line (concat channel " topic: " mtpchat--topic))
-      (when nick
-	(setq mtpchat--header-line (concat mtpchat--header-line " (set by " nick ")")))
-
-      ;; Update of the top line
-      (setq header-line-format (concat (propertize " "
-						   'display
-						   '(space :align-to 0))
-				       mtpchat--header-line))
-      )))
+  (when (/= (point-min) (point-max))
+    (let ((offset (or (and (= (char-before (point-at-eol)) 13) -1) 0))
+	  channel nick)
+      (cond 
+       ((looking-at mtpchat-regexp--topic)
+	(forward-char 6)
+	(setq channel (current-word))
+	(search-forward "topic : ")
+	;; Hack 1- is to get rid of the ^M 
+	(setq mtpchat--topic (buffer-substring-no-properties (point) (+ (point-at-eol) offset))))
+       ((looking-at mtpchat-regexp--topic-set)
+	(forward-char 6)
+	(setq nick (current-word))
+	(search-forward "set channel ")
+	(setq channel (current-word))
+	(search-forward "topic to ")
+	;; Hack 1- is to get rid of the ^M 
+	(setq mtpchat--topic (buffer-substring-no-properties (point) (+ (point-at-eol) offset))))
+       )
+      (when channel
+	;; Topic set!!! 
+	(setq mtpchat--header-line (concat channel " topic: " mtpchat--topic))
+	(when nick
+	  (setq mtpchat--header-line (concat mtpchat--header-line " (set by " nick ")")))
+	
+	;; Update of the top line
+	(setq header-line-format (concat (propertize " "
+						     'display
+						     '(space :align-to 0))
+					 mtpchat--header-line))
+	))))
       
 
 
