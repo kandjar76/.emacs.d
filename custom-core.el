@@ -131,7 +131,7 @@ Returns \"black\" if no valid color is found."
 ;; Thanks to Daniel Pittman <daniel@rimspace.net> for this tip. 
 (if using-xemacs 
 	(setq font-lock-auto-fontify t)
-	(global-font-lock-mode 1))
+	(global-font-lock-mode t))
 
 ;; Avoid deactivation of region when buffer end or beginning is reached
 ;; XEmacs mailing list ; schrod@iti.informatik.th-darmstadt.de
@@ -157,7 +157,7 @@ Returns \"black\" if no valid color is found."
 ;;   In Pending Delete mode, typed text replaces the selected region.
 (if using-xemacs
 	(pending-delete-on)
-	(pending-delete-mode 1))
+	(pending-delete-mode t))
 
 ;; Toggle truncate lines:
 (toggle-truncate-lines)
