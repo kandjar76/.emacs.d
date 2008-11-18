@@ -1,0 +1,220 @@
+; Argument syntax:
+; r = read only
+; w = write only
+; e = read/write
+; b = branch label
+; i = immediate value
+; l = label value
+; s = special register
+; c = channel
+
+[EVEN]
+
+NOP	!e		1  
+HEQ	r, r		2  
+HEQI	!w, r, i	2  
+HGT	!w, r, r	2  
+HGTI	!w, r, i	2  
+HLGT	!w, r, r	2  
+HLGTI	!w, r, i	2  
+
+FA      w, r, r		6  
+FS      w, r, r		6  
+FM	w, r, r		6  
+FMA     w, r, r, r	6  
+FMS     w, r, r, r	6  
+FNMS    w, r, r, r	6  
+DFA	w, r, r		13 
+DFS     w, r, r		13 
+DFM     w, r, r		13 
+DFMA    w, r, r		13 
+DFMS    w, r, r		13 
+DFNMA   w, r, r		13 
+DFNMS   w, r, r		13 
+FESD	w, r		13 
+FRDS	w, r		13 
+CNTB	w, r		4  
+AVGB	w, r, r		4  
+ABSDB	w, r, r		4  
+SUMB	w, r, r		4  
+SHLH	w, r, r		4  
+SHLHI	w, r, i		4  
+SHL     w, r, r  	4  
+SHLI    w, r, i		4  
+ROTH	w, r, r         4  
+ROTHI	w, r, i		4  
+ROT     w, r, r         4  
+ROTI    w, r, i		4  
+ROTHM	w, r, r         4  
+ROTHMI	w, r, i		4  
+ROTM    w, r, r         4  
+ROTMI   w, r, i         4  
+ROTMAH	w, r, r         4  
+ROTMAHI	w, r, i         4  
+ROTMA   w, r, r         4  
+ROTMAI  w, r, i         4  
+MPY	w, r, r		7  
+MPYI    w, r, i		7  
+MPYU    w, r, r		7  
+MPYUI   w, r, i		7  
+MPYA    w, r, r, r	7  
+MPYS    w, r, r		7  
+MPYH    w, r, r		7  
+MPYHH   w, r, r		7  
+MPYHHU  w, r, r		7  
+MPYHHA  w, r, r		7  
+
+MPYHHAU w, r, r		7  
+FI	w, r, r		7  
+CUFLT	w, r, i		7  
+CSFLT	w, r, i		7  
+CFLTU   w, r, i    	7  
+CFLTS   w, r, i    	7  
+CEQB	w, r, r         2  
+CEQBI	w, r, i  	2  
+CGTB    w, r, r         2  
+CGTBI   w, r, i         2  
+CLGTB   w, r, r         2  
+CLGTBI  w, r, i         2  
+CEQH    w, r, r         2  
+CEQHI   w, r, i         2  
+CGTH    w, r, r         2  
+CGTHI   w, r, i         2  
+CLGTH   w, r, r         2  
+CLGTHI  w, r, i         2  
+CEQ     w, r, r         2  
+CEQI    w, r, i         2  
+CGT     w, r, r         2  
+CGTI    w, r, i         2  
+CLGT    w, r, r         2  
+CLGTI   w, r, i         2  
+FCEQ	w, r, r		2  
+FCMEQ	w, r, r		2  
+FCGT	w, r, r		2  
+FCMGT	w, r, r		2  
+AND	w, r, r		2  
+NAND    w, r, r		2  
+ANDC    w, r, r		2  
+ANDBI   w, r, i		2  
+ANDHI   w, r, i		2  
+ANDI    w, r, i		2  
+OR      w, r, r		2  
+NOR     w, r, r		2  
+ORC     w, r, r		2  
+ORBI    w, r, i	 	2  
+ORHI    w, r, i		2  
+ORI     w, r, i		2  
+XOR     w, r, r		2  
+EQV     w, r, r		2  
+XORBI   w, r, i 	2  
+XORHI   w, r, i		2  
+XORI    w, r, i		2  
+IL	w, i            2  
+ILH	w, i		2  
+ILA	w, i            2  
+ILHU	w, i            2  
+IOHL	w, i 		2  
+AH	w, r, r		2  
+AHI     w, r, i		2  
+A       w, r, r		2  
+AI      w, r, i		2  
+SFH     w, r, r         2  
+SFHI    w, r, i       	2  
+SF      w, r, r         2  
+SFI     w, r, i       	2  
+	
+BG	w, r, r		2  
+BGX	e, r, r		2  
+SFX	e, r, r		2  
+CG	w, r, r		2  
+CGX	e, r, r		2  
+ADDX	e, r, r		2  
+XSBH	w, r		2  
+XSHW    w, r		2  
+XSWD    w, r		2  
+CLZ	w, r		2  
+SELB	w, r, r, r	2  
+SYNC 			1  
+SYNCC			1  
+DSYNC			1  
+
+[ODD]
+   
+LNOP      !e		1  
+BR        b		1  
+BRSL      r, b		4  
+BRHNZ     r, b		1  
+BRHZ      r, b		1  
+BRNZ      r, b		1  
+BRZ       r, b		1  
+	 
+BI        r		1
+BID       r		1
+BIE       r		1
+BISL      w, r          4  
+BISLED    w, r		4  
+BIHNZ     r, r          1  
+BIHZ      r, r          1  
+BINZ      r, r          1  
+BIZ       r, r          1  
+BRA       b		1  
+BRASL     w, b		4  
+HBR       b, r		15 
+HBRA      b, b		15 
+HBRR      b, b		15 
+HBRP      b, r		15 
+LQA       w, l	   	6  
+LQD       w, i(r)	6  
+LQR       w, l		6  
+LQX       w, r, r	6  
+STQA      r, l		1  
+STQD      r, i(r)	1
+STQR      r, l		1  
+STQX      r, r, r	1  
+SHLQBY    w, r, r	4  
+SHLQBYI   w, r, i	4  
+SHLQBYBI  w, r, r	4  
+SHLQBI    w, r, r	4  
+SHLQBII   w, r, i	4  
+ROTQBY    w, r, r	4  
+ROTQBYI   w, r, i	4  
+ROTQBYBI  w, r, r	4  
+ROTQBI    w, r, r	4  
+ROTQBII   w, r, i	4  
+ROTQMBY   w, r, r	4  
+ROTQMBYI  w, r, i	4  
+ROTQMBYBI w, r, r	4  
+ROTQMBI   w, r, r	4  
+ROTQMBII  w, r, i	4  
+ORX       w, r		4  
+SHUFB	  w, r, r, r	4  
+CBD	  w, i(r)	4  
+CBX	  w, r, r       4  
+CHD       w, i(r)       4  
+CHX       w, r, r       4  
+CWD       w, i(r)       4  
+CWX       w, r, r       4  
+CDD       w, i(r)       4  
+CDX       w, r, r       4  
+FSMBI	  w, i		4  
+FSMB	  w, r          4  
+FSMH  	  w, r          4  
+FSM	  w, r		4  
+GBB	  w, r		4  
+GBH	  w, r          4  
+GB        w, r  	4  
+FREST	  w, r		4  
+FRSQEST   w, r    	4  
+FSCRRD    w		13 
+FSCRWR    r		7  
+MFSPR	  w, s		6  
+MTSPR	  s, r		6  
+IRETD			1  
+IRETE			1  
+IRET			1  
+RCHCNT    w, c		6  
+RDCH	  w, c		6  
+WRCH	  c, r		1  
+STOP      !e	  	1  
+STOPD	  r, r, r	1  
+
