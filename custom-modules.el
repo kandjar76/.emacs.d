@@ -207,84 +207,82 @@
 ;; find ~/work -name \*.cpp -or -name \*.h -or -name \*.c > ~/.cscope/cscope.files
 ;; cscope -b -q -k
 
-(defun cscope-find-this-symbol-no-updates(symbol)
-  "Locate a symbol in source code [no database update performed]."
-  (interactive (list (cscope-prompt-for-symbol "Find this symbol [without updating the database]: " nil)))
-  (let ((cscope-do-not-update-database t)
-	(cscope-adjust t))
-    (setq cscope-symbol symbol)
-    (cscope-call (format "Finding symbol: %s" symbol)
-		 (list "-0" symbol) nil 'cscope-process-filter
-		 'cscope-process-sentinel)))
+;(defun cscope-find-this-symbol-no-updates(symbol)
+;  "Locate a symbol in source code [no database update performed]."
+;  (interactive (list (cscope-prompt-for-symbol "Find this symbol [without updating the database]: " nil)))
+;  (let ((cscope-do-not-update-database t)
+;	(cscope-adjust t))
+;    (setq cscope-symbol symbol)
+;    (cscope-call (format "Finding symbol: %s" symbol)
+;		 (list "-0" symbol) nil 'cscope-process-filter
+;		 'cscope-process-sentinel)))
 
-(defun cscope-find-global-definition-no-updates(symbol)
-  "Find a symbol's global definition [no database update performed]."
-  (interactive (list (cscope-prompt-for-symbol "Find this global definition [without updating the database]: " nil)))
-  (let ((cscope-do-not-update-database t)
-	(cscope-adjust t))
-    (setq cscope-symbol symbol)
-    (cscope-call (format "Finding global definition: %s" symbol)
-		 (list "-1" symbol) nil 'cscope-process-filter
-		 'cscope-process-sentinel)))
+;(defun cscope-find-global-definition-no-updates(symbol)
+;  "Find a symbol's global definition [no database update performed]."
+;  (interactive (list (cscope-prompt-for-symbol "Find this global definition [without updating the database]: " nil)))
+;  (let ((cscope-do-not-update-database t)
+;	(cscope-adjust t))
+;    (setq cscope-symbol symbol)
+;    (cscope-call (format "Finding global definition: %s" symbol)
+;		 (list "-1" symbol) nil 'cscope-process-filter
+;		 'cscope-process-sentinel)))
 
-(defun cscope-find-this-text-string-no-updates(symbol)
-  "Locate where a text string occurs [no database update performed]."
-  (interactive (list (cscope-prompt-for-symbol "Find this text string [without updating the database]: " nil)))
-  (let ((cscope-do-not-update-database t)
-	(cscope-adjust t))
-    (setq cscope-symbol symbol)
-    (cscope-call (format "Finding text string: %s" symbol)
-		 (list "-4" symbol) nil 'cscope-process-filter
-		 'cscope-process-sentinel)))
+;(defun cscope-find-this-text-string-no-updates(symbol)
+;  "Locate where a text string occurs [no database update performed]."
+;  (interactive (list (cscope-prompt-for-symbol "Find this text string [without updating the database]: " nil)))
+;  (let ((cscope-do-not-update-database t)
+;	(cscope-adjust t))
+;    (setq cscope-symbol symbol)
+;    (cscope-call (format "Finding text string: %s" symbol)
+;		 (list "-4" symbol) nil 'cscope-process-filter
+;		 'cscope-process-sentinel)))
 
-(defun cscope-find-functions-calling-this-function-no-updates (symbol)
-  "Display functions calling a function."
-  (interactive (list (cscope-prompt-for-symbol "Find functions calling this function [without updating the database]: " nil)))
-  (let ((cscope-do-not-update-database t)
-	(cscope-adjust t))
-    (setq cscope-symbol symbol)
-    (cscope-call (format "Finding functions calling: %s" symbol)
-		 (list "-3" symbol) nil 'cscope-process-filter
-		 'cscope-process-sentinel)))
+;(defun cscope-find-functions-calling-this-function-no-updates (symbol)
+;  "Display functions calling a function."
+;  (interactive (list (cscope-prompt-for-symbol "Find functions calling this function [without updating the database]: " nil)))
+;  (let ((cscope-do-not-update-database t)
+;	(cscope-adjust t))
+;    (setq cscope-symbol symbol)
+;    (cscope-call (format "Finding functions calling: %s" symbol)
+;		 (list "-3" symbol) nil 'cscope-process-filter
+;		 'cscope-process-sentinel)))
 
-(defun cscope-find-global-definition-no-prompting-no-updates ()
-  "Find a symbol's global definition without prompting."
-  (interactive)
-  (let ((symbol (cscope-extract-symbol-at-cursor nil))
-	(cscope-do-not-update-database t)
-	(cscope-adjust t))	 ;; Use fuzzy matching.
-    (setq cscope-symbol symbol)
-    (cscope-call (format "Finding global definition: %s" symbol)
-		 (list "-1" symbol) nil 'cscope-process-filter
-		 'cscope-process-sentinel)))
+;(defun cscope-find-global-definition-no-prompting-no-updates ()
+;  "Find a symbol's global definition without prompting."
+;  (interactive)
+;  (let ((symbol (cscope-extract-symbol-at-cursor nil))
+;	(cscope-do-not-update-database t)
+;	(cscope-adjust t))	 ;; Use fuzzy matching.
+;    (setq cscope-symbol symbol)
+;    (cscope-call (format "Finding global definition: %s" symbol)
+;		 (list "-1" symbol) nil 'cscope-process-filter
+;		 'cscope-process-sentinel)))
 
-(defun cscope-find-this-symbol-no-prompting-no-updates()
-  "Locate a symbol in source code [no database update performed -- no user prompting]."
-  (interactive)
-  (let ((symbol (cscope-extract-symbol-at-cursor nil))
-	(cscope-do-not-update-database t)
-	(cscope-adjust t))
-    (setq cscope-symbol symbol)
-    (cscope-call (format "Finding symbol: %s" symbol)
-		 (list "-0" symbol) nil 'cscope-process-filter
-		 'cscope-process-sentinel)))
+;(defun cscope-find-this-symbol-no-prompting-no-updates()
+;  "Locate a symbol in source code [no database update performed -- no user prompting]."
+;  (interactive)
+;  (let ((symbol (cscope-extract-symbol-at-cursor nil))
+;	(cscope-do-not-update-database t)
+;	(cscope-adjust t))
+;    (setq cscope-symbol symbol)
+;    (cscope-call (format "Finding symbol: %s" symbol)
+;		 (list "-0" symbol) nil 'cscope-process-filter
+;		 'cscope-process-sentinel)))
 
 
-(require 'xcscope)
 
-(define-key global-map [(f10)]                'cscope-find-this-symbol-no-prompting-no-updates)
-(define-key global-map [(f12)]                'cscope-find-global-definition-no-prompting-no-updates)
+;(require 'xcscope)
 
-(define-key global-map [(control f9)]         'cscope-find-this-text-string-no-updates)
-(define-key global-map [(control f10)]        'cscope-find-this-symbol-no-updates)
-(define-key global-map [(control f11)]        'cscope-find-global-definition-no-updates)
-(define-key global-map [(control f12)]        'cscope-find-functions-calling-this-function-no-updates)
-
-(define-key global-map [(control shift f9)]   'cscope-find-this-text-string)
-(define-key global-map [(control shift f10)]  'cscope-find-this-symbol)
-(define-key global-map [(control shift f11)]  'cscope-find-global-definition)
-(define-key global-map [(control shift f12)]  'cscope-find-functions-calling-this-function)
-
+;(define-key global-map [(f10)]                'cscope-find-this-symbol-no-prompting-no-updates)
+;(define-key global-map [(control f10)]        'cscope-find-this-symbol)
+;(define-key global-map [(control shift f10)]  'cscope-find-this-symbol-no-updates)
+;(define-key global-map [(control f11)]        'cscope-find-global-definition)
+;(define-key global-map [(control shift f11)]  'cscope-find-global-definition-no-updates)
+;(define-key global-map [(control f9)]         'cscope-find-this-text-string)
+;(define-key global-map [(control shift f9)]   'cscope-find-this-text-string-no-updates)
+;(define-key global-map [(control f12)]        'cscope-find-functions-calling-this-function)
+;(define-key global-map [(control shift f12)]  'cscope-find-functions-calling-this-function-no-updates)
+;(define-key global-map [(f12)]                'cscope-find-global-definition-no-prompting-no-updates)
 
 ;;(set-face-foreground 'cscope-line-face  "white")
 ;(cscope-set-initial-directory "~/.cscope")
@@ -297,7 +295,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Enable autoloading of various major modes
-(require 'spu-mode)
+;(require 'spu-mode)
 
 
 ;;------------------------------------------------------------------------------
