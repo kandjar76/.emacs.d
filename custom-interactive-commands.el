@@ -276,11 +276,6 @@ if COUNT is nil, each number is increased by line number within the selection (s
 	  (setq line-ndx (1+ line-ndx)))))))
 
 
-      
-(define-key global-map [(control ?x) (?r) (?i)]	'increase-numbers-on-rectangle)
-
-
-
 (defsubst dired-one-or-two-files-p ()
   "Return 1 or 2 iff one or two files are marked to be treated by dired. Returns nil otherwise"
   (save-excursion
@@ -348,3 +343,58 @@ If only one is marked, run the merge between the marked files and the one below 
        (while (re-search-forward "[0-9]*\\.?[0-9]+" nil t)
 	 (setq sum (+ sum (string-to-number (match-string 0)))))
        (message "Sum: %f" sum))))
+
+
+
+(autoload 'operate-on-rectangle "rect")
+(defun replace-string-rectangle (start end from-string to-string)
+   "Replace the string FROM-STRING with the string TO-STRING in the rectangle delimited by START and END."
+   (interactive "r\ns[Rectangle] Replace String: \ns[Rectangle] With: ")
+   (let ((count 0))
+     (operate-on-rectangle (lambda (pt ignore ignore) 
+			     (let ((start (or (and (< pt (point)) pt) (point)))
+				   (end   (or (and (> pt (point)) pt) (point))))
+			       (goto-char start)
+			       (while (search-forward from-string end t)
+				 (setq count (1+ count))
+				 (replace-match to-string nil t))))
+			   start end nil)
+     (if ( = count 1 )
+	 (message "Replaced 1 occurrence")
+	 (message "Replaced %i occurrences" count))))
+
+(defun replace-regexp-rectangle (start end from-regexp to-string)
+   "Replace the regexp FROM-REGEXP with the string TO-STRING in the rectangle delimited by START and END."
+   (interactive "r\ns[Rectangle] Replace Regexp: \ns[Rectangle] With: ")
+   (let ((count 0))
+     (operate-on-rectangle (lambda (pt ignore ignore) 
+			     (let ((start (or (and (< pt (point)) pt) (point)))
+				   (end   (or (and (> pt (point)) pt) (point))))
+			       (goto-char start)
+			       (while (re-search-forward from-regexp end t)
+				 (setq count (1+ count))
+				 (replace-match to-string nil nil))))
+			   start end nil)
+     (if ( = count 1 )
+	 (message "Replaced 1 occurrence")
+	 (message "Replaced %i occurrences" count))))
+
+
+
+(defun extract-string-length (&optional single)
+  "Print the number of characters in the string which point is inside.
+With prefix arg, use single quotes, not double quotes, as delimeters."
+  (interactive "P")
+  (let* ((quote-char   (or (and single ?\') ?\"))
+         (quote-string (format "^%c\n" quote-char)))
+    (save-excursion
+      (skip-chars-forward quote-string)
+      (if (/= (following-char) quote-char)
+          (error "Point is not inside string"))
+      (let ((length (- (point)
+                       (progn
+                         (skip-chars-backward quote-string)
+                         (if (/= (preceding-char) quote-char)
+                             (error "Point is not inside string"))
+                         (point)))))
+        (message "String has %d (0x%x) characters" length length)))))
