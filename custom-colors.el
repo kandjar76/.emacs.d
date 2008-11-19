@@ -40,25 +40,46 @@
 (set-face-foreground 'diredp-compressed-file-suffix "red")
 
 ;; Font used in ediff mode:
-(set-face-background 'ediff-current-diff-face-A     (first-valid-color "honeydew"))
-(set-face-foreground 'ediff-current-diff-face-A     (first-valid-color "black"))
-(set-face-background 'ediff-current-diff-face-B     (first-valid-color "honeydew"))
-(set-face-foreground 'ediff-current-diff-face-B     (first-valid-color "black"))
-(set-face-background 'ediff-fine-diff-face-A     (first-valid-color "honeydew"))
-(set-face-foreground 'ediff-fine-diff-face-A     (first-valid-color "red"))
-(set-face-background 'ediff-fine-diff-face-B     (first-valid-color "honeydew"))
-(set-face-foreground 'ediff-fine-diff-face-B     (first-valid-color "red"))
+(if (string= emacs-version "22.1.1")
+    (progn 
+      (set-face-background 'ediff-current-diff-A     (first-valid-color "honeydew"))
+      (set-face-foreground 'ediff-current-diff-A     (first-valid-color "black"))
+      (set-face-background 'ediff-current-diff-B     (first-valid-color "honeydew"))
+      (set-face-foreground 'ediff-current-diff-B     (first-valid-color "black"))
+      (set-face-background 'ediff-fine-diff-A     (first-valid-color "honeydew"))
+      (set-face-foreground 'ediff-fine-diff-A     (first-valid-color "red"))
+      (set-face-background 'ediff-fine-diff-B     (first-valid-color "honeydew"))
+      (set-face-foreground 'ediff-fine-diff-B     (first-valid-color "red"))
 
-(set-face-background 'ediff-odd-diff-face-A     (first-valid-color "lavender blush"))
-(set-face-foreground 'ediff-odd-diff-face-A     (first-valid-color "dark gray"))
-(set-face-background 'ediff-even-diff-face-A     (first-valid-color "lavender"))
-(set-face-foreground 'ediff-even-diff-face-A     (first-valid-color "dark gray"))
+      (set-face-background 'ediff-odd-diff-A     (first-valid-color "lavender blush"))
+      (set-face-foreground 'ediff-odd-diff-A     (first-valid-color "dark gray"))
+      (set-face-background 'ediff-even-diff-A     (first-valid-color "lavender"))
+      (set-face-foreground 'ediff-even-diff-A     (first-valid-color "dark gray"))
 
-(set-face-background 'ediff-odd-diff-face-B     (first-valid-color "lavender blush"))
-(set-face-foreground 'ediff-odd-diff-face-B     (first-valid-color "dark gray"))
-(set-face-background 'ediff-even-diff-face-B     (first-valid-color "lavender"))
-(set-face-foreground 'ediff-even-diff-face-B     (first-valid-color "dark gray"))
+      (set-face-background 'ediff-odd-diff-B     (first-valid-color "lavender blush"))
+      (set-face-foreground 'ediff-odd-diff-B     (first-valid-color "dark gray"))
+      (set-face-background 'ediff-even-diff-B     (first-valid-color "lavender"))
+      (set-face-foreground 'ediff-even-diff-B     (first-valid-color "dark gray"))
+      )
+    (progn 
+      (set-face-background 'ediff-current-diff-face-A     (first-valid-color "honeydew"))
+      (set-face-foreground 'ediff-current-diff-face-A     (first-valid-color "black"))
+      (set-face-background 'ediff-current-diff-face-B     (first-valid-color "honeydew"))
+      (set-face-foreground 'ediff-current-diff-face-B     (first-valid-color "black"))
+      (set-face-background 'ediff-fine-diff-face-A     (first-valid-color "honeydew"))
+      (set-face-foreground 'ediff-fine-diff-face-A     (first-valid-color "red"))
+      (set-face-background 'ediff-fine-diff-face-B     (first-valid-color "honeydew"))
+      (set-face-foreground 'ediff-fine-diff-face-B     (first-valid-color "red"))
+      
+      (set-face-background 'ediff-odd-diff-face-A     (first-valid-color "lavender blush"))
+      (set-face-foreground 'ediff-odd-diff-face-A     (first-valid-color "dark gray"))
+      (set-face-background 'ediff-even-diff-face-A     (first-valid-color "lavender"))
+      (set-face-foreground 'ediff-even-diff-face-A     (first-valid-color "dark gray"))
 
+      (set-face-background 'ediff-odd-diff-face-B     (first-valid-color "lavender blush"))
+      (set-face-foreground 'ediff-odd-diff-face-B     (first-valid-color "dark gray"))
+      (set-face-background 'ediff-even-diff-face-B     (first-valid-color "lavender"))
+      (set-face-foreground 'ediff-even-diff-face-B     (first-valid-color "dark gray"))))
 
 
 ;; Font used to highlight warnings:
