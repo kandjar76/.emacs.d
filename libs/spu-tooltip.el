@@ -1043,69 +1043,28 @@
 
 ;;(spu-tooltip-string "shufb")
 	
+(defun spu-find-register-definition(reg)
+  "Search for the definition of the register, and returns the comment at the end of line if any (after ';')"
+  (save-excursion 
+    (save-match-data
+      (goto-char (point-min))
+      ;;(let ((regdef (search-forward-regexp (concat "^[\t ]*\\.reg[\t ]*" reg) nil t)))
+      (let ((regdef (search-forward-regexp (concat "^\\.reg[\t ]*" reg) nil t)))
+	(if regdef
+	    (let (end line)
+	      (goto-char regdef)
+	      (end-of-line)
+	      (setq end (point))
+	      (beginning-of-line)
+	      (setq line (buffer-substring-no-properties (point) end))
+	      (let ((cmt (string-match ";" line)))
+		(if cmt
+		    (substring line cmt)))))))))
 
 (defun th-spu-mode-handler ()
-  (or (spu-tooltip-string (current-word)) ""))
+  (or (spu-tooltip-string (current-word))
+      (spu-find-register-definition (current-word)) 
+      ""))
 
-
-
-;;(defun temp-extract-doc()
-;;  (interactive)
-;;  (if (is-region-active)
-;;      (let ((start (region-beginning))
-;;	    (end   (region-end))
-;;	    opcode
-;;	    fctn
-;;	    latency
-;;	    category
-;;	    comment
-;;	    beg
-;;	    instr-list
-;;	    item)
-;;	(if ( > start end )
-;;	    (let (tmp) (setq tmp end end start start tmp)))
-;;	(deactivate-mark)
-;;	(save-excursion
-;;	  (goto-char start)
-;;	  (beginning-of-line)
-;;	  (while (and (bolp)
-;;		      (not (bobp))
-;;		      (< (point) end))
-;;	    (setq opcode (current-word))
-;;	    (setq beg (point))
-;;	    (move-to-column 24)
-;;	    (setq fctn (clear-spaces (buffer-substring-no-properties beg (point))))
-;;	    (setq beg (point))
-;;	    (move-to-column 27) 
-;;	    (setq latency (clear-spaces (buffer-substring-no-properties beg (point))))
-;;	    (setq beg (point))
-;;	    (move-to-column 32)
-;;	    (setq category (clear-spaces (buffer-substring-no-properties beg (point))))
-;;	    (setq comment (clear-spaces (buffer-substring-no-properties (point) (point-at-eol))))
-;;	    (setq instr-list (cons (list (downcase opcode) fctn latency category comment) instr-list))
-;;	    (forward-line 1)
-;;	    (beginning-of-line)))
-;;	(goto-char 1437)
-;;	(setq instr-list (reverse instr-list))
-;;	(insert "(setq spu-opcode-help (list ")
-;;	(setq item (pop instr-list))
-;;	(while item
-;;	  (insert (concat "(list \"" (car item) "\""))
-;;	  (newline)
-;;	  (lisp-indent-line)
-;;	  (insert (concat "\""       (cadr item) "\""))
-;;	  (newline)
-;;	  (lisp-indent-line)
-;;	  (insert (concat "\""       (caddr item) "\""))
-;;	  (newline)
-;;	  (lisp-indent-line)
-;;	  (insert (concat "\""    (cadddr item) "\""))
-;;	  (newline)
-;;	  (lisp-indent-line)
-;;	  (insert (concat "\""    (cadddr (cdr item)) "\")"))
-;;	  (newline)
-;;	  (lisp-indent-line)
-;;	  (setq item (pop instr-list)))
-;;	(insert "))"))))
 
 (provide 'spu-tooltip)
