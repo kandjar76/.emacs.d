@@ -108,3 +108,103 @@
       ad-do-it))
 (ad-activate 'yank-pop)
 
+;; To move to another lib:
+
+(defun detect-decimal-or-hexa-number()
+  "PRIVATE - Return a list with the min and max value surrounding a number
+Known issue: the detection of the hexadecimal number is not 100% accurate, if this come to be a problem
+the code can be changed"
+  (let ((start (point))
+	end)
+    (save-excursion
+      (if (and (= (char-after start) ?0)
+	       (eq (char-after (1+ start)) ?x) ;; Most of the time people don't use X to represent a hexa number. 
+	       (and (char-after (+ start 2))
+		    (string-match "[0-9A-Fa-f]" (char-to-string (char-after (+ start 2))))))
+	  ;; Chance are: it's an hexa decimal number
+	  (progn (goto-char (+ start 2))
+		 (setq end (search-forward-regexp "[0-9A-Fa-f]+")))
+	  (setq end (search-forward-regexp "[0-9]+")))
+      )
+    (cons start end)))
+
+(defun increment-numbers-multilines()
+  "Increment the value on each lines"
+  (interactive)
+  (if (is-region-active)
+      (save-excursion
+	(save-match-data
+	  (let* ((region (extend-region-to-full-lines (region-beginning) (region-end)))
+		 (lines  (count-lines (car region) (cdr region)))
+		 (line-count 0))
+	    (goto-char (car region))
+	    (while (< line-count lines)
+	      (save-restriction
+		(let (bol eol)
+		  (beginning-of-line)
+		  (setq bol (point))
+		  (end-of-line)
+		  (setq eol (point))
+		  (narrow-to-region bol eol)
+		  (goto-char (point-min))
+		  (while (search-forward-regexp "[0123456789]" nil t)
+		    (backward-char)
+		    (let* ((number-region (detect-decimal-or-hexa-number))
+			   (start         (car number-region))
+			   (end           (cdr number-region))
+			   (lgt           (- end start))
+			   (hex-number    (and (> lgt 1) (= (char-after (+ start 1)) ?x)))
+			   (str           (buffer-substring (+ start (or (and hex-number 2) 0)) end))
+			   (new-number    (+ line-count (string-to-number str (and hex-number 16))))
+			   new-string)
+		      (if hex-number
+			  (setq new-string (concat "0x" (format (concat "%0" (number-to-string (- lgt 2)) "X") new-number)))
+			  (setq new-string (format (concat "%0" (number-to-string lgt) "d") new-number)))
+		      (delete-region start end)
+		      (goto-char start)
+		      (insert new-string)))))
+		(forward-line 1)
+		(setq line-count (1+ line-count))))))
+      (message "There is no active region!")))
+
+
+(defun increment-numbers-region(&optional arg)
+  "Increment each number in the selected region by 1 or by the value of the prefix argument"
+  (interactive "p")
+  (if (is-region-active)
+      (save-excursion
+	(save-match-data
+	  (let* ((incr (or arg 1))
+		 (region (cons (region-beginning) (region-end)))
+		 (lines  (count-lines (car region) (cdr region)))
+		 (line-count 0))
+	    (goto-char (car region))
+	    (while (< line-count lines)
+	      (save-restriction
+		(let (bol eol)
+		  (beginning-of-line)
+		  (setq bol (point))
+		  (end-of-line)
+		  (setq eol (point))
+		  (narrow-to-region bol eol)
+		  (goto-char (point-min))
+		  (while (search-forward-regexp "[0123456789]" nil t)
+		    (backward-char)
+		    (let* ((number-region (detect-decimal-or-hexa-number))
+			   (start         (car number-region))
+			   (end           (cdr number-region))
+			   (lgt           (- end start))
+			   (hex-number    (and (> lgt 1) (= (char-after (+ start 1)) ?x)))
+			   (hex-prefix    (or (and hex-number 2) 0))
+			   (str           (buffer-substring (+ start hex-prefix) end))
+			   (new-number    (+ incr (string-to-number str (and hex-number 16))))
+			   new-string)
+		      (if hex-number
+			  (setq new-string (concat "0x" (format (concat "%0" (number-to-string (- lgt 2)) "X") new-number)))
+			  (setq new-string (format (concat "%0" (number-to-string lgt) "d") new-number)))
+		      (delete-region start end)
+		      (goto-char start)
+		      (insert new-string)))))
+		(forward-line 1)
+		(setq line-count (1+ line-count))))))
+      (message "There is no active region!")))

@@ -20,6 +20,9 @@
 (define-key global-map [(control ?x) (?k)]		'kill-buffer-now)
 (define-key global-map [(control ?x) (control ?d)]	'dired)
 
+(define-key global-map [(control ?x) (?+)]	        'increment-numbers-region)
+(define-key global-map [(control ?z)]                   nil)
+
 ;; Disable mouse-2 default behavior which is "kill" or "yank" something like that... 
 (define-key global-map [(mouse-2)]               	nil)
 (define-key global-map [(drag-mouse-1)]                 nil)
