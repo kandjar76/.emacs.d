@@ -25,10 +25,14 @@
 ;; - correct latency for double-precision instructions.
 ;; - Function to automatically find the best column
 ;; - Highlight the latency (all the time / on a selected region? / What about loops?)
-;; - BUG: When the text scroll left.. weird behavior... 
+;; - BUG: When the text scroll left.. weird behavior...  (emacs 21 bug. doesn't happened with emacs 22)
 
 
 ;; History:
+;;
+;;  v1.8: Update by Cedric Lallain
+;;        - adding spu-move-up/down/left/right functions
+;;
 ;;  v1.7: Update by Cedric Lallain
 ;;        - the "add register" function now checks if a variable already exist, 
 ;;        in that case, just edit the current comment.
@@ -778,6 +782,75 @@ even if it's used in the commented section of the line."
 ;;
 ;;
 
+
+(defun spu-move-up()
+  "Move up to the next instruction"
+  (interactive)
+  (let ((column (current-column))
+	(oddcol1 (spu-find-odd-opcode))
+	(bol1   (point-at-bol))
+	bol2 oddcol2)
+    (save-excursion
+      (forward-line -1)
+      (while (and (or (spu-detect-no-opcodes-line)
+		      (not (spu-detect-opcodes-line)))
+		  (not (bobp)))
+	(forward-line -1))
+      (when (and (not (spu-detect-no-opcodes-line))
+		 (spu-detect-opcodes-line))
+	(setq oddcol2 (spu-find-odd-opcode))
+	(goto-char (point-at-bol))
+	(if (and oddcol2
+		   oddcol1
+		   (>= column oddcol1))
+	    (move-to-column oddcol2)
+	    (spu-next-opcode))
+	(setq bol2 (point))))
+    (if (not bol2)
+	(message "End of Buffer!")
+	(goto-char bol2))))
+
+(defun spu-move-down()
+  "Move down to the next instruction"
+  (interactive)
+  (let ((column (current-column))
+	(oddcol1 (spu-find-odd-opcode))
+	(bol1   (point-at-bol))
+	bol2 oddcol2)
+    (save-excursion
+      (forward-line 1)
+      (while (and (or (spu-detect-no-opcodes-line)
+		      (not (spu-detect-opcodes-line)))
+		  (not (eobp)))
+	(forward-line 1))
+      (when (and (not (spu-detect-no-opcodes-line))
+		 (spu-detect-opcodes-line))
+	(setq oddcol2 (spu-find-odd-opcode))
+	(goto-char (point-at-bol))
+	(if (and oddcol2
+		   oddcol1
+		   (>= column oddcol1))
+	  (move-to-column oddcol2)
+	  (spu-next-opcode))
+	(setq bol2 (point))))
+    (if (not bol2)
+	(message "End of Buffer!")
+	(goto-char bol2))))
+
+(defun spu-move-left()
+  "Move furthest left opcode of the current line"
+  (interactive)
+  (beginning-of-line)
+  (spu-next-opcode))
+
+(defun spu-move-right()
+  "Move furthest right opcode of the current line"
+  (interactive)
+  (let ((oddcol (spu-find-odd-opcode)))
+    (if oddcol
+	(move-to-column oddcol)
+	(progn (beginning-of-line)
+	       (spu-next-opcode)))))
 
 (defun spu-indent()
   "Indent function for SPU-mode"
