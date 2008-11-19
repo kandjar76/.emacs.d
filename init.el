@@ -10,6 +10,9 @@
         )
        load-path))
 
+(defvar running-on-windows (memq system-type '(windows-nt cygwin)))
+(defvar running-on-linux (not running-on-windows))
+(defvar running-on-x (eq window-system 'x))
 
 ;; Set the default font:
 (if (eq window-system 'x)
