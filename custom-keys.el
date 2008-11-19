@@ -9,6 +9,7 @@
 (define-key global-map [(control meta g)]        	'goto-line)
 (define-key global-map [(insert)]                	'overwrite-mode)
 (define-key global-map [(control backspace)]            'backward-delete-word)
+(define-key global-map [(control tab)]                  'dabbrev-expand)
 
 (define-key global-map [(control f)]             	'list-matching-lines)
 (define-key global-map [(control ?`)]			'highlight-current-word)
@@ -27,7 +28,6 @@
 (define-key global-map [(control f7)]                   'compile)
 
 (define-key global-map [(insert)]                       nil)
-
 
 ;; Disable mouse-2 default behavior which is "kill" or "yank" something like that... 
 (define-key global-map [(mouse-2)]               	nil)
@@ -94,3 +94,10 @@
 (define-key global-map [(control ?x) (?r) (?s)] 'replace-regexp-rectangle)
 (define-key global-map [(control ?x) (?r) (?r)] 'replace-string-rectangle)
 
+;; Scroll other window:
+(define-key global-map [(meta down)] '(lambda(arg) (interactive "p") (scroll-other-window arg)))
+(define-key global-map [(meta up)]   '(lambda(arg) (interactive "p") (scroll-other-window-down arg)))
+
+
+;; In emacs 23, c^spc will activate the transient mode... :(
+(define-key global-map [(control ? )]   '(lambda(arg) (interactive "P") (set-mark-command arg) (deactivate-mark)))
