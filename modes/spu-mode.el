@@ -1,8 +1,8 @@
-;
-; Copyright (c) 2005 Naughty Dog, Inc.
-; A Wholly Owned Subsidiary of Sony Computer Entertainment, Inc.
-; Use and distribution without consent strictly prohibited
-;
+;;
+;; Copyright (c) 2005 Naughty Dog, Inc.
+;; A Wholly Owned Subsidiary of Sony Computer Entertainment, Inc.
+;; Use and distribution without consent strictly prohibited
+;;
 
 ;; Author: Cedric Lallain (clallain@naughtydog.com) 
 ;; Base on an XEmacs version written by Cort Stratton (cstratton@naughtydog.com)
@@ -17,22 +17,25 @@
 ;; - Rearrange instructions in one pipeline without affecting instructions
 ;;   in the other pipeline (C-M-up and C-M-down)
 ;; - Region report: count how many opcodes/cycles in a selected region
+;; - Indentation worked on a selected region
 ;;
 ;; Potential improvements
 ;; - spu-trim-nops command that safely removes (comments out) all pairs of
 ;;   unnecessary nop/lnop opcodes.
-;; - highlight the variable used in the current line in diff colors (c.f.: prodg debugger)
-;; - highlight stalls
 ;; - correct latency for double-precision instructions.
 ;; - Function to automatically find the best column
-;; - Function to reindent the whole spu code
-;; - Function to count how many even/odd/cycles for a given region.
-;; - Highlight the register used by the current instruction
 ;; - Highlight the latency (all the time / on a selected region? / What about loops?)
 ;; - BUG: When the text scroll left.. weird behavior... 
 
+
 ;; History:
-;;  v1.4: Update by Cedric Lallain
+;;  v1.6: Update by Cedric Lallain
+;;        - fix undo function while using the indent function
+;;        - the indent function doesn't create new lines anymore
+;;        - new swap function: (C-SPC) to mark the current line 
+;;                             (C-TAB) to swap the instr with the on on the marked line
+;;
+;;  v1.5: Update by Cedric Lallain
 ;;        - new function: spu-region-report
 ;;
 ;;  v1.4: Update by Cedric Lallain
@@ -174,7 +177,7 @@ matches any of the individual opcodes."
 			"ah" "ahi" "a" "ai" "sfh" "sfhi" "sf" "sfi" "bg" "bgx" "sfx" "cg" "cgx"
 			"addx" "xsbh"  "xshw" "xswd" "clz" "selb"))
 
-(setq spu-sp-opcodes  '("fa" "fs" "fm" "fma" "fms" "fnma" "fnms" "dfa" "dfs" "dfm" "dfma" "dfms"
+(setq spu-sp-opcodes  '("fa" "fs" "fm" "fma" "fms" "fnms" "dfa" "dfs" "dfm" "dfma" "dfms"
 			"dfnma" "dfnms"))
 
 (setq spu-bo-opcodes  '("cntb" "avgb" "absdb" "sumb"))
