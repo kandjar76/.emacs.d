@@ -602,6 +602,7 @@ A bookmark implementation of `overlay-list'."
           (message "No previous bookmark."))))))
 
 
+;;;###autoload
 (defun bm-remove-all nil
   "Delete all visible bookmarks in current buffer."
   (interactive)

@@ -67,6 +67,7 @@
 (defvar dabbrev-highlight-overlay nil
   "Interanal variable keeps an overlay highlighting the last expanded string.")
 
+;;;###autoload
 (let (current-load-list)
   (defadvice dabbrev-expand
     (after dabbrev-expand-highlight activate)
@@ -74,6 +75,7 @@
 Highlight last expanded string."
     (dabbrev-highlight)))
 
+;;;###autoload
 (defun dabbrev-highlight ()
   (let ((start dabbrev--last-expansion-location)
 	(end)
