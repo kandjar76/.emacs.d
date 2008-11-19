@@ -61,7 +61,7 @@ you may want to set to intercept the connection data."
 			(quit (and abort-handler
 				   (funcall abort-handler buffer server port)))
 			(file-error (cond ((string= (cadr data) "connection failed")
-					   (and error-handler
+					(and error-handler
 						(funcall error-handler buffer server port (caddr data))))
 					  ((string= (cadr data) "make client process failed")
 					   (and error-handler
@@ -80,8 +80,8 @@ you may want to set to intercept the connection data."
 			       (if (get-tcp-connection-keep-alive connection)
 				   (set-network-process-option process :keepalive t))
 			       (set-process-buffer process buffer)
-			       (and connection-handler
-				    (funcall connection-handler buffer server port))
+		    (and connection-handler
+			 (funcall connection-handler buffer server port))
 			       )))))))
 
 
@@ -94,6 +94,8 @@ you may want to set to intercept the connection data."
 ;(defun tcp-default-keep-alive()
 ;  (featurep 'make-network-process '(:keepalive t)))
 
+
+(provide 'tcp-client)
 
 
 

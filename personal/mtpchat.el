@@ -3,7 +3,7 @@
 ;;
 
 
-
+(require 'tcp-client)
 
 
 ;; Create faces for various opcode classes.
@@ -92,7 +92,6 @@
 
 
 (defun mtpchat-mode()
-  (interactive)
   (kill-all-local-variables)
   (setq mode-name "MtpChat")
   (setq major-mode 'mtpchat-mode)
@@ -103,6 +102,7 @@
 
 
 (defun mtpchat-start()
+  (interactive)
   (let ((mtpchat-hooks (make-new-record tcp-hooks
 					:connection-established-handler 'mtpchat-connection-established
 					:connection-abort-handler 'mtpchat-connection-abort
