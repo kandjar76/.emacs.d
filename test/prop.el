@@ -1,0 +1,82 @@
+(set-window-margins (get-buffer-window (current-buffer)) 7)
+(remove-text-properties  1 10 (list 'display))
+
+(add-text-properties 1 2 (list 'display
+			       (list
+				(list (list 'margin 'left-margin)
+				 codestack-entry-image) "test"
+				)))
+
+(defimage codestack-entry-image ((:type xpm :ascent center :data "/* XPM */
+static char * sb_tag+_xpm[] = {
+\"20 13 4 1\",
+\"      c None\",
+\".     c #828282\",
+\"+     c #000000\",
+\"@     c #FFF993\",
+\"    ............... \",
+\"   .+++++++++++++++.\",
+\"  .+@@@@@@@@@@@@@@+.\",
+\" .+@@@@@@++@@@@@@@+.\",
+\".+@@@@@@@++@@@@@@@+.\",
+\".+@++@@++++++@@@@@+.\",
+\".+@++@@++++++@@@@@+.\",
+\".+@@@@@@@++@@@@@@@+.\",
+\" .+@@@@@@++@@@@@@@+.\",
+\"  .+@@@@@@@@@@@@@@+.\",
+\".  .+++++++++++++++.\",
+\"    ............... \",
+\"                    \"};"))
+  "Image used for the display of a codestack entry.")
+
+
+(insert-image codestack-entry-image)
+
+
+;; 12 12 4        1
+;; wd hg nb_color char-per-pixel
+
+(defimage ione((:type xpm :ascent center :data "/* XPM */
+static char * sb_tag+_xpm[] = {
+\"12 12 4 1\",
+\"      c None\",
+\".     c #828282\",
+\"+     c #000000\",
+\"@     c #FFF993\",
+\"     ..     \",
+\"   ..@@.    \",
+\" ...@@@.    \",
+\" .@@@@@.    \",
+\".@@..@@.    \",
+\" ....@@.    \",
+\"    .@@.    \",
+\"    .@@.    \",
+\" ....@@.... \",
+\".@@@@@@@@@@.\",
+\" .......... \",
+\"            \"};"))
+  "Test.")
+
+(insert-image ione)
+(clear-image-cache)
+
+(defimage itst((:type xpm :ascent center :data "/* XPM */
+static char * sb_tag+_xpm[] = {
+\"12 12 4 1\",
+\"      c None\",
+\".     c #828282\",
+\"*     c #000000\",
+\"@     c #FFF993\",
+\"************\",
+\"*....@@....*\",
+\"*.. @@@....*\",
+\"*..@@@@....*\",
+\"*.@@.@@....*\",
+\"*....@@....*\",
+\"*....@@....*\",
+\"*....@@....*\",
+\"*....@@....*\",
+\"*.@@@@@@@@.*\",
+\"************\",
+\"            \"};")))
+(insert-image itst)
