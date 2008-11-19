@@ -61,6 +61,7 @@ BEGIN {
    gsub(/\{!nop\}/,"{nop}" ,$0)   # Replace dependencies with a TMP arg
    gsub(/\{!lnop\}/,"{lnop}" ,$0) # Replace dependencies with a TMP arg
    gsub(/,/, " ", $0)
+   gsub(/\/\*[^*]*\*\//, "", $0)
 
    if ( $1 == ".global" )
    {
@@ -252,7 +253,7 @@ function format_instruction(instr, deps)
         }
         else
         {
-            fi_instr   = "\t{~~ " deps " ~~}"
+            fi_instr   = "\t" nop_value[fi_pipe]" /* " deps " */"
         }
     }
 

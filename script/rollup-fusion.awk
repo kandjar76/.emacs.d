@@ -59,6 +59,7 @@ BEGIN {
     gsub(/\{!nop\}/,"{nop}" ,$0)   # Replace dependencies with a TMP arg
     gsub(/\{!lnop\}/,"{lnop}" ,$0) # Replace dependencies with a TMP arg
     gsub(/,/, " ", $0)
+   gsub(/\/\*[^*]*\*\//, "", $0)
 
     if ( $1 == ".loop" )
     {
