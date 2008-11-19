@@ -70,9 +70,6 @@
 	    'spu-highlight-registers-3
 	    'spu-highlight-registers-4))
 
-(defvar spu-highlight-registers-with-definition-lookup nil
-  "t means: the highlighting will also search for the register definition")
-
 (defvar spu-highlight-registers-line-range -1
   "In order to speed up the process, the line range will specify how many line should be highlighted 
 above and below the current line. -1 to narrow to the current page only")
@@ -87,24 +84,7 @@ above and below the current line. -1 to narrow to the current page only")
 
 
 
-(defun spu-find-register-definition(reg)
-  "Search for the definition of the register, and returns the comment at the end of line if any (after ';')"
-  (save-excursion 
-    (save-match-data
-      (goto-char (point-min))
-      ;;(let ((regdef (search-forward-regexp (concat "^[\t ]*\\.reg[\t ]*" reg) nil t)))
-      (let ((regdef (search-forward-regexp (concat "^\\.reg[\t ]*" reg) nil t)))
-	(if regdef
-	    (let (end line)
-	      (goto-char regdef)
-	      (end-of-line)
-	      (setq end (point))
-	      (beginning-of-line)
-	      (setq line (buffer-substring-no-properties (point) end))
-	      (let ((cmt (string-match ";" line)))
-		(if cmt
-		    (substring line cmt)
-		    "** No comment found **"))))))))
+
 	    
 		  
 
@@ -115,14 +95,11 @@ above and below the current line. -1 to narrow to the current page only")
       (goto-char start)
       (while (search-forward-regexp reg end t)
 	(let ((ovl (make-overlay (match-beginning 0)
-				 (match-end 0)))
-	      (def (and spu-highlight-registers-with-definition-lookup
-			(or (spu-find-register-definition reg)
-			    "** Not defined **"))))
+				 (match-end 0))))
 	  (overlay-put ovl 'face (nth cnt spu-highlight-registers-font-list))
 	  (overlay-put ovl 'spu-highlight-register  t)
 	  ;;(overlay-put highlight-current-line-overlay 'priority spu-highlight-registers-overlay-priority)
-	  (if def (overlay-put ovl 'help-echo def)))))))
+	  )))))
 
 (defun spu-highlight-register-clear-overlays()
   "Remove all highlighting on registers"
