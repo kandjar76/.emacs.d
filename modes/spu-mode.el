@@ -16,6 +16,7 @@
 ;;   if a comment already exist, update the cycle count of the opcode
 ;; - Rearrange instructions in one pipeline without affecting instructions
 ;;   in the other pipeline (C-M-up and C-M-down)
+;; - Region report: count how many opcodes/cycles in a selected region
 ;;
 ;; Potential improvements
 ;; - spu-trim-nops command that safely removes (comments out) all pairs of
@@ -31,6 +32,9 @@
 ;; - BUG: When the text scroll left.. weird behavior... 
 
 ;; History:
+;;  v1.4: Update by Cedric Lallain
+;;        - new function: spu-region-report
+;;
 ;;  v1.4: Update by Cedric Lallain
 ;;        - fix invalid regular expression
 ;;
@@ -149,8 +153,6 @@ matches any of the individual opcodes."
 	  (mapcar (lambda (x) (concat "\\<" x "\\>"))
 		  inst-list)))
 
-
-
 ;;
 ;;
 ;;    SPU Internal Data
@@ -186,7 +188,8 @@ matches any of the individual opcodes."
 (setq spu-br-opcodes  '("br" "brsl" "brhnz" "brhz" "brnz" "brz" "hbrr" "bi" "bisl" "bisled"
 			"bihnz" "bihz" "binz" "biz" "hbr" "hbrp" "bra" "brasl" "hbra" "bie" "bid"))
 
-(setq spu-ls-opcodes  '("lqa" "lqd" "lqr" "lqx" "stqa" "stqd" "stqr" "stqx" "rdchcnt" "rdch" "wrch"))
+(setq spu-st-opcodes  '("stqa" "stqd" "stqr" "stqx"))
+(setq spu-ls-opcodes  '("lqa" "lqd" "lqr" "lqx" "rdchcnt" "rdch" "wrch"))
 
 (setq spu-sh-opcodes  '("shlqby" "shlqbyi" "shlqbybi" "shlqbi" "shlqbii" "rotqby" "rotqbyi"
 			"rotqbybi" "rotqbi" "rotqbii" "rotqmby" "rotqmbyi" "rotqmbybi" "rotqmbi"
@@ -222,12 +225,51 @@ matches any of the individual opcodes."
    ((member opcode spu-bo-opcodes) 4)
    ((member opcode spu-ws-opcodes) 4)
    ((member opcode spu-fi-opcodes) 7)
-   ((member opcode spu-br-opcodes) 1) ; Well, I guess that depends...
+   ((member opcode spu-br-opcodes) 4) ; Well, I guess that depends...
    ((member opcode spu-ls-opcodes) 6)
+   ((member opcode spu-st-opcodes) 1) ; In thoery: 6 cycles before the data is written in the memory, 1 cycle before being able to use the registers
    ((member opcode spu-sh-opcodes) 4)
    ((member opcode '("lnop" "nop" "stop")) 1)
    (t 0))) ;(error (format "Unknown opcode: %s" opcode)))))
 
+
+(defun spu-clean-curly-comments(str)
+  "Return the string STR after having removed all comments formed with { and } inside."
+  (let* ((pos (string-match "[{}]" str))
+	 (chr (and pos (substring str pos (+ pos 1)))))
+    (cond ((not chr) str)
+	  ((string= chr "{") 
+	   (if (string-match "}" str)
+	       (concat (substring str 0 pos) 
+		       (spu-clean-curly-comments (substring str (+ pos 1))))
+	       (substring str 0 pos)))
+	  ((string= chr "}") (spu-clean-curly-comments (substring str (+ 1 pos))))
+	  )))
+
+(defun spu-clean-c-comments(str)
+  "Return the string STR after having removed all c style /* */ comments inside."
+  (let* ((pos (string-match "/\\*\\|\\*/" str))
+	 (cmt (and pos (substring str pos (+ pos 2)))))
+    (cond ((not cmt) str)
+	  ((string= cmt "/*") 
+	   (if (string-match "\\*/" str (+ pos 2))
+	       (concat (substring str 0 pos) 
+		       (spu-clean-c-comments (substring str (+ pos 2))))
+	       (substring str 0 pos)))
+	  ((string= cmt "*/") (spu-clean-c-comments (substring str (+ 2 pos))))
+	  )))
+
+(defun spu-clean-line-comment(str)
+  "Return the string after cleaning the comment starting with ';'"
+  (let ((pos (string-match "\\(;\\|//\\)" str)))
+    (if pos
+	(substring str 0 pos)
+	str)))
+
+(defun spu-clean-comments(str)
+  (spu-clean-c-comments 
+   (spu-clean-curly-comments 
+    (spu-clean-line-comment str))))
 
 (defun spu-find-even-opcode()
   "Return the column of the even opcode in this line (nil if no even opcodes are found)"
@@ -279,7 +321,7 @@ spaces / tabs present at the beginning of the line."
       (setq end (point))
       (beginning-of-line)
       (setq start (point))
-      (setq line (buffer-substring start end))
+      (setq line (spu-clean-comments (buffer-substring start end)))
       (or (string-match spu-even-opcode-regexp line)
 	  (string-match spu-odd-opcode-regexp line)))))
   
@@ -552,17 +594,17 @@ Assumes that the current line has / will have opcodes on it."
 	    (spu-indent-and-comment-opcodes)))))
 
 
-(defun spu-get-end-of-line-position()
-  "Return the position of the end of the buffer"
-  (save-excursion
-    (end-of-line)
-    (point)))
+;(defun spu-get-end-of-line-position()
+;  "Return the position of the end of the buffer"
+;  (save-excursion
+;    (end-of-line)
+;    (point)))
 
-(defun spu-get-beginning-of-line-position()
-  "Return the position of the end of the buffer"
-  (save-excursion
-    (beginning-of-line)
-    (point)))
+;(defun spu-get-beginning-of-line-position()
+;  "Return the position of the end of the buffer"
+;  (save-excursion
+;    (beginning-of-line)
+;    (point)))
 
 (defun spu-column-to-pos(column)
   "Convert the column into a position assuming that the cursor is at the current line"
@@ -591,18 +633,18 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
     (goto-char bol1)
     (setq odd-column-1  (spu-find-odd-opcode))
     (setq comment-1     (and odd-column-1 (spu-find-comment-before-opcode odd-column-1)))
-    (setq end-of-even-1 (or (and comment-1 (car comment-1)) (and odd-column-1 (spu-column-to-pos odd-column-1)) (spu-get-end-of-line-position)))
+    (setq end-of-even-1 (or (and comment-1 (car comment-1)) (and odd-column-1 (spu-column-to-pos odd-column-1)) (point-at-eol)))
     (goto-char bol2)
     (setq odd-column-2  (spu-find-odd-opcode))
     (setq comment-2     (and odd-column-2 (spu-find-comment-before-opcode odd-column-2)))
-    (setq end-of-even-2 (or (and comment-2 (car comment-2)) (and odd-column-2 (spu-column-to-pos odd-column-2)) (spu-get-end-of-line-position)))
+    (setq end-of-even-2 (or (and comment-2 (car comment-2)) (and odd-column-2 (spu-column-to-pos odd-column-2)) (point-at-eol)))
     (if swap-odd
 	(progn (goto-char bol1)
-	       (setq instr-1 (buffer-substring end-of-even-1 (spu-get-end-of-line-position)))
+	       (setq instr-1 (buffer-substring end-of-even-1 (point-at-eol)))
 	       (goto-char bol2)
-	       (setq instr-2 (buffer-substring end-of-even-2 (spu-get-end-of-line-position)))
+	       (setq instr-2 (buffer-substring end-of-even-2 (point-at-eol)))
 	       (goto-char end-of-even-2)
-	       (delete-region end-of-even-2 (spu-get-end-of-line-position))
+	       (delete-region end-of-even-2 (point-at-eol))
 	       (spu-clear-whitespaces-before end-of-even-2)
 	       (if comment-1 
 		   (indent-to-column (- spu-odd-column spu-comment-size))
@@ -616,7 +658,7 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 
 	       (save-excursion
 		 (goto-char end-of-even-1)
-		 (delete-region end-of-even-1 (spu-get-end-of-line-position))
+		 (delete-region end-of-even-1 (point-at-eol))
 		 (spu-clear-whitespaces-before end-of-even-1)
 		 (if comment-2 
 		     (indent-to-column (- spu-odd-column spu-comment-size))
@@ -661,6 +703,30 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 			      (goto-char (spu-column-to-pos even-column-1)))))))))
       
       
+
+(defun spu-extract-registers()
+  "Extract the register of the current instruction
+Returns a list of string.
+Note: this function assume that this is a line with opcodes"
+  (let ((even (spu-find-even-opcode))
+	(odd  (spu-find-odd-opcode))
+	(cur  (current-column))
+	instr)
+    (if (or (and odd (>= cur odd))
+	    (not even))
+	(setq instr (buffer-substring-no-properties (spu-column-to-pos odd)
+						    (point-at-eol)))
+	(setq instr (buffer-substring-no-properties (spu-column-to-pos even)
+						    (or (and odd (spu-column-to-pos odd))
+							(point-at-eol)))))
+    (setq instr (spu-clean-comments instr))
+    (setq wl    (split-string (subst-char-in-string ?, 32 instr)))
+    (if (or (member (car wl) spu-even-opcodes)
+	    (member (car wl) spu-odd-opcodes))
+	(cdr wl))))
+
+
+
 ;;
 ;;
 ;;    SPU Interactive command:
@@ -724,16 +790,50 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 	     (backward-char) ; the function will stop if we reach the beginning of the buffer
 	     (spu-previous-opcode)))))
 
-;;(defun spu-swap-point-and-mark()
-;;   (interactive)
-;;   (let ((col (current-column)))
-;;     (beginning-of-line)
-;;     (let ((bol1 (point)))
-;;       (goto-char (mark))
-;;       (beginning-of-line)
-;;       (let ((bol2 (point)))
-;; 	(spu-swap-instructions bol1 bol2 col)))))
 
+(defun spu-region-report()
+  "Report how many odd / even / cycle counts per pipeline in the selected region"
+  (interactive "*")
+  (if (not (is-region-active))
+      (message "No region selected")
+      (let ((start (region-beginning))
+	    (end   (region-end)))
+	(if ( > start end )
+	    (let (tmp) (setq tmp end end start start tmp)))
+	(save-excursion
+	  (goto-char start)
+	  (beginning-of-line)
+	  (let ((even-count 0)
+		(odd-count 0)
+		(even-cycle-count 0)
+		(odd-cycle-count 0))
+	    (while (and (bolp)
+			(not (bobp))
+			(< (point) end))
+	      (if (spu-detect-opcodes-line)
+		  (let ((even (spu-find-even-opcode))
+			(odd  (spu-find-odd-opcode)))
+		    (if even
+			(save-excursion
+			  (move-to-column even)
+			  (forward-char 1) ; in case of {nop}
+			  (if (not (string= (current-word) "nop"))
+			      (progn (setq even-cycle-count (+ (spu-cycle-count (current-word)) even-cycle-count))
+				     (setq even-count (1+ even-count))))))
+		    (if odd
+			(save-excursion
+			  (move-to-column odd)
+			  (forward-char 1) ; in case of {nop}
+			  (if (not (string= (current-word) "lnop"))
+			      (progn (setq odd-cycle-count (+ (spu-cycle-count (current-word)) odd-cycle-count))
+				     (setq odd-count (1+ odd-count))))))
+		    ))
+	      (forward-line 1))
+	    (message (format "SPU Report: even=%i (%i cycles) ; odd=%i (%i cycles) -- max ratio: %f." 
+			     even-count even-cycle-count 
+			     odd-count odd-cycle-count
+			     (/ (+ .0 (max even-cycle-count odd-cycle-count)) (max even-count odd-count))))
+	    )))))
 
 
 (defun spu-swap-next-instruction()
@@ -743,7 +843,7 @@ line, leaving the corresponding instructions in the other pipe unaffected."
   (if (spu-detect-no-opcodes-line)
       (message "The current line doesn't contain any opcodes.")
       (let ((column (current-column))
-	    (bol1   (spu-get-beginning-of-line-position))
+	    (bol1   (point-at-bol))
 	    bol2)
 
 	;; Find the next line:
@@ -755,7 +855,7 @@ line, leaving the corresponding instructions in the other pipe unaffected."
 	    (forward-line 1))
 	  (if (and (not (spu-detect-no-opcodes-line))
 		   (spu-detect-opcodes-line))
-	      (setq bol2 (spu-get-beginning-of-line-position))))
+	      (setq bol2 (point-at-bol))))
 	;; Swap:
 	(if bol2
 	    (spu-swap-instructions bol1 bol2 column)
@@ -769,7 +869,7 @@ line, leaving the corresponding instructions in the other pipe unaffected."
   (if (spu-detect-no-opcodes-line)
       (message "The current line doesn't contain any opcodes.")
       (let ((column (current-column))
-	    (bol1   (spu-get-beginning-of-line-position))
+	    (bol1   (point-at-bol))
 	    bol2)
 
 	;; Find the next line:
@@ -781,7 +881,7 @@ line, leaving the corresponding instructions in the other pipe unaffected."
 	    (forward-line -1))
 	  (if (and (not (spu-detect-no-opcodes-line))
 		   (spu-detect-opcodes-line))
-	      (setq bol2 (spu-get-beginning-of-line-position))))
+	      (setq bol2 (point-at-bol))))
 	;; Swap:
 	(if bol2
 	    (spu-swap-instructions bol1 bol2 column)
@@ -812,8 +912,8 @@ line, leaving the corresponding instructions in the other pipe unaffected."
 	    (while (and (bolp)
 			(not (eobp))
 			(string-match "^\\.[Rr][Ee][Gg][ \t]"
-				      (buffer-substring (spu-get-beginning-of-line-position) 
-							(spu-get-end-of-line-position))))
+				      (buffer-substring (point-at-bol) 
+							(point-at-eol))))
 	      (forward-line 1))
 	    (forward-line -1)
 	    (end-of-line)
