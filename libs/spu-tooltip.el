@@ -30,8 +30,7 @@
 ;; The SPU instruction documentation is based on IBM docs which can be found at
 ;; the following address: 
 ;;
-;;   http://www-01.ibm.com/chips/techlib/techlib.nsf/techdocs/76CA6C7304210F398
-;;   7257060006F2C44/$file/SPU_ISA_v1.2_27Jan2007_pub.pdf
+;;   http://www-01.ibm.com/chips/techlib/techlib.nsf/techdocs/76CA6C7304210F3987257060006F2C44/$file/SPU_ISA_v1.2_27Jan2007_pub.pdf
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -369,82 +368,236 @@ bytes 2 and 3 of register RT.")
 				  "SHLH	rt, ra, rb"
 				  "4"
 				  "WS"
-				  "rt.h[n] = ra.h[n] << ( rb.h[n] & 0x1F )")
+				  "rt.h[n] = ra.h[n] << rb.h[n]\n
+For each of eight halfword slots:
+. The contents of register RA are shifted to the left according to the count in
+bits 11 to 15 of register RB.
+. The result is placed in register RT.
+. If the count is zero, the contents of register RA are copied unchanged into 
+register RT. If the count is greater than 15, the result is zero.
+. Bits shifted out of the left end of the halfword are discarded; zeros are 
+shifted in at the right.")
 			    (list "shlhi"
-				  "SHLHI rt, ra, imm"
+				  "SHLHI rt, ra, u7"
 				  "4"
 				  "WS"
-				  "rt.h[n] = ra.h[n] << ( imm & 0x1F )")
+				  "rt.h[n] = ra.h[n] << u7\n
+For each of eight halfword slots:
+. The contents of register RA are shifted to the left according to the count in
+the immediate value u7.
+. The result is placed in register RT.
+. If the count is zero, the contents of register RA are copied unchanged into
+register RT. If the count is greater than 15, the result is zero.
+. Bits shifted out of the left end of the halfword are discarded; zeros are 
+shifted in at the right.")
 			    (list "shl"
 				  "SHL rt, ra, rb"
 				  "4"
 				  "WS"
-				  "rt.w[n] = ra.w[n] << ( rb.w[n] & 0x3F )")
+				  "rt.w[n] = ra.w[n] << rb.w[n]\n
+For each of four word slots:
+. The contents of register RA are shifted to the left according to the count in
+bits 26 to 31 of register RB.
+. The result is placed in register RT.
+. If the count is zero, the contents of register RA are copied unchanged into 
+register RT. If the count is greater than 31, the result is zero.
+. Bits shifted out of the left end of the word are discarded; zeros are shifted
+in at the right.")
 			    (list "shli"
-				  "SHLI rt, ra, imm"
+				  "SHLI rt, ra, u7"
 				  "4"
 				  "WS"
-				  "rt.w[n] = ra.w[n] << ( imm & 0x3F )")
+				  "rt.w[n] = ra.w[n] << u7\n
+For each of four word slots:
+. The contents of register RA are shifted to the left according to the count in
+the immediate value u7.
+. The result is placed in register RT.
+. If the count is zero, the contents of register RA are copied unchanged into
+register RT. If the count is greater than 31, the result is zero.
+. Bits shifted out of the left end of the word are discarded; zeros are shifted
+in at the right.")
 			    (list "roth"
 				  "ROTH	rt, ra, rb"
 				  "4"
 				  "WS"
-				  "rt.h[n] = ra.h[n] <^ ( rb.h[n] & 0x0F )\n<^ is an idiosyncratic symbol for rotate")
+				  "rt.h[n] = ra.h[n] <^ ( rb.h[n] & 0x0F )\n<^ is an idiosyncratic symbol for rotate\n
+For each of eight halfword slots:
+. The contents of register RA are rotated to the left according to the count in
+bits 12 to 15 of register RB.
+. The result is placed in register RT.
+. If the count is zero, the contents of register RA are copied unchanged into 
+register RT.
+. Bits rotated out of the left end of the halfword are rotated in at the right 
+end.")
 			    (list "rothi"
-				  "ROTHI rt, ra, imm"
+				  "ROTHI rt, ra, u7"
 				  "4"
 				  "WS"
-				  "rt.h[n] = ra.h[n] <^ ( imm & 0x0F )\n<^ is an idiosyncratic symbol for rotate")
+				  "rt.h[n] = ra.h[n] <^ ( u7 & 0x0F )\n<^ is an idiosyncratic symbol for rotate\n
+For each of eight halfword slots:
+. The contents of register RA are rotated to the left according to the count
+in the last 4 bits of the U7 value.
+. The result is placed in register RT.
+. If the count is zero, the contents of register RA are copied unchanged into
+register RT.
+. Bits rotated out of the left end of the halfword are rotated in at the right
+end.")
 			    (list "rot"
 				  "ROT rt, ra, rb"
 				  "4"
 				  "WS"
-				  "rt.w[n] = ra.w[n] <^ ( rb.w[n] & 0x1F )\n<^ is an idiosyncratic symbol for rotate")
+				  "rt.w[n] = ra.w[n] <^ ( rb.w[n] & 0x1F )\n<^ is an idiosyncratic symbol for rotate\n
+For each of four word slots:
+. The contents of register RA are rotated to the left according to the count in
+bits 27 to 31 of register RB.
+. The result is placed in register RT.
+. If the count is zero, the contents of register RA are copied unchanged into 
+register RT.
+. Bits rotated out of the left end of the word are rotated in at the right end.")
 			    (list "roti"
-				  "ROTI rt, ra, imm"
+				  "ROTI rt, ra, u7"
 				  "4"
 				  "WS"
-				  "rt.w[n] = ra.w[n] <^ ( imm & 0x1F )\n<^ is an idiosyncratic symbol for rotate")
+				  "rt.w[n] = ra.w[n] <^ ( u7 & 0x1F )\n<^ is an idiosyncratic symbol for rotate\n
+For each of four word slots:
+. The contents of register RA are rotated to the left according to the count in
+the last four bits of the value u7.
+. The result is placed in register RT.
+. If the count is zero, the contents of register RA are copied unchanged into 
+register RT.
+. Bits rotated out of the left end of the word are rotated in at the right end.")
 			    (list "rothm"
 				  "ROTHM rt, ra, rb"
 				  "4"
 				  "WS"
-				  "rt.h[n] = ra.h[n] >> ( -rb.h[n] & 0x1F )\nshift right logical")
+				  "rt.h[n] = ra.h[n] >> ( -rb.h[n] & 0x1F )\nshift right logical\n
+For each of eight halfword slots:
+. The shift_count is (0 - RB) modulo 32.
+. If the shift_count is less than 16, then RT is set to the contents of RA 
+shifted right shift_count bits, with zero fill at the left.
+. Otherwise, RT is set to zero.
+
+The Rotate and Mask instructions provide support for a logical right shift, and
+the Rotate and Mask Algebraic instructions provide support for an algebraic 
+right shift. They differ from a conventional right logical or algebraic shift 
+in that the shift amount accepted by the instructions is the two's complement
+of the right shift amount. 
+Thus, to shift right logically the contents of R2 by the number of bits given 
+in R1, the following sequence could be used:
+   sfi r3,r1,0    Form two's complement
+   rotm r4,r2,r3  Rotate, then mask
+For the immediate forms of these instructions, the formation of the two's 
+complement shift quantity can be performed during assembly or compilation.")
 			    (list "rothmi"
-				  "ROTHMI rt, ra, imm"
+				  "ROTHMI rt, ra, u7"
 				  "4"
 				  "WS"
-				  "rt.h[n] = ra.h[n] >> ( -imm & 0x1F )")
+				  "rt.h[n] = ra.h[n] >> ( -u7 & 0x1F )\n
+For each of eight halfword slots:
+. The shift_count is (0 - U7) modulo 32.
+. If the shift_count is less than 16, then RT is set to the contents of RA
+shifted right shift_count bits, with zero fill at the left.
+. Otherwise, RT is set to zero.
+
+The Rotate and Mask instructions provide support for a logical right shift, and
+the Rotate and Mask Algebraic instructions provide support for an algebraic 
+right shift. They differ from a conventional right logical or algebraic shift 
+in that the shift amount accepted by the instructions is the two's complement
+of the right shift amount. 
+Thus, to shift right logically the contents of R2 by the number of bits given 
+in R1, the following sequence could be used:
+   sfi r3,r1,0    Form two's complement
+   rotm r4,r2,r3  Rotate, then mask
+For the immediate forms of these instructions, the formation of the two's 
+complement shift quantity can be performed during assembly or compilation.")
 			    (list "rotm"
 				  "ROTM rt, ra, rb"
 				  "4"
 				  "WS"
-				  "rt.w[n] = ra.w[n] >> ( -rb.w[n] & 0x3F )")
+				  "rt.w[n] = ra.w[n] >> ( -rb.w[n] & 0x3F )\n
+For each of four word slots:
+. The shift_count is (0 - RB) modulo 64.
+. If the shift_count is less than 32, then RT is set to the contents of RA
+shifted right shift_count bits, with zero fill at the left.
+. Otherwise, RT is set to zero.
+
+The Rotate and Mask instructions provide support for a logical right shift, and
+the Rotate and Mask Algebraic instructions provide support for an algebraic 
+right shift. They differ from a conventional right logical or algebraic shift 
+in that the shift amount accepted by the instructions is the two's complement
+of the right shift amount. 
+Thus, to shift right logically the contents of R2 by the number of bits given 
+in R1, the following sequence could be used:
+   sfi r3,r1,0    Form two's complement
+   rotm r4,r2,r3  Rotate, then mask
+For the immediate forms of these instructions, the formation of the two's 
+complement shift quantity can be performed during assembly or compilation.")
 			    (list "rotmi"
-				  "ROTMI rt, ra, imm"
+				  "ROTMI rt, ra, u7"
 				  "4"
 				  "WS"
-				  "rt.w[n] = ra.w[n] >> ( -imm & 0x3F )")
+				  "rt.w[n] = ra.w[n] >> ( -u7 & 0x3F )\n
+For each of four word slots:
+. The shift_count is (0 - U7) modulo 64.
+. If the shift_count is less than 32, then RT is set to the contents of RA
+shifted right shift_count bits, with zero fill at the left.
+. Otherwise, RT is set to zero.
+
+The Rotate and Mask instructions provide support for a logical right shift, and
+the Rotate and Mask Algebraic instructions provide support for an algebraic 
+right shift. They differ from a conventional right logical or algebraic shift 
+in that the shift amount accepted by the instructions is the two's complement
+of the right shift amount. 
+Thus, to shift right logically the contents of R2 by the number of bits given 
+in R1, the following sequence could be used:
+   sfi r3,r1,0    Form two's complement
+   rotm r4,r2,r3  Rotate, then mask
+For the immediate forms of these instructions, the formation of the two's 
+complement shift quantity can be performed during assembly or compilation.")
 			    (list "rotmah"
 				  "ROTMAH rt, ra, rb"
 				  "4"
 				  "WS"
-				  "rt.h[n] = ra.h[n] >> ( -rb.h[n] & 0x1F )\nshift right arithmetic")
+				  "rt.h[n] = ra.h[n] >> ( -rb.h[n] & 0x1F )\nshift right arithmetic\n
+For each of eight halfword slots:
+. The shift_count is (0 - RB) modulo 32.
+. If the shift_count is less than 16, then RT is set to the contents of RA 
+shifted right shift_count bits, replicating bit 0 (of the halfword) at the 
+left.
+. Otherwise, all bits of this halfword of RT are set to bit 0 of this 
+halfword of RA.")
 			    (list "rotmahi"
-				  "ROTMAHI rt, ra, imm"
+				  "ROTMAHI rt, ra, u7"
 				  "4"
 				  "WS"
-				  "rt.h[n] = ra.h[n] >> ( -imm & 0x1F )")
+				  "rt.h[n] = ra.h[n] >> ( -u7 & 0x1F )\n
+For each of eight halfword slots:
+. The shift_count is (0 - U7) modulo 32.
+. If the shift_count is less than 16, then RT is set to the contents of RA
+shifted right shift_count bits, replicating bit 0 (of the halfword) at the
+left.
+. Otherwise, all bits of this halfword of RT are set to bit 0 of this 
+halfword of RA.")
 			    (list "rotma"
 				  "ROTMA rt, ra, rb"
 				  "4"
 				  "WS"
-				  "rt.w[n] = ra.w[n] >> ( -rb.w[n] & 0x3F )")
+				  "rt.w[n] = ra.w[n] >> ( -rb.w[n] & 0x3F )\n
+For each of four word slots:
+. The shift_count is (0 - RB) modulo 64.
+. If the shift_count is less than 32, then RT is set to the contents of RA 
+shifted right shift_count bits, replicating bit 0 (of the word) at the left.
+. Otherwise, all bits of this word of RT are set to bit 0 of this word of RA.")
 			    (list "rotmai"
-				  "ROTMAI rt, ra, imm"
+				  "ROTMAI rt, ra, u7"
 				  "4"
 				  "WS"
-				  "rt.w[n] = ra.w[n] >> ( -imm & 0x3F )")
+				  "rt.w[n] = ra.w[n] >> ( -u7 & 0x3F )\n
+For each of four word slots:
+. The shift_count is (0 - U7) modulo 64.
+. If the shift_count is less than 32, then RT is set to the contents of RA
+shifted right shift_count bits, replicating bit 0 (of the word) at the left.
+. Otherwise, all bits of this word of RT are set to bit 0 of this word of RA.")
 			    (list "mpy"
 				  "MPY rt, ra, rb"
 				  "7"
@@ -1067,77 +1220,148 @@ RA; otherwise, select the bit from register RB.
 				  "SHLQBY rt, ra, rb"
 				  "4"
 				  "SH"
-				  "rt = ra << ( ( rb.b[3] & 0x1F ) << 3 )")
+				  "rt = ra << ( ( rb.b[3] & 0x1F ) << 3 )/n
+The bytes of register RA are shifted to the left according to the count in bits
+27 to 31 of the preferred slot of register RB. The result is placed in register
+RT. If the count is zero, the contents of register RA are copied unchanged into
+register RT. If the count is greater than 15, the result is zero. Bytes shifted
+out of the left end of the register are discarded, and bytes of zeros are 
+shifted in at the right.")
 			    (list "shlqbyi"
-				  "SHLQBYI rt, ra, imm"
+				  "SHLQBYI rt, ra, u7"
 				  "4"
 				  "SH"
-				  "rt = ra << ( ( imm & 0x1F ) << 3 )")
+				  "rt = ra << ( ( u7 & 0x1F ) << 3 )\n
+The bytes of register RA are shifted to the left according to the count in the
+last 4 bits of the U7 value. The result is placed in register RT. If the count
+is zero, the contents of register RA are copied unchanged into register RT. If
+the count is greater than 15, the result is zero. Bytes shifted out of the left
+end of the register are discarded, and zero bytes are shifted in at the right.")
 			    (list "shlqbybi"
 				  "SHLQBYBI rt, ra, rb"
 				  "4"
 				  "SH"
-				  "rt = ra << ( rb.b[3] & 0xF8 )")
+				  "rt = ra << ( rb.b[3] & 0xF8 )\n
+The bytes of register RA are shifted to the left according to the count in bits
+24 to 28 of the preferred slot of register RB. The result is placed in register
+RT. If the count is zero, the contents of register RA are copied unchanged into
+register RT. If the count is greater than 15, the result is zero. Bytes shifted
+out of the left end of the register are discarded, and bytes of zeros are 
+shifted in at the right.")
 			    (list "shlqbi"
 				  "SHLQBI rt, ra, rb"
 				  "4"
 				  "SH"
-				  "rt = ra << ( rb.b[3] & 0x07 )")
+				  "rt = ra << ( rb.b[3] & 0x07 )\n
+The contents of register RA are shifted to the left according to the count in
+bits 29 to 31 of the preferred slot of register RB. The result is placed in 
+register RT. A shift of up to 7 bit positions is possible.
+If the count is zero, the contents of register RA are copied unchanged into 
+register RT. Bits shifted out of the left end of the register are discarded, 
+and zeros are shifted in at the right.")
 			    (list "shlqbii"
-				  "SHLQBII rt, ra, imm"
+				  "SHLQBII rt, ra, u7"
 				  "4"
 				  "SH"
-				  "rt = ra << ( imm & 0x07 )")
+				  "rt = ra << ( imm & 0x07 )\n
+The contents of register RA are shifted to the left according to the count in
+the last 3 bits of the U7 value. The result is placed in register RT. A shift
+of up to 7 bit positions is possible.
+If the count is zero, the contents of register RA are copied unchanged into 
+register RT. Bits shifted out of the left end of the register are discarded, 
+and zeros are shifted in at the right.")
 			    (list "rotqby"
 				  "ROTQBY rt, ra, rb"
 				  "4"
 				  "SH"
-				  "rt = ra <^ ( ( rb.b[3] & 0x0F ) << 3 )")
+				  "rt = ra <^ ( ( rb.b[3] & 0x0F ) << 3 )\n
+The bytes in register RA are rotated to the left according to the count in the
+rightmost 4 bits of the preferred slot of register RB. The result is placed in
+register RT. Rotation of up to 15 byte positions is possible.
+If the count is zero, the contents of register RA are copied unchanged into 
+register RT. Bytes rotated out of the left end of the register are rotated in
+at the right.")
 			    (list "rotqbyi"
-				  "ROTQBYI rt, ra, imm"
+				  "ROTQBYI rt, ra, u7"
 				  "4"
 				  "SH"
-				  "rt = ra <^ ( ( imm & 0x0F ) << 3 )")
+				  "rt = ra <^ ( ( u7 & 0x0F ) << 3 )\n
+The bytes in register RA are rotated to the left according to the count in the
+rightmost 4 bits of the value u7. The result is placed in register RT. Rotation
+of up to 15 byte positions is possible. If the count is zero, the contents of
+register RA are copied unchanged into register RT. Bytes rotated out of the 
+left end of the register are rotated in at the right.")
 			    (list "rotqbybi"
 				  "ROTQBYBI rt, ra, rb"
 				  "4"
 				  "SH"
-				  "rt = ra <^ ( rb.b[3] & 0x78 )")
+				  "rt = ra <^ ( rb.b[3] & 0x78 )\n
+The bytes of register RA are rotated to the left according to the count in bits
+25 to 28 of the preferred slot of register RB. The result is placed in register
+RT. If the count is zero, the contents of register RA are copied unchanged into
+register RT. Bytes rotated out of the left end of the register are rotated in 
+at the right.")
 			    (list "rotqbi"
 				  "ROTQBI rt, ra, rb"
 				  "4"
 				  "SH"
-				  "rt = ra <^ ( rb.b[3] & 0x07 )")
+				  "rt = ra <^ ( rb.b[3] & 0x07 )\n
+The contents of register RA are rotated to the left according to the count in
+bits 29 to 31 of the preferred slot of register RB. The result is placed in
+register RT. Rotation of up to 7 bit positions is possible.
+If the count is zero, the contents of register RA are copied unchanged into 
+register RT. Bits rotated out at the left end of the register are rotated in at
+the right.")
 			    (list "rotqbii"
-				  "ROTQBII rt, ra, imm"
+				  "ROTQBII rt, ra, u7"
 				  "4"
 				  "SH"
-				  "rt = ra <^ ( imm & 0x07 )")
+				  "rt = ra <^ ( u7 & 0x07 )\n
+The contents of register RA are rotated to the left according to the count in
+the rightmost 3 bits of the value u7. The result is placed in register RT. 
+Rotation of up to 7 bit positions is possible. If the count is zero, the 
+contents of register RA are copied unchanged into register RT.
+Bits rotated out at the left end of the register are rotated in at the right.")
 			    (list "rotqmby"
 				  "ROTQMBY rt, ra, rb"
 				  "4"
 				  "SH"
-				  "rt = ra >> ( ( -rb.b[3] & 0x1F ) << 3 )")
+				  "rt = ra >> ( ( -rb.b[3] & 0x1F ) << 3 )\n
+The shift_count is (0 - the preferred word of RB) modulo 32. If the shift_count
+is less than 16, then RT is set to the contents of RA shifted right shift_count
+bytes, filling at the left with 0x00 bytes. Otherwise, RT is set to zero.")
 			    (list "rotqmbyi"
-				  "ROTQMBYI rt, ra, imm"
+				  "ROTQMBYI rt, ra, u7"
 				  "4"
 				  "SH"
-				  "rt = ra >> ( ( -imm & 0x1F ) << 3 )")
+				  "rt = ra >> ( ( -u7 & 0x1F ) << 3 )\n
+The shift_count is (0 - U7) modulo 32. If the shift_count is less than 16, then
+RT is set to the contents of RA shifted right shift_count bytes, filling at the
+left with 0x00 bytes. Otherwise, all bytes of RT are set to 0x00.")
 			    (list "rotqmbybi"
 				  "ROTQMBYBI rt, ra, rb"
 				  "4"
 				  "SH"
-				  "rt = ra >> ( -( rb.b[3] & 0xF8 ) & 0xF8 )\n\n  #bits to	bits in b	b.low = -shr\n  shift right	high  low	b.hi  = -(shr & 0xF8)\n  0		00000 000\n  1		00000 111\n  2		00000 110\n  3		00000 101\n  4		00000 100\n  5		00000 011\n  6		00000 010\n  7		00000 001\n  8		11111 000\n  9		11111 111\n  . . .\n  16		11110 000\n")
+				  "rt = ra >> ( -( rb.b[3] & 0xF8 ) & 0xF8 )\n\n  #bits to	bits in b	b.low = -shr\n  shift right	high  low	b.hi  = -(shr & 0xF8)\n  0		00000 000\n  1		00000 111\n  2		00000 110\n  3		00000 101\n  4		00000 100\n  5		00000 011\n  6		00000 010\n  7		00000 001\n  8		11111 000\n  9		11111 111\n  . . .\n  16		11110 000\n
+The shift_count is (0 minus bits 24 to 28 of RB) modulo 32. If the shift_count
+is less than 16, then RT is set to the contents of RA, which is shifted right 
+shift_count bytes, and filled at the left with 0x00 bytes. Otherwise, all 
+bytes of RT are set to 0x00.")
 			    (list "rotqmbi"
 				  "ROTQMBI rt, ra, rb"
 				  "4"
 				  "SH"
-				  "rt = ra >> ( -rb.b[3] & 0x07 )")
+				  "rt = ra >> ( -rb.b[3] & 0x07 )\n
+The shift_count is (0 - the preferred word of RB) modulo 8. RT is set to the 
+contents of RA, shifted right by shift_count bits, filling at the left with
+zero bits.")
 			    (list "rotqmbii"
-				  "ROTQMBII rt, ra, imm"
+				  "ROTQMBII rt, ra, u7"
 				  "4"
 				  "SH"
-				  "rt = ra >> ( -imm & 0x07 )")
+				  "rt = ra >> ( -u7 & 0x07 )\n
+The shift_count is (0 - U7) modulo 8. RT is set to the contents of RA, shifted
+right by shift_count bits, filling at the left with zero bits.")
 			    (list "orx"
 				  "ORX rt, ra"
 				  "4"
