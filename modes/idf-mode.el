@@ -50,47 +50,48 @@ matches any of the individual token."
 (defun idf-indent-line()
   "Indentation for idf file"
   (interactive)
-  (save-excursion
-    (beginning-of-line)
-    ;; Beginning of buffer, indent -> 0
-    (if (bobp)
-	(ident-line-to 0)
-	;; We are not in the beginning of the buffer, therefore we can consider the different indentation
-	;; option looking at the previous line:
-	(let ((not-indented t) 
-	      cur-indent)
-	  ;; End of block: </...> ?
-	  (if (looking-at "^[ \t]*</")
-	      (progn
+  (let (cur-indent)
+    (save-excursion
+      (beginning-of-line)
+      ;; Beginning of buffer, indent -> 0
+      (if (bobp)
+	  (ident-line-to 0)
+	  ;; We are not in the beginning of the buffer, therefore we can consider the different indentation
+	  ;; option looking at the previous line:
+	  (let ((not-indented t))
+	    ;; End of block: </...> ?
+	    (if (looking-at "^[ \t]*</")
+		(progn
+		  (save-excursion
+		    (forward-line -1)
+		    (while (and (not (bobp))
+				(looking-at "^[ \t]*$"))
+		      (forward-line -1))
+		    (if (bobp)
+			(setq cur-indent 0)
+			;; If it's an empty block, don't increase the indentation...
+			(if (not (looking-at "^[ \t]*<[^!/].*[^/]>"))
+			    (setq cur-indent (- (current-indentation) tab-width))
+			    (setq cur-indent (current-indentation))))
+		    (if (< cur-indent 0)
+			(setq cur-indent 0))))
 		(save-excursion
-		  (forward-line -1)
-		  (while (and (not (bobp))
-			      (looking-at "^[ \t]*$"))
-		    (forward-line -1))
-		  (if (bobp)
-		      (setq cur-indent 0)
-		      ;; If it's an empty block, don't increase the indentation...
-		      (if (not (looking-at "^[ \t]*<[^!/].*[^/]>"))
-			  (setq cur-indent (- (current-indentation) tab-width))
-			  (setq cur-indent (current-indentation))))
-		  (if (< cur-indent 0)
-		      (setq cur-indent 0))))
-	      (save-excursion
-		(while not-indented
-		  (forward-line -1)
-		  ;; We found the end of a previous block... -> same indentation
-		  (cond ((looking-at "^[ \t]*</")
-			 (setq cur-indent (current-indentation)
-			       not-indented nil))
-			;; We found a beginning of a block:
-			((looking-at "^[ \t]*<[^!].*[^/]>")
-			 (setq cur-indent (+ (current-indentation) tab-width)
-			       not-indented nil))
-			;; We went up to the beginning of the buffer... let's stop
-			((bobp) (setq not-indented nil))))))
-	  (if cur-indent
-	      (indent-line-to cur-indent)
-	      (indent-line-to 0))))))
+		  (while not-indented
+		    (forward-line -1)
+		    ;; We found the end of a previous block... -> same indentation
+		    (cond ((looking-at "^[ \t]*</")
+			   (setq cur-indent (current-indentation)
+				 not-indented nil))
+			  ;; We found a beginning of a block:
+			  ((looking-at "^[ \t]*<[^!].*[^/]>")
+			   (setq cur-indent (+ (current-indentation) tab-width)
+				 not-indented nil))
+			  ;; We went up to the beginning of the buffer... let's stop
+			  ((bobp) (setq not-indented nil)))))))))
+    (if cur-indent
+	(indent-line-to cur-indent)
+	(indent-line-to 0))
+    ))
 
 (defun idf-indent-line-or-region()
   (interactive)
