@@ -1,13 +1,13 @@
 ;;; record-type.el -- Redefinition of find-dired
 ;;
-;; Author:   Cedric Lallain
+;; Author:   Cedric Lallain <kandjar76@hotmail.com>
 ;; Version:  0.9
 ;; Keywords: record-type
 ;; Description: Record type definition.
 ;; Tested with: GNU Emacs 21.x and GNU Emacs 22.x
-
+;;
 ;; This file is *NOT* part of GNU Emacs.
-
+;;
 ;;    This program is free software; you can redistribute it and/or modify
 ;;    it under the terms of the GNU General Public License as published by
 ;;    the Free Software Foundation; either version 2 of the License, or
@@ -21,22 +21,96 @@
 ;;    You should have received a copy of the GNU General Public License
 ;;    along with this program; if not, write to the Free Software
 ;;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-;;; Commentary:
-
-
-
-;; TODO: Docs!
-;;  default value
-
-
-;; Control function to remember:
 ;;
-;;  integer-or-marker-p  | int
-;;  stringp              | string
-;;  symbolp              | symbol
-;;  fboundp              | function
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Definition of a new emacs type: record.
+;; A record is a set of named fields with their associated type. 
 ;; 
+;; The type definition is made through a predicate, the internal functions
+;; will do type checking to make sure the type is correct.
+;; 
+;; In order to define a new record the syntax is:
+;;   (defrecord type-name "Comment string"
+;;      :field-name1 'predicate-1
+;;      :field-name2 'predicate-2
+;;      ....)
+;;
+;; Once the type created, a generic set of functions are available in order to work with it:
+;; . recordp                 returns t if type-name is a record type
+;; . get-record-comment      returns the comment associated with the type
+;; . make-new-record         creates and returns a new instance (optional: initial values)
+;; . instancep               returns t if the argument is an instance of a record type
+;; . get-record-type         returns the record-type associated with an instance
+;; . has-record-field        checks if a specific field name exists in the record-type definition
+;; . set-record-field-value  set a value to a specific field of an instance
+;; . set-record-field-values set values to different fields of an instance
+;; . get-record-field-value  returns the value of a specific field of an instance
+;;
+;; The record type definition will auto-generate the definition of the 
+;; following functions:
+;;   a constructor function:
+;;      make-new-<record-name>
+;; . a predicate function:
+;;      <record-name>-p
+;; . a set and a get function for each field name:
+;;      set-<record-name>-<field-name>
+;;      get-<record-name>-<field-name>
+;;
+;; **** Note: the set functions will change the value of the instance without
+;;  having to do a "setq". If you just want to a field value without changing
+;;  the variable, use: set-record-field-value. 
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;; Here is a sample code to demonstrate the use of the general functions:
+;;
+;;   (defrecord test 
+;;     "Comment for the record test" 
+;;     :string 'stringp
+;;     :symbol 'symbolp
+;;     :int 'number-or-marker-p)
+;; 
+;;   (recordp test)
+;;   (get-record-comment test)
+;;   (get-record-type (make-new-record test))
+;;   (has-record-field test :string)
+;;
+;;   (setq itest (make-new-record test))
+;;   (setq itest (set-record-field-value itest :symbol 'sym))
+;;   (get-record-field-value (set-record-field-values itest :int  3 :string "test") :int)
+;;
+;;
+;;; Here is another sample, this time to demonstrate, 
+;;  how to use the newly-defined function:
+;;
+;;   (defrecord test2 "This is a comment for test2" 
+;;     :string 'stringp
+;;     :symbol 'symbolp
+;;     :int 'number-or-marker-p)
+;;   
+;;   (setq itest2 (make-new-test2))
+;;   (set-test2-string itest2 "pouet")
+;;   (get-test2-int itest2)
+;;   
+;;   (setq itest3 (make-new-test2 :string "pouet" :int 50))
+;;   
+;;   (let ((field-name "test"))
+;;     (get-test2-string itest2)
+;;     (message field-name))
+;;   (let ((field-name "test"))
+;;     (set-test2-string itest2 "ok")
+;;     (message field-name))
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;; TODO-list: 
+;;
+;;  make the comment optional
+;;  default value
+;;  ... suggestion? ;-)
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;------------------------------------------------------------------------------
@@ -46,38 +120,49 @@
 ;;------------------------------------------------------------------------------
 
 (defmacro defrecord-define-set-code (record-type field)
-  "PRIVATE - Define the prive set function to be able to set the field FIELD value in the record RECORD-TYPE"
+  "PRIVATE - Define the private set function to be able to set the field FIELD value in the record RECORD-TYPE"
   (let ((field-name (make-symbol "field-name-private"))
-	(set-function-name (make-symbol "set-function-name-private")))
+	(set-function-name (make-symbol "set-function-name-private"))
+	(set-function-comment (make-symbol "set-function-comment-private")))    
     (let* ((field-name (if (string= (substring (symbol-name field) 0 1) ":")
 			   (substring (symbol-name field) 1)
 			   (symbol-name field)))
-	   (set-function-name (eval `(intern ,(concat "set-" (symbol-name record-type) "-" field-name "-private")))))
-      `(defun ,set-function-name (instance value) (set-record-field instance ,field value)))))
+	   (set-function-name (eval `(intern ,(concat "set-" (symbol-name record-type) "-" field-name "-private"))))
+	   (set-function-comment (format "PRIVATE - Set the %s value to VALUE of a specific instance INSTANCE whose type is %s" 
+					 field-name (symbol-name record-type))))
+      `(defun ,set-function-name (instance value) 
+	 ,set-function-comment
+	 (set-record-field-value instance ,field value)))))
 
 (defmacro defrecord-define-set-macro-code (record-type field)
   "PRIVATE - Define the set macro to have a direct write on the field FIELD in the record RECORD-TYPE"
   (let ((field-name (make-symbol "field-name"))
 	(set-macro-name (make-symbol "set-macro-name"))
-	(set-function-name (make-symbol "set-function-name")))
+	(set-function-name (make-symbol "set-function-name"))
+	(set-macro-comment (make-symbol "set-macro-comment")))
     (let* ((field-name (if (string= (substring (symbol-name field) 0 1) ":")
 			   (substring (symbol-name field) 1)
 			   (symbol-name field)))
 	   (set-macro-name (eval `(intern ,(concat "set-" (symbol-name record-type) "-" field-name))))
-	   (set-function-name (eval `(intern (concat "set-" (symbol-name record-type) "-" field-name "-private")))))
-      `(defmacro ,set-macro-name (instance value) (list 'setq instance (list ',set-function-name instance value))))))
+	   (set-function-name (eval `(intern (concat "set-" (symbol-name record-type) "-" field-name "-private"))))
+	   (set-macro-comment (format "Set the %s value to VALUE of a specific instance INSTANCE whose type is %s" 
+				      field-name (symbol-name record-type))))
+      `(defmacro ,set-macro-name (instance value) ,set-macro-comment (list 'setq instance (list ',set-function-name instance value))))))
 
 (defmacro defrecord-define-get-code (record-type field)
   "PRIVATE - Define the get function to return the value of the FIELD in an instance of the record RECORD-TYPE"
   (let ((field-name (make-symbol "field-name"))
 	(record-name (make-symbol "record-name"))
-	(get-function-name (make-symbol "get-function-name")))
+	(get-function-name (make-symbol "get-function-name"))
+	(get-function-comment (make-symbol "get-function-comment")))
     (let* ((field-name (if (string= (substring (symbol-name field) 0 1) ":")
 			   (substring (symbol-name field) 1)
 			   (symbol-name field)))
 	   (record-name (symbol-name record-type))
-	   (get-function-name (eval `(intern ,(concat "get-" record-name "-" field-name)))))
-      `(defun ,get-function-name (instance) (get-record-field instance ,field)))))
+	   (get-function-name (eval `(intern ,(concat "get-" record-name "-" field-name))))
+	   (get-function-comment (format "Return the %s value of a specific instance INSTANCE whose type is %s" 
+					 field-name (symbol-name record-type))))
+      `(defun ,get-function-name (instance) ,get-function-comment (get-record-field-value instance ,field)))))
 
 
 (defmacro defrecord-define-field-functions(record-type field2)
@@ -87,7 +172,7 @@
 	  (defrecord-define-get-code ,record-type ,(eval field2))))
 
 
-(defun defrecord-private(record-type comment &rest args)
+(defun defrecord-private(comment &rest args)
   "PRIVATE - Function used to create the structure of RECORD-TYPE.
 Create a record type with a specific comment COMMENT.
 A record is constituated with a list of coupe symbol / type-checker"
@@ -101,18 +186,32 @@ A record is constituated with a list of coupe symbol / type-checker"
 		(if (symbol-function type-checker)
 		    (setq new-type (append new-type (list (cons field-name type-checker)))))
 		(error "Wrong type of argument, expecting a symbol type"))))
-	(set record-type new-type))
+	new-type)
       (error "Invalid name type: the comment must be a string!")))
+
+
+(defmacro defrecord-define-make-new (record-type)
+  "PRIVATE - Define the predicate function for the record RECORD-TYPE"
+  (let ((record-name (make-symbol "record-name"))
+	(make-new-function-name    (make-symbol "make-new-function-name"))
+	(make-new-function-comment (make-symbol "make-new-function-comment")))
+    (let* ((record-name (symbol-name record-type))
+	   (make-new-function-name (eval `(intern ,(concat "make-new-" record-name))))
+	   (make-new-function-comment (concat "Return a new instance of the record-type " (symbol-name record-type))))
+      `(defun ,make-new-function-name (&rest args) ,make-new-function-comment (apply 'make-new-record ,record-type args)))))
 
 
 (defmacro defrecord-define-predicate (record-type)
   "PRIVATE - Define the predicate function for the record RECORD-TYPE"
   (let ((record-name (make-symbol "record-name"))
-	(predicate-function-name (make-symbol "predicate-function-name")))
+	(predicate-function-name    (make-symbol "predicate-function-name"))
+	(predicate-function-comment (make-symbol "predicate-function-comment")))
     (let* ((record-name (symbol-name record-type))
-	   (predicate-function-name (eval `(intern ,(concat record-name "-p")))))
-      `(defun ,predicate-function-name (instance) (and (instancep instance)
-						       (eq ,record-type (car instance)))))))
+	   (predicate-function-name (eval `(intern ,(concat record-name "-p"))))
+	   (predicate-function-comment (concat "Return t if INSTANCE's type is " (symbol-name record-type))))
+      `(defun ,predicate-function-name (instance) ,predicate-function-comment 
+	 (and (instancep instance)
+	      (eq ,record-type (car instance)))))))
 
 ;; ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
@@ -126,14 +225,17 @@ A record is constituated with a list of coupe symbol / type-checker"
   "Create a record type RECORD-TYPE.
 A record is constituated with a list of coupe symbol / type-checker"
   (let ((fields (make-symbol "fields"))
-	(current-field-name (make-symbol "current-field-name")))
-    `(progn (defrecord-private (quote ,record-type) ,comment ,@args) 
-	    (defrecord-define-predicate ,record-type)
-	    (let ((fields (cddr ,record-type)))
-	      (while fields 
-		(let ((current-field-name (caar fields)))
-		  (defrecord-define-field-functions ,record-type current-field-name)
-		  (pop fields)))))))
+	(current-field-name (make-symbol "current-field-name"))
+	(current-field-comment (make-symbol "current-field-comment")))
+    (let ((current-field-comment comment))
+      `(progn (defconst ,record-type (defrecord-private ,current-field-comment ,@args) ,current-field-comment) 
+	      (defrecord-define-predicate ,record-type)
+	      (defrecord-define-make-new ,record-type)
+	      (let ((fields (cddr ,record-type)))
+		(while fields 
+		  (let ((current-field-name (caar fields)))
+		    (defrecord-define-field-functions ,record-type current-field-name)
+		    (pop fields))))))))
 
 (defun recordp(record)
   "Return t if RECORD's type if record"
@@ -151,11 +253,6 @@ A record is constituated with a list of coupe symbol / type-checker"
 	  (pop to-check))
 	result)))
 
-(defun instancep(instance)
-  "Return t if INSTANCE is an instance of a record type"
-  (and (listp instance) 
-       (recordp (car instance))))
-
 (defun get-record-comment(record)
   "Return the comment attached to the record!"
   (and (recordp record)
@@ -165,7 +262,12 @@ A record is constituated with a list of coupe symbol / type-checker"
   "Create a new instance of the record"
   (if (recordp record-type)
       (let* ((instance (append (list record-type) (mapcar (lambda(head) nil) (cddr record-type)))))
-        (apply 'set-record-fields instance args))))
+        (apply 'set-record-field-values instance args))))
+
+(defun instancep(instance)
+  "Return t if INSTANCE is an instance of a record type"
+  (and (listp instance) 
+       (recordp (car instance))))
 
 (defun get-record-type(instance)
   "Return the record type of the instance INSTANCE"
@@ -184,7 +286,7 @@ A record is constituated with a list of coupe symbol / type-checker"
 			      field-name)))
 	found)))
 
-(defun set-record-field(instance field-name field-value)
+(defun set-record-field-value(instance field-name field-value)
   "Set a specific field value in INSTANCE"
   (if (and (instancep instance)
 	   (symbolp field-name))
@@ -209,14 +311,14 @@ A record is constituated with a list of coupe symbol / type-checker"
 	  (error "Invalid data: you need to pass an instance of a struct to this function!")
 	  (error "Invalid data: missing field"))))
 
-(defun set-record-fields(instance &rest args)
+(defun set-record-field-values(instance &rest args)
   "Set the value of several fields to the record INSTANCE"
   (let ((new-instance instance))
     (while args 
-      (setq new-instance (set-record-field new-instance (pop args) (pop args))))
+      (setq new-instance (set-record-field-value new-instance (pop args) (pop args))))
     new-instance))
 
-(defun get-record-field(instance field-name)
+(defun get-record-field-value(instance field-name)
   "Retrieve the value of a specific field"
   (if (and (instancep instance)
 	   (symbolp field-name))
@@ -232,44 +334,6 @@ A record is constituated with a list of coupe symbol / type-checker"
 			(pop fields)
 			(pop values)))
 	       field-value))))
-
-
-;; Code sample:
-;; --------------------------
-;;
-;; (defrecord test "Comment for the record test" 
-;;   :string 'stringp
-;;   :symbol 'symbolp
-;;   :int 'number-or-marker-p)
-;; 
-;; (recordp test)
-;; (get-record-comment test)
-;; (get-record-type (make-new-record test))
-;; (has-record-field test :string)
-;;
-;; (setq itest (make-new-record test))
-;; (setq itest (set-record-field itest :symbol 'sym))
-;; (get-record-field (set-record-fields itest :int  3 :string "test") :int)
-;;
-;;
-;;
-;; (defrecord test2 "This is a comment for test2" 
-;;   :string 'stringp
-;;   :symbol 'symbolp
-;;   :int 'number-or-marker-p)
-;;
-;; (setq itest2 (make-new-record test2))
-;; (set-test2-string itest2 "pouet")
-;; (get-test2-int itest2)
-;;
-;; (setq itest3 (make-new-record test2 :string "pouet" :int 50))
-;;
-;; (let ((field-name "test"))
-;;   (get-test2-string itest2)
-;;   (message field-name))
-;; (let ((field-name "test"))
-;;   (set-test2-string itest2 "ok")
-;;   (message field-name))
 
 
 (provide 'record-type)
