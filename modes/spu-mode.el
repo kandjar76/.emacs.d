@@ -1316,10 +1316,8 @@ If the register already exist, edit the comment instead."
     (define-key spu-mode-map [(control meta right)]       'spu-next-opcode)
     (define-key spu-mode-map [(control meta left)]        'spu-previous-opcode)
     (define-key spu-mode-map [(control c) ?a]             'spu-add-current-word-to-register-list)
-    (define-key spu-mode-map [(control c) ?s]             'spu-region-report)
     (define-key spu-mode-map [(control c) ?d]             'spu-delete-current-instruction)
     (define-key spu-mode-map [(control tab)]              'spu-swap-with-marked-line)
-    (define-key spu-mode-map [(control f7)]               'compile)
     spu-mode-map))
 
 (defconst spu-font-lock-keywords-3

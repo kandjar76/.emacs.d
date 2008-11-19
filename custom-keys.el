@@ -24,6 +24,7 @@
 (define-key global-map [(control ?z)]                   nil)
 
 (define-key global-map [(control +)]                    'redo)
+(define-key global-map [(control f7)]                   'compile)
 
 
 ;; Disable mouse-2 default behavior which is "kill" or "yank" something like that... 
@@ -83,7 +84,14 @@
 (define-key spu-mode-map [(control c) ?h] 'spu-highlight-registers-mode)
 (define-key spu-mode-map [(control c) ?j] 'spu-highlight-latency-mode)
 (define-key spu-mode-map [(control c) ?s] 'spu-stall-check)
+(define-key spu-mode-map [(control c) ?n] 'spu-nopify)
 (define-key spu-mode-map [(control c) ?l] 'spu-highlight-loop-mode)
 
 ;; Speedbar keys:
 (define-key global-map [(f5)] 'speedbar-get-focus)
+
+;; Rectangle keys:
+(define-key global-map [(control ?x) (?r) (?i)]	'increase-numbers-on-rectangle)
+(define-key global-map [(control ?x) (?r) (?s)] 'replace-regexp-rectangle)
+(define-key global-map [(control ?x) (?r) (?r)] 'replace-string-rectangle)
+

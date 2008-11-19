@@ -74,7 +74,6 @@ Side effect: copy the selected region inside the kill buffer"
   (local-set-key [(control ?x) (?a) (?c)] 'cpp-align-comment)
   (local-set-key [(control ?q)] 'cpp-comment-block)
 
-  (local-set-key [(control f7)] 'compile)
   (local-set-key [(f4)] 'next-error)
   (local-set-key [(shift f4)] 'previous-error)
   (local-set-key [?{] 'surround-with-curly-brackets)
