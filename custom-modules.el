@@ -206,6 +206,9 @@
 (require 'spu-highlight-stalls)
 (require 'spu-tooltip)
 
+;; Autoactivate the loading of the SPU registers:
+(add-hook 'spu-mode-hook 'spu-highlight-registers-mode)
+
 ;;------------------------------------------------------------------------------
 ;;
 ;; Module: ddf-mode

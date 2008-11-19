@@ -45,7 +45,7 @@
 
 
 (make-face  'spu-highlight-registers-2)
-(set-face-background 'spu-highlight-registers-2 (first-valid-color "moccasin" "coral1"))
+(set-face-background 'spu-highlight-registers-2 (first-valid-color "light sky  blue" "moccasin" "coral1"))
 (defvar spu-highlight-registers-2 'spu-highlight-registers-2
   "Font to highlight the second register of a SPU line.")
 
@@ -81,12 +81,6 @@ above and below the current line. -1 to narrow to the current page only")
 ;; Utility functions:
 ;;
 
-
-
-
-
-	    
-		  
 
 (defun spu-highlight-register(reg cnt start end)
   "Highlight the occurence of the register REG in the buffer"
@@ -126,6 +120,15 @@ above and below the current line. -1 to narrow to the current page only")
 	  (progn (spu-highlight-register reg count start end)
 		 (setq count (+ count 1))))))))
 
+(defun spu-highlight-registers-in-preprocessor-command(start end)
+  "Highlight the register after .reg / .cset / .cuse"
+  (let* ((line       (buffer-substring-no-properties (point-at-bol) (point-at-eol)))
+	 (clean-line (spu-clean-comments line)))
+    (if (string-match "^\\.reg\\>\\|\\.cset\\|\\.cuse" clean-line)
+	(let ((reglist (cdr (split-string (subst-char-in-string ?, 32 clean-line)))))
+	  (spu-highlight-register-list (remove-duplicates reglist :test 'string= :from-end t) start end))
+	(spu-highlight-register-clear-overlays))))
+
 (defun spu-highlight-registers()
   "Highlight the register of the current line."
   (save-restriction
@@ -142,7 +145,7 @@ above and below the current line. -1 to narrow to the current page only")
 		    end   (window-end))))
       (if (spu-detect-opcodes-line)
 	  (spu-highlight-register-list (remove-duplicates (spu-extract-registers) :test 'string= :from-end t) start end)
-	  (spu-highlight-register-clear-overlays)))))
+	  (spu-highlight-registers-in-preprocessor-command start end)))))
 
 
 (defsubst spu-highlight-registers-post-hook()
@@ -182,6 +185,5 @@ function `spu-highlight-registers-mode'."
   :set (lambda (symbol value) (spu-highlight-registers-mode (or value 0)))
   :initialize 'custom-initialize-default
   :type 'boolean)
-
 
 (provide 'spu-highlight-registers)
