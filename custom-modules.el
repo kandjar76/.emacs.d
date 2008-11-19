@@ -209,6 +209,7 @@
 
 ;; Autoactivate the loading of the SPU registers:
 (add-hook 'spu-mode-hook 'spu-highlight-registers-mode)
+(add-hook 'spu-mode-hook 'spu-highlight-latency-mode)
 
 ;;------------------------------------------------------------------------------
 ;;
@@ -254,6 +255,20 @@
 ;;------------------------------------------------------------------------------
 
 (require 'find-dired++)
+
+;;------------------------------------------------------------------------------
+;;
+;; Module: speedbar
+;;
+;;------------------------------------------------------------------------------
+
+(require 'speedbar)
+;; (setq speedbar-fetch-etags-parse-list
+;;       (append speedbar-fetch-etags-parse-list
+;; 	      '(("\\.spu\\'" .
+;; 		 "\\\\<([a-zA-Z0-9_]+\\>[ \t]:"))))
+(speedbar-add-supported-extension ".spu")
+(speedbar-add-supported-extension ".fx")
 
 ;;------------------------------------------------------------------------------
 ;;

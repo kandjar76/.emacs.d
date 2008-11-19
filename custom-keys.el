@@ -81,5 +81,9 @@
 
 ;; Spu keys:
 (define-key spu-mode-map [(control c) ?h] 'spu-highlight-registers-mode)
+(define-key spu-mode-map [(control c) ?j] 'spu-highlight-latency-mode)
 (define-key spu-mode-map [(control c) ?s] 'spu-stall-check)
 (define-key spu-mode-map [(control c) ?l] 'spu-highlight-loop-mode)
+
+;; Speedbar keys:
+(define-key global-map [(f5)] 'speedbar-get-focus)

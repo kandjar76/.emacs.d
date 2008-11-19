@@ -65,6 +65,11 @@
 (defvar spu-highlight-stalls-6c-font 'spu-highlight-stalls-6c-font
   "Font to highlight the register which are responsible for a stall of 6 cycles.")
 
+(make-face  'spu-highlight-latency-line-font)
+(set-face-background 'spu-highlight-latency-line-font (first-valid-color "#FFE0E0" "orange red" "red"))
+(defvar spu-highlight-stalls-end-line-font 'spu-highlight-latency-line-line-font
+  "Font to highlight the first line which won't stall with the current instruction.")
+
 
 ;;
 ;; Global variables:
@@ -254,7 +259,69 @@ Returns a list of opcode / stalling time"
 	      (message "No stalls found"))))))
 	  
 
+;;
+;; Minor mode to highlight the next available line...
+;;
+
+(defun spu-highlight-latency-clear-overlays()
+  "Remove the overlay off the latency line"
+  (let ((ovl-lists (overlay-lists))
+	(count 0))
+    (setq ovl-lists (list (car ovl-lists) (cdr ovl-lists)))
+    (while ovl-lists
+      (let ((ovls (pop ovl-lists)))
+	(while ovls
+	  (if (overlay-get (car ovls) 'spu-highlight-latency-line)
+	      (progn (setq count (+ 1 count))
+		     (delete-overlay (pop ovls)))
+	      (pop ovls)))))
+    count))
+
+(defun spu-highlight-latency-line()
+  (spu-highlight-latency-clear-overlays)
+  (save-excursion
+    (if (spu-detect-opcodes-line)
+	(let ((instr-latency (spu-get-opcode-latency (spu-extract-instruction))))
+	  (when (> instr-latency 1)
+	    (while (and (> instr-latency 0)
+			(spu-move-down))
+	      (setq instr-latency (1- instr-latency)))
+	    (when (= instr-latency 0)
+	      ;; Create the overlay
+	      (let ((ovl (make-overlay (point-at-bol) (1+ (point-at-eol)))))
+		(overlay-put ovl 'face 'spu-highlight-latency-line-font)
+		(overlay-put ovl 'spu-highlight-latency-line  t))))))))
+
+(defun spu-highlight-latency-post-hook()
+  "Post command"
+  (interactive)
+  (spu-highlight-latency-line))
+
+(define-minor-mode spu-highlight-latency-mode
+  "Highlight the line which won't stall after running the current instruction 
+ (assuming this will be the one causing the stall)."
+  :init-value nil
+  :global nil
+  :lighter " HiStall"
+  ;; Body of the function:
+  (make-local-variable 'post-command-hook)
+  (if (not spu-highlight-latency-mode)
+      (progn (remove-hook 'post-command-hook 'spu-highlight-latency-post-hook)
+	     (spu-highlight-latency-clear-overlays))
+      (add-hook 'post-command-hook 'spu-highlight-latency-post-hook))
+  (when (interactive-p)
+    (message "SPU Highlight Stall Line Mode is now %s."
+	     (or (and spu-highlight-latency-mode "Enabled") "Disbaled"))))
+
+(defcustom spu-highlight-latency-mode nil
+  "*Non-nil means SPU Highight Latency mode is enabled.
+In this mode, when the cursor is on some specific line, all registers used in
+this line are highlighted.
+Setting this variable directly does not change the mode; instead, use
+function `spu-highlight-latency-mode'."
+  :set (lambda (symbol value) (spu-highlight-latency-mode (or value 0)))
+  :initialize 'custom-initialize-default
+  :type 'boolean)
+
 
 (provide 'spu-highlight-stalls)
-
-(length '())

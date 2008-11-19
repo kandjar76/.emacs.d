@@ -7,6 +7,7 @@
          "~/.emacs.d/libs"
          "~/.emacs.d/modes"
          "~/.emacs.d/personal"
+	 "~/.emacs.d/speedbar"
         )
        load-path))
 
