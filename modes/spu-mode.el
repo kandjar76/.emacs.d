@@ -702,10 +702,10 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 			  (if even-column-1
 			      (goto-char (spu-column-to-pos even-column-1)))))))))
       
-      
 
-(defun spu-extract-registers()
-  "Extract the register of the current instruction
+
+(defun spu-extract-instruction()
+  "Extract the current instruction
 Returns a list of string.
 Note: this function assume that this is a line with opcodes"
   (let ((even (spu-find-even-opcode))
@@ -723,7 +723,15 @@ Note: this function assume that this is a line with opcodes"
     (setq wl    (split-string (subst-char-in-string ?, 32 instr)))
     (if (or (member (car wl) spu-even-opcodes)
 	    (member (car wl) spu-odd-opcodes))
-	(cdr wl))))
+	 wl)))
+      
+
+(defun spu-extract-registers()
+  "Extract the register of the current instruction
+Returns a list of string.
+Note: this function assume that this is a line with opcodes"
+  (let ((instr (spu-extract-instruction)))
+    (if instr (cdr instr))))
 
 
 
