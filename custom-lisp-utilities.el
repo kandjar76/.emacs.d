@@ -22,18 +22,17 @@
 			(setq end (point-at-eol))
 		  (progn
 			(next-line 1)
-			(setq end (point-at-bol)))))
-	(cons start end)))
-
+			(setq end (point-at-bol))))
+	)
+	(cons start end))
+)
 
 (defun alphanumericp (ch)
   "Returns t if the argument is an alphanumeric character (or underscore)."
-  (if ch
-       (or (and (>= ch ?a) (<= ch ?z))
-	   (and (>= ch ?A) (<= ch ?Z))
-	   (and (>= ch ?0) (<= ch ?9))
-	   (eq ch ?_))
-       nil))
+  (or (and (>= ch ?a) (<= ch ?z))
+	  (and (>= ch ?A) (<= ch ?Z))
+	  (and (>= ch ?0) (<= ch ?9))
+	  (eq ch ?_)))
 
 
 ;; Emacs function which doesn't exist in XEmacs
