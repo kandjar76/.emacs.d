@@ -1,13 +1,13 @@
 ;;; tcp-client.el -- Providing a network interface
 ;;
-;; Author: Cedric Lallain
+;; Author: Cedric Lallain <kandjar76@hotmail.com>
 ;; Version:  1.0
 ;; Keywords: tcp network connection client
 ;; Description: Provide a tcp client interface 
 ;; Tested with: GNU Emacs 21.x and GNU Emacs 22.x
-
+;;
 ;; This file is *NOT* part of GNU Emacs.
-
+;;
 ;;    This program is free software; you can redistribute it and/or modify
 ;;    it under the terms of the GNU General Public License as published by
 ;;    the Free Software Foundation; either version 2 of the License, or
@@ -21,13 +21,61 @@
 ;;    You should have received a copy of the GNU General Public License
 ;;    along with this program; if not, write to the Free Software
 ;;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-;;; Commentary:
-
-;; The purpose of this library is to provide a network interface to ease the creation of 
-;; network related script.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; The purpose of this library is to provide a network interface to ease the
+;; creation of network related script.
 ;; 
-;; This library is dependending on struct-type.el
+;; This library is dependending on record-type.el
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Here is an example of how to use it: 
+;;
+;;  (defun sample-error-report(buffer server port error)
+;;    (save-excursion
+;;      (set-buffer buffer)
+;;      (insert (format "[error] %s:%i -- %s\n" server port error))))
+;;  
+;;  (defun sample-connection-report(buffer server port)
+;;    (save-excursion
+;;      (set-buffer buffer)
+;;      (insert (format "[connect] %s:%i -- Connection established\n" server port))))
+;;  
+;;  (defun sample-abort-report(buffer server port)
+;;    (save-excursion
+;;      (set-buffer buffer)
+;;      (insert (format "[error] %s:%i -- Abort connection\n" server port))))
+;;  
+;;  (defun sample-sentinel-report(process event)
+;;    (save-excursion
+;;      (set-buffer (process-buffer process))
+;;      (insert (format "[event] Process: %s had the event -- %s" process event))))
+;;  
+;;  (defun sample-filter-report(process message)
+;;    (save-excursion
+;;      (set-buffer (process-buffer process))
+;;      (insert (format "[got] %s" message))))
+;;  
+;;  
+;;  (tcp-connect "*ok*" 
+;;  	     (make-new-tcp-connection :server "127.0.0.1" :port 1000)
+;;  	     (make-new-tcp-hooks 
+;;  			      :connection-failed-handler 'sample-error-report
+;;  			      :connection-established-handler 'sample-connection-report
+;;  			      :connection-abort-handler 'sample-abort-report))
+;;  
+;;  (tcp-connect "*test*" 
+;;  	     (make-new-tcp-connection :server "127.0.0.1" :port 2000)
+;;  	     (make-new-tcp-hooks 
+;;  			      :connection-failed-handler 'sample-error-report
+;;  			      :connection-established-handler 'sample-connection-report
+;;  			      :connection-abort-handler 'sample-abort-report
+;;  			      :sentinel-handler 'sample-sentinel-report
+;;  			      :filter-handler 'sample-filter-report))
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (require 'record-type)
@@ -45,8 +93,7 @@
 (defrecord tcp-connection
   "Handle a tcp connection"
   :server 'stringp
-  :port 'integerp
-  :keep-alive 'atom)
+  :port 'integerp)
 
 (defun tcp-connect (buffer-name connection hooks)
   "Try to established a connection on a specific server
@@ -110,9 +157,11 @@ you may want to set to intercept the connection data."
 
 
 (defun tcp-send(process data)
+  "Send DATA to the connection using the process PROCESS"
   (process-send-string process data))
 
 (defun tcp-kill(process)
+  "Kill the network connection, killing the process PROCESS"
   (delete-process process))
 
 ;(defun tcp-default-keep-alive()
@@ -122,46 +171,3 @@ you may want to set to intercept the connection data."
 (provide 'tcp-client)
 
 
-
-
-;;(defun tmp-error-report(buffer server port error)
-;;  (save-excursion
-;;    (set-buffer buffer)
-;;    (insert (format "[error] %s:%i -- %s\n" server port error))))
-;;
-;;(defun tmp-connection-report(buffer server port)
-;;  (save-excursion
-;;    (set-buffer buffer)
-;;    (insert (format "[connect] %s:%i -- Connection established\n" server port))))
-;;
-;;(defun tmp-abort-report(buffer server port)
-;;  (save-excursion
-;;    (set-buffer buffer)
-;;    (insert (format "[error] %s:%i -- Abort connection\n" server port))))
-;;
-;;(defun tmp-sentinel-report(process event)
-;;  (save-excursion
-;;    (set-buffer (process-buffer process))
-;;    (insert (format "[event] Process: %s had the event -- %s" process event))))
-;;
-;;(defun tmp-filter-report(process message)
-;;  (save-excursion
-;;    (set-buffer (process-buffer process))
-;;    (insert (format "[got] %s" message))))
-;;
-;;
-;;(tcp-connect "*ok*" 
-;;	     (make-new-record tcp-connection :server "150.0.2.157" :port 8530 :keep-alive t)
-;;	     (make-new-record tcp-hooks 
-;;			      :connection-failed-handler 'tmp-error-report
-;;			      :connection-established-handler 'tmp-connection-report
-;;			      :connection-abort-handler 'tmp-abort-report))
-;;
-;;(tcp-connect "*mtp*" 
-;;	     (make-new-record tcp-connection :server "zen.dtdns.net" :port 4000 :keep-alive t)
-;;	     (make-new-record tcp-hooks 
-;;			      :connection-failed-handler 'tmp-error-report
-;;			      :connection-established-handler 'tmp-connection-report
-;;			      :connection-abort-handler 'tmp-abort-report
-;;			      :sentinel-handler 'tmp-sentinel-report
-;;			      :filter-handler 'tmp-filter-report))
