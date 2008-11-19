@@ -48,6 +48,8 @@
       (c-electric-paren ARG)))
 
 
+(setq c-font-lock-keywords c-font-lock-keywords-3)
+(setq c++-font-lock-keywords c++-font-lock-keywords-3)
 
 
 ;; Perform my C/C++-specific customizations.
@@ -78,7 +80,12 @@
 
   (modify-syntax-entry ?_ "w"   c++-mode-syntax-table)
   (modify-syntax-entry ?_ "w"   c-mode-syntax-table)
+
 )
+
+;;(font-lock-add-keywords
+;; 'c-mode
+;; '(("\\<\\(FIXME\\):" 1 font-lock-warning-face t)))
 
 (add-hook 'c++-mode-hook 'my-c-setup)
 (add-hook 'c-mode-hook 'my-c-setup)
