@@ -1,14 +1,18 @@
-;; Add my elisp directory to the XEmacs default load path
+;; Add my elisp directory to the Emacs default load path
 (setq load-path
       (append
        (list 
          "~/.emacs.d"
-         "~/.emacs.d/external/xcscope"
          "~/.emacs.d/external"
+		 "~/.emacs.d/libs"
          "~/.emacs.d/modes"
         )
        load-path))
 
+
+;; Set the default font:
+(create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
+(set-face-font 'default "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
 
 
 (load-library "custom-core")                       ; must be loaded before -- setup the core emacs
@@ -24,7 +28,10 @@
 (load-library "my-awk")
 (load-library "my-asm")
 
-;;(desktop-load-default)
-;;(desktop-read)
 
+
+
+;; Automatically load the desktop:
+;;(desktop-read)
 ;;(message "Startup files loaded succesfully -- M^x desktop-read : to restore the previously opened files.")))
+

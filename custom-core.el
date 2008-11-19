@@ -71,7 +71,8 @@ Returns \"black\" if no valid color is found."
 
 ;; Automatically resize the minibuffer when the user is entering
 ;; input, so they can always see everything they type.
-(resize-minibuffer-mode)
+(if (boundp 'resize-minibuffer-mode)
+    (resize-minibuffer-mode))
 
 ;; Enable the research to loop around:
 (setq isearch-wrapped t)
@@ -79,8 +80,9 @@ Returns \"black\" if no valid color is found."
 ;; Try to flash the frame instead of beep at error/message;
 (setq visible-bell nil)
 
-;; Display line numbers in the modeline
+;; Display line/column numbers in the modeline
 (line-number-mode t)
+(column-number-mode t)
 
 ;; Set number of lines in a compilation window
 (setq compilation-window-height nil)
@@ -88,6 +90,13 @@ Returns \"black\" if no valid color is found."
 ;; unlock the eval-expression function, in case I feel the sudden urge to
 ;; evaluate a Lisp expression in the middle of C code.
 (put 'eval-expression 'disabled nil)
+
+;; unlock the set-goal-column command:
+(put 'set-goal-column 'disabled nil)
+
+;; unlock the downcase function -- useful for keyboard macros:
+(put 'downcase-region 'disabled nil)
+(put 'upcase-region 'disabled nil)
 
 ;; Enable only one command in Buffers menu (select that buffer)
 (if using-xemacs 
@@ -115,8 +124,9 @@ Returns \"black\" if no valid color is found."
 
 ;; Change the cursor used when the mouse is over a mode line
 (if using-xemacs 
+    (progn
 	(setq x-mode-pointer-shape "leftbutton")
-	(setq x-pointer-shape "leftbutton"))
+	(setq x-pointer-shape "leftbutton")))
 
 ;; Display matching parentheses
 (if using-xemacs
@@ -131,7 +141,7 @@ Returns \"black\" if no valid color is found."
 ;; Thanks to Daniel Pittman <daniel@rimspace.net> for this tip. 
 (if using-xemacs 
 	(setq font-lock-auto-fontify t)
-	(global-font-lock-mode t))
+	(global-font-lock-mode 1))
 
 ;; Avoid deactivation of region when buffer end or beginning is reached
 ;; XEmacs mailing list ; schrod@iti.informatik.th-darmstadt.de
@@ -157,10 +167,10 @@ Returns \"black\" if no valid color is found."
 ;;   In Pending Delete mode, typed text replaces the selected region.
 (if using-xemacs
 	(pending-delete-on)
-	(pending-delete-mode t))
+	(pending-delete-mode 1))
 
 ;; Toggle truncate lines:
-(toggle-truncate-lines)
+(setq default-truncate-lines t)
 
 ;; Enable shift+key to select a region:
 (pc-selection-mode)
@@ -172,18 +182,19 @@ Returns \"black\" if no valid color is found."
 ;;------------------------------------------------------------------------------
 
 ;; Add additional extensions and their appropriate modes
-;(setq auto-mode-alist
-;      (append '(("\\.C$"       . c++-mode)
-;		("\\.cc$"      . c++-mode)
-;		("\\.cpp$"     . c++-mode)
-;		("\\.hh$"      . c++-mode)
-;		("\\.hpp$"     . c++-mode)
-;		("\\.c$"       . c++-mode)
-;		("\\.h$"       . c++-mode)
-;		("\\.inl$"     . c++-mode)
-;		("\\.tex$"     . latex-mode)
-;		("\\.spu$"     . spu-mode)
-;		("\\.spu.s$"   . spu-mode)
-;		("\\.[fv]p$"   . c++-mode)
-;		("\\.xml$"     . xml-mode))
-;	      auto-mode-alist))
+(setq auto-mode-alist
+      (append '(("\\.C$"       . c++-mode)
+		("\\.cc$"      . c++-mode)
+		("\\.cpp$"     . c++-mode)
+		("\\.hh$"      . c++-mode)
+		("\\.hpp$"     . c++-mode)
+		("\\.c$"       . c++-mode)
+		("\\.h$"       . c++-mode)
+		("\\.inl$"     . c++-mode)
+		("\\.[fv]p$"   . c++-mode)
+		("\\.spu$"     . spu-mode)
+		("\\.spu.s$"   . spu-mode)
+		("\\.S$"       . spu-mode)
+		("\\.ddf"      . ddf-mode)
+		("\\.xml$"     . xml-mode))
+	      auto-mode-alist))

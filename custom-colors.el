@@ -5,17 +5,33 @@
 (set-face-background 'bm-face      (first-valid-color "lightcyan" "blue"))
 (set-face-foreground 'bm-face      (first-valid-color "black" "blue"))
 
+;; Highlight the current line:
+(set-face-background 'highlight-current-line-face (first-valid-color "#C0E0FF" "lightblue" "white"))
+
+;; I-Search:
+(set-face-foreground 'isearch (first-valid-color "red"))
+(set-face-background 'isearch (first-valid-color "lightgray" "grey" "white"))
+
+;; Color of the text selection:
+(set-face-background 'region (first-valid-color "#FFE0C0" "brightcyan"))
+
+;; Quick search colors:
+(set-face-background 'secondary-selection      (first-valid-color "white"))
+(set-face-foreground 'secondary-selection      (first-valid-color "red"))
+
+;; Show-matching parent / Highlight current-word:
+(set-face-background 'show-paren-match-face    (first-valid-color "#E0C0FF"))
+(set-face-foreground 'show-paren-match-face    (first-valid-color "red"))
+
+
+
 
 ;; ???
 (set-face-foreground 'font-lock-builtin-face   (first-valid-color "darkcyan" "violetred" "darkmagenta" "magenta"))
 
+(make-face-unbold 'font-lock-builtin-face)
 
-;;(make-face-bold 'font-lock-builtin-face)
 (set-face-foreground 'font-lock-warning-face   (first-valid-color "violetred" "darkmagenta" "magenta"))
-(set-face-background 'secondary-selection      (first-valid-color "white"))
-(set-face-foreground 'secondary-selection      (first-valid-color "red"))
-
-
 
 ;; Default color:
 (set-face-foreground 'default "black")
@@ -42,16 +58,6 @@
 
 ;; Color of the language keyword: const, if, else...
 ;(set-face-foreground 'font-lock-keyword-face (first-valid-color "blue"))
-
-;; Highlight the current line:
-;(set-face-background 'highlight-current-line-face (first-valid-color "#C0E0FF" "lightblue" "white"))
-
-;; I-Search"
-;(set-face-foreground 'isearch (first-valid-color "red"))
-;(set-face-background 'isearch (first-valid-color "gray" "grey" "white"))
-
-;; Color of the text selection:
-;(set-face-background 'zmacs-region (first-valid-color "#FFE0C0" "brightcyan"))
 
 ;; Color of the cursor:
 ;(set-face-background 'text-cursor (first-valid-color "red"))
