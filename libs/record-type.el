@@ -176,8 +176,8 @@ A record is constituated with a list of coupe symbol / type-checker"
 		     (pop fields))))
 	(if (not not-found)
 	    new-instance
-	    (error (format "The record %s doesn't contain the field %s or the associated value's type is invalid"
-			   (get-record-name (car instance))
+	    (error (format "This record doesn't contain the field %s or the associated value's type is invalid"
+			   ;(get-record-name (car instance))
 			   (symbol-name field-name)))))
       (if (instancep instance)
 	  (error "Invalid data: you need to pass an instance of a struct to this function!")

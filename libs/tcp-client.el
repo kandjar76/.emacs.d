@@ -8,29 +8,21 @@
 
 (require 'record-type)
 
-;; User customization variable:
-(setq tcp-client-activate-logs t)
-
-
 
 (defrecord tcp-hooks
   "TCP-Client Handlers"
   :connection-established-handler 'functionp ;; (<call> buffer server port)
   :connection-failed-handler      'functionp ;; (<call> buffer server port message)
   :connection-abort-handler       'functionp ;; (<call> buffer server port)
+  :sentinel-handler               'functionp ;; (<call> process event) 
+  :filter-handler                 'functionp ;; (<call> process received-data)
 )
 
 (defrecord tcp-connection
   "Handle a tcp connection"
   :server 'stringp
-  :port 'integerp)
-
-(defrecord tcp-state
-  "Contains state of the current tcp connection"
-  :process 'processp
-  :buffer  'bufferp
-  :server  'stringp
-  :port    'integerp)
+  :port 'integerp
+  :keep-alive 'atom)
 
 (defun tcp-connect (buffer-name connection hooks)
   "Try to established a connection on a specific server
@@ -56,50 +48,94 @@ you may want to set to intercept the connection data."
 		  (proc-name          (format "tcp-connection:%s:%i" server port))
 		  (abort-handler      (get-tcp-hooks-connection-abort-handler hooks))
 		  (error-handler      (get-tcp-hooks-connection-failed-handler hooks))
-		  (connection-handler (get-tcp-hooks-connection-established-handler hooks)))
+		  (connection-handler (get-tcp-hooks-connection-established-handler hooks))
+		  (sentinel-handler   (get-tcp-hooks-sentinel-handler hooks))
+		  (filter-handler     (get-tcp-hooks-filter-handler hooks)))
 	     (progn (display-buffer buffer)
 		    (sit-for 0) ;; force redisplay
 		    (if process
-			(message "TODO: a process already exist, we need to kill it before carry on"))
+			(progn (delete-process process)
+			       (setq process 0)))
 		    (condition-case data
 			(setq process (open-network-stream proc-name buffer server port))
 			(quit (and abort-handler
 				   (funcall abort-handler buffer server port)))
-			(file-error (if ( string= (cadr data) "connection failed")
-					(and error-handler
-					     (funcall error-handler buffer server port (caddr data)))
-					(signal 'file-error data)))
+			(file-error (cond ((string= (cadr data) "connection failed")
+					   (and error-handler
+						(funcall error-handler buffer server port (caddr data))))
+					  ((string= (cadr data) "make client process failed")
+					   (and error-handler
+						(funcall error-handler buffer server port (caddr data))))
+					  (t (signal (car data) (cdr data)))))
 			(error (if (and (stringp (cadr data))
 					(string-match "^Unknown host" (cadr data)))
 					(and error-handler
 					(funcall error-handler buffer server port (cadr data)))
 				 (apply 'error data))))
-		    ;;(set-process-sentinel process pouet)
-		    (and connection-handler
-			 (funcall connection-handler buffer server port))
-		    (set-process-buffer process buffer)
-		    )))))
+		    (if process 
+			(progn (if sentinel-handler
+				   (set-process-sentinel process sentinel-handler))
+			       (if filter-handler
+				   (set-process-filter process filter-handler))
+			       (if (get-tcp-connection-keep-alive connection)
+				   (set-network-process-option process :keepalive t))
+			       (set-process-buffer process buffer)
+			       (and connection-handler
+				    (funcall connection-handler buffer server port))
+			       )))))))
+
+
+(defun tcp-send(process data)
+  (process-send-string process data))
+
+(defun tcp-kill(process)
+  (delete-process process))
+
+;(defun tcp-default-keep-alive()
+;  (featurep 'make-network-process '(:keepalive t)))
 
 
 
-(defun tmp-error-report(buffer server port error)
-  (save-excursion
-    (set-buffer buffer)
-    (insert (format "[error] %s:%i -- %s\n" server port error))))
 
-(defun tmp-connection-report(buffer server port)
-  (save-excursion
-    (set-buffer buffer)
-    (insert (format "[connect] %s:%i -- Connection established\n" server port))))
 
-(defun tmp-abort-report(buffer server port)
-  (save-excursion
-    (set-buffer buffer)
-    (insert (format "[error] %s:%i -- Abort connection\n" server port))))
-
-(tcp-connect "*ok*" 
-	     (make-new-record tcp-connection :server "150.0.2.157" :port 8530)
-	     (make-new-record tcp-hooks 
-			      :connection-failed-handler 'tmp-error-report
-			      :connection-established-handler 'tmp-connection-report
-			      :connection-abort-handler 'tmp-abort-report))
+;;(defun tmp-error-report(buffer server port error)
+;;  (save-excursion
+;;    (set-buffer buffer)
+;;    (insert (format "[error] %s:%i -- %s\n" server port error))))
+;;
+;;(defun tmp-connection-report(buffer server port)
+;;  (save-excursion
+;;    (set-buffer buffer)
+;;    (insert (format "[connect] %s:%i -- Connection established\n" server port))))
+;;
+;;(defun tmp-abort-report(buffer server port)
+;;  (save-excursion
+;;    (set-buffer buffer)
+;;    (insert (format "[error] %s:%i -- Abort connection\n" server port))))
+;;
+;;(defun tmp-sentinel-report(process event)
+;;  (save-excursion
+;;    (set-buffer (process-buffer process))
+;;    (insert (format "[event] Process: %s had the event -- %s" process event))))
+;;
+;;(defun tmp-filter-report(process message)
+;;  (save-excursion
+;;    (set-buffer (process-buffer process))
+;;    (insert (format "[got] %s" message))))
+;;
+;;
+;;(tcp-connect "*ok*" 
+;;	     (make-new-record tcp-connection :server "150.0.2.157" :port 8530 :keep-alive t)
+;;	     (make-new-record tcp-hooks 
+;;			      :connection-failed-handler 'tmp-error-report
+;;			      :connection-established-handler 'tmp-connection-report
+;;			      :connection-abort-handler 'tmp-abort-report))
+;;
+;;(tcp-connect "*mtp*" 
+;;	     (make-new-record tcp-connection :server "zen.dtdns.net" :port 4000 :keep-alive t)
+;;	     (make-new-record tcp-hooks 
+;;			      :connection-failed-handler 'tmp-error-report
+;;			      :connection-established-handler 'tmp-connection-report
+;;			      :connection-abort-handler 'tmp-abort-report
+;;			      :sentinel-handler 'tmp-sentinel-report
+;;			      :filter-handler 'tmp-filter-report))
