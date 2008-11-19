@@ -25,6 +25,13 @@
 			(setq end (point-at-bol)))))
 	(cons start end)))
 
+(defun clear-spaces(string)
+  "Clear the spaces and tabs at the beginning and at the end of STRING."
+  (let ((begpos (string-match "[^ \t]" string))
+	(endpos (string-match "[ \t]*$" string)))
+    (or (and begpos
+	     (substring string begpos endpos))
+	"")))
 
 (defun alphanumericp (ch)
   "Returns t if the argument is an alphanumeric character (or underscore)."
