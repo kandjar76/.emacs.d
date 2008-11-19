@@ -76,3 +76,6 @@
 (define-key dired-mode-map [return] 'dired-find-alternate-file)
 (define-key dired-mode-map [(control return)] 'dired-find-file)
 (define-key dired-mode-map [backspace] 'dired-up-directory)
+(define-key dired-mode-map [(control ?=)] 'diredp-ediff)
+(define-key dired-mode-map [?=] 'dired-ediff-marked-files)
+
