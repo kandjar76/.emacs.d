@@ -208,7 +208,9 @@
   (setq major-mode 'mtpchat-mode)
   (setq mode-line-process '(":%s"))
   (use-local-map mtpchat-mode-map)
-  (set (make-local-variable 'font-lock-defaults) '(mtpchat-font-lock-keywords nil t)))
+  (set (make-local-variable 'font-lock-defaults) '(mtpchat-font-lock-keywords nil t))
+  (set (make-local-variable 'truncate-lines) nil))
+
 
 
 
