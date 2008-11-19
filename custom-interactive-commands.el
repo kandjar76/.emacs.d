@@ -25,13 +25,13 @@
 
 (defun electric-split-window-horizontally(&optional arg)
   "Split current window into two window side by side, move the cursor to the new created window"
-  (interactive)
+  (interactive "P")
   (split-window-horizontally arg)
   (other-window 1))
 
 (defun electric-split-window-vertically(&optional arg)
   "Split current window into two window side by side, move the cursor to the new created window"
-  (interactive)
+  (interactive "P")
   (split-window-vertically arg)
   (other-window 1))
 
@@ -111,7 +111,7 @@
 
 (defun kill-selected-region (&optional arg)
   "Equivalent to kill-region, except, it won't kill it if the selected region isn't active"
-  (interactive)
+  (interactive "*")
   (if (is-region-active)
       (kill-region (mark) (point))))
 
@@ -138,7 +138,7 @@ the code can be changed"
 
 (defun increment-numbers-multilines()
   "Increment the value on each lines"
-  (interactive)
+  (interactive "*")
   (if (is-region-active)
       (save-excursion
 	(save-match-data
@@ -178,7 +178,7 @@ the code can be changed"
 
 (defun increment-numbers-region(&optional arg)
   "Increment each number in the selected region by 1 or by the value of the prefix argument"
-  (interactive "p")
+  (interactive "*p")
   (if (is-region-active)
       (save-excursion
 	(save-match-data
@@ -332,3 +332,19 @@ If only one is marked, run the merge between the marked files and the one below 
 		       (re-search-forward (dired-marker-regexp) nil t)
 		       (setq second (dired-get-file-for-visit))))
 	    (emerge-files-internal first second))))))
+
+(defun sum-column (start end)
+   "Adds numbers in rectangle defined by START to END."
+   (interactive "r")
+   (save-excursion
+     (kill-rectangle start end)
+     (exchange-point-and-mark)
+     (yank-rectangle)
+     (set-buffer (get-buffer-create "*calc-sum*"))
+     (erase-buffer)
+     (yank-rectangle)
+     (exchange-point-and-mark-nomark)
+     (let ((sum 0))
+       (while (re-search-forward "[0-9]*\\.?[0-9]+" nil t)
+	 (setq sum (+ sum (string-to-number (match-string 0)))))
+       (message "Sum: %f" sum))))
