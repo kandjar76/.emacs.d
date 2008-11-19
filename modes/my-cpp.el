@@ -1,11 +1,5 @@
 (require 'cc-mode)
 
-;; Provide context-sensitive tab completion of strings.  If the last
-;; character typed was a valid identifier character (a-zA-Z0-9_), then
-;; expand.  Otherwise, indent as usual.
-(defadvice self-insert-command (after store-last-char nil activate compile)
-  "Stores the last character typed inside self-insert-command."
-  (put 'self-insert-command 'last-char-inserted last-command-char))
 
 (defun my-c-smart-tab (&optional ARG)
   "Intelligently decides whether to indent or do word-completion."
@@ -13,21 +7,10 @@
   ;; Special case: a region has been selected -- run the alignment on the selected region
   (if (is-region-active)
       (c-indent-line-or-region)
-      ;; hack!  ANY command that fails with an error will cause last-command to be t.
-      ;; Is there a better way to check whether dabbrev-expand returned an error?
-      (if (or (and (or (eq last-command this-command) (eq last-command t))
-		   (get this-command 'dabbrev-continue))
-	      (and (eq last-command 'self-insert-command)
-		   (alphanumericp (get 'self-insert-command 'last-char-inserted))))
-	  (progn
-	    (put this-command 'dabbrev-continue t)
-	    (dabbrev-expand nil))
-	  (progn
-	    (put this-command 'dabbrev-continue nil)
-	    (c-indent-command ARG))))
-)
-
-
+      (if (looking-at "\\>")
+          (dabbrev-expand nil)
+	  (c-indent-command ARG) ;(indent-for-tab-command)
+	  )))
 
 (defun surround-with-curly-brackets(&optional ARG)
   "Add curly brackets around the selected block"
@@ -70,10 +53,8 @@
 ;; Perform my C/C++-specific customizations.
 (defun my-c-setup ()
   (c-set-style "gnu")
-  (ad-activate 'self-insert-command)
 
   (local-set-key [(tab)] 'my-c-smart-tab)
-  (local-set-key [(delete)] 'special-delete-for-region)
   (local-set-key [(control ?c) (?m)] 'manual-entry)
   (local-set-key [(control ?x) (?a) (?a)] 'cpp-align-variable-assignment) 
   (local-set-key [(control ?x) (?a) (?f)] 'cpp-align-function-bracket)
