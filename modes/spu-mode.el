@@ -934,8 +934,9 @@ even if it's used in the commented section of the line."
   (let ((even (spu-find-even-opcode))
 	(odd  (spu-find-odd-opcode))
 	(col  (current-column)))
-    (cond ((and even (< col even)) (move-to-column even))
-	  ((and odd  (< col odd))  (move-to-column odd))
+    (cond ((and even (<= col even)) (move-to-column even))
+	  ((and odd  (<= col odd))  (move-to-column odd))
+	  ((eobp) nil)
 	  (t (end-of-line)
 	     (forward-char) ; the function will stop if we reach the end of the buffer
 	     (spu-next-opcode)))))
@@ -1186,9 +1187,6 @@ which is on the marked line."
 	    (spu-swap-instructions bol1 bol2 column)))))
 
 
-
-
-
 (defun spu-valid-opcode-p (opcode)
   "Returns t if opcode is a valid SPU opcode; returns nil otherwise."
   (and (or (member opcode spu-even-opcodes) (member opcode spu-odd-opcodes)) t))
@@ -1285,6 +1283,33 @@ If the register already exist, edit the comment instead."
       (message "No Selected Region.")))
 
 
+(defun spu-generate-shuffle-mask(shufflemask)
+  "Generate a shuffle mask based on the string SHUFFLEMASK"
+  (interactive "sEnter shuffle string: ")
+  (let ((shufflelist (string-to-list shufflemask))
+	(outputlist nil)
+	(outputstr "")
+	mask-list-hi
+	mask-list-lo)
+  (cond ((= (length shufflemask) 4)
+	 (setq mask-list-hi '(( 0  1  2  3) ( 4  5  6  7) ( 8  9 10 11) (12 13 14 15))
+	       mask-list-lo '((16 17 18 19) (20 21 22 23) (24 25 26 27) (28 29 30 31))))
+ 	((= (length shufflemask) 8)
+	 (setq mask-list-hi '(( 0  1) ( 2  3) ( 4  5) ( 6  7) ( 8  9) (10 11) (12 13) (14 15))
+	       mask-list-lo '((16 17) (18 19) (20 21) (22 23) (24 25) (26 27) (28 29) (30 31))))
+ 	((= (length shufflemask) 16)
+	 (setq mask-list-hi '(( 0) ( 1) ( 2) ( 3) ( 4) ( 5) ( 6) ( 7) ( 8) ( 9) (10) (11) (12) (13) (14) (15))
+	       mask-list-lo '((16) (17) (18) (19) (20) (21) (22) (23) (24) (25) (26) (27) (28) (29) (30) (31))))
+	(t (error "The size of the string must be either 4, 8 or 16"))
+	)
+  (while shufflelist
+    (if (= (logand (car shufflelist) 32) 32)
+	(setq outputlist (append outputlist (nth (- (pop shufflelist) 97) mask-list-lo)))
+	(setq outputlist (append outputlist (nth (- (pop shufflelist) 65) mask-list-hi)))))
+  (while outputlist
+    (setq outputstr (concat outputstr (format "0x%02X, " (pop outputlist)))))
+  (insert outputstr)
+  ))
 
 
 ;;
