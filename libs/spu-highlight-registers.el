@@ -108,17 +108,12 @@ above and below the current line. -1 to narrow to the current page only")
 	    
 		  
 
-(defun spu-bounded-search(reg end)
-  "Do a search-forward-regexp. But returns nil if the string is after the END point."
-  (and (search-forward-regexp reg nil t)
-       (<= (match-beginning 0) end)))
-
 (defun spu-highlight-register(reg cnt start end)
   "Highlight the occurence of the register REG in the buffer"
   (save-excursion
     (save-match-data
       (goto-char start)
-      (while (spu-bounded-search reg end)
+      (while (search-forward-regexp reg end t)
 	(let ((ovl (make-overlay (match-beginning 0)
 				 (match-end 0)))
 	      (def (and spu-highlight-registers-with-definition-lookup
@@ -175,7 +170,8 @@ above and below the current line. -1 to narrow to the current page only")
 
 (defsubst spu-highlight-registers-post-hook()
   "Post command"
-  (spu-highlight-registers))
+  (let ((case-fold-search nil))
+    (spu-highlight-registers)))
 
 
 ;;
@@ -189,7 +185,7 @@ above and below the current line. -1 to narrow to the current page only")
   :global nil
   :lighter " HiRegs"
   ;; Body of the function:
-  (make-local-hook 'post-command-hook)
+  (make-local-variable 'post-command-hook)
   (if (not spu-highlight-registers-mode)
       (progn (remove-hook 'post-command-hook 'spu-highlight-registers-post-hook)
 	     (spu-highlight-register-clear-overlays)
