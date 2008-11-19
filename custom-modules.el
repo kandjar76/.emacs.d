@@ -91,7 +91,7 @@
   (highlight-regexp-clear)
   (pending-delete-mode 1)) ;; For unknown reason, pending-mode is corrupted by this function... linked to the remove-hook call
 
-(setq quick-search-current-text "")
+(setq quick-search-current-text nil)
 (defun quick-search-text()
   "Extract the text to do the quick search: it's either the current if nothing is selected of the selected text"
   (if mark-active
@@ -118,16 +118,18 @@
 (defun repeat-quick-search-forward()
   "Repeat a forward research using the stored current word (cf: search-current-word-forward / search-current-word-backword)"
   (interactive)
-  (search-forward quick-search-current-text)
-  (highlight-selected-word quick-search-current-text 0)
-  (add-hook 'pre-command-hook 'dehighlight-current-word))
+  (when quick-search-current-text
+    (search-forward quick-search-current-text)
+    (highlight-selected-word quick-search-current-text 0)
+    (add-hook 'pre-command-hook 'dehighlight-current-word)))
 
 (defun repeat-quick-search-backward()
   "Repeat a forward research using the stored current word (cf: search-current-word-forward / search-current-word-backword)"
   (interactive)
-  (search-backward quick-search-current-text)
-  (highlight-selected-word quick-search-current-text 0)
-  (add-hook 'pre-command-hook 'dehighlight-current-word))
+  (when quick-search-current-text
+    (search-backward quick-search-current-text)
+    (highlight-selected-word quick-search-current-text 0)
+    (add-hook 'pre-command-hook 'dehighlight-current-word)))
 
 
 ;;
@@ -192,7 +194,6 @@
 ;;------------------------------------------------------------------------------
 
 (require 'xcscope+)
-;(cscope-set-initial-directory "~/.cscope")
 
 
 ;;------------------------------------------------------------------------------
@@ -213,28 +214,12 @@
 
 ;;------------------------------------------------------------------------------
 ;;
-;; Module: ddf-mode
+;; Module: extra modes
 ;;
 ;;------------------------------------------------------------------------------
 
 (require 'ddf-mode)
-
-
-;;------------------------------------------------------------------------------
-;;
-;; Module: auto-save
-;;
-;;------------------------------------------------------------------------------
-
-;; Load the auto-save.el package, which lets you put all of your autosave
-;; files in one place, instead of scattering them around the file system.
-
-(if using-xemacs
-    (progn (require 'auto-save)
-	   (setq auto-save-directory (expand-file-name "~/.xemacs/autosaves/")
-		 auto-save-directory-fallback auto-save-directory
-		 auto-save-hash-p nil
-		 auto-save-interval 2000)))
+(require 'idf-mode)
 
 
 ;;------------------------------------------------------------------------------
@@ -255,29 +240,4 @@
 ;;------------------------------------------------------------------------------
 
 (require 'find-dired++)
-
-;;------------------------------------------------------------------------------
-;;
-;; Module: speedbar
-;;
-;;------------------------------------------------------------------------------
-
-(require 'speedbar)
-;; (setq speedbar-fetch-etags-parse-list
-;;       (append speedbar-fetch-etags-parse-list
-;; 	      '(("\\.spu\\'" .
-;; 		 "\\\\<([a-zA-Z0-9_]+\\>[ \t]:"))))
-(speedbar-add-supported-extension ".spu")
-(speedbar-add-supported-extension ".fx")
-
-;;------------------------------------------------------------------------------
-;;
-;; Module: suggbind
-;;
-;;------------------------------------------------------------------------------
-
-;; Turn off builtin pre-command hints, and enable a much-improved version.
-(setq suggest-key-bindings nil)
-(load "suggbind")
-
 
