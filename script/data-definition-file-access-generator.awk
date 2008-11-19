@@ -318,6 +318,16 @@ function analyze_attributs()
 		return
 
 	_attributs = substr($0, _attrb_pos+1)
+
+	while ( _attributs ~ /^.*[^\]]\]/ )
+	{
+		_attrb_pos = index(_attributs, ":")
+		if ( !_attrb_pos )
+			return
+
+		_attributs = substr(_attributs, _attrb_pos+1)
+	}
+
 	gsub(/:.*$/,"" ,$0)
 
 	_attcount = split(_attributs, _attrbs, ",")
