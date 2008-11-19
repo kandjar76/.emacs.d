@@ -469,11 +469,13 @@ matches any of the individual opcodes."
     spu-syntax-table)
   "Spu syntax mode definition -- word and comments")
 
-
 ;; Spu-mode entry function:
 (defun spu-mode ()
   "Major mode for editing SPU assembly code."
   (interactive)
+  (make-local-variable 'comment-end-skip)
+  (setq comment-end-skip "\\$")
+  ;;(setq comment-end-skip "[ \t]*\\(\\s>\\|\\*+/\\)")
   (kill-all-local-variables)
   (set-syntax-table spu-syntax-table)
   (use-local-map spu-mode-map)
