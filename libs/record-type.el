@@ -23,7 +23,7 @@
 ;;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
+;; 
 ;; Definition of a new emacs type: record.
 ;; A record is a set of named fields with their associated type. 
 ;; 
@@ -211,7 +211,7 @@ A record is constituated with a list of coupe symbol / type-checker"
 	   (predicate-function-comment (concat "Return t if INSTANCE's type is " (symbol-name record-type))))
       `(defun ,predicate-function-name (instance) ,predicate-function-comment 
 	 (and (instancep instance)
-	      (eq ,record-type (car instance)))))))
+						       (eq ,record-type (car instance)))))))
 
 ;; ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
@@ -229,12 +229,12 @@ A record is constituated with a list of coupe symbol / type-checker"
 	(current-field-comment (make-symbol "current-field-comment")))
     (let ((current-field-comment comment))
       `(progn (defconst ,record-type (defrecord-private ,current-field-comment ,@args) ,current-field-comment) 
-	      (defrecord-define-predicate ,record-type)
+	    (defrecord-define-predicate ,record-type)
 	      (defrecord-define-make-new ,record-type)
-	      (let ((fields (cddr ,record-type)))
-		(while fields 
-		  (let ((current-field-name (caar fields)))
-		    (defrecord-define-field-functions ,record-type current-field-name)
+	    (let ((fields (cddr ,record-type)))
+	      (while fields 
+		(let ((current-field-name (caar fields)))
+		  (defrecord-define-field-functions ,record-type current-field-name)
 		    (pop fields))))))))
 
 (defun recordp(record)

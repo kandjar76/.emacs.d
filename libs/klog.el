@@ -18,18 +18,18 @@
 ;;  [errs] `- a std error
 ;;  [crit] `- a major issue
 ;;  [info] `- entering a block
-;;  [info] |   `- log within this block
-;;  [info] |   `- second log within the same block
+;;  [info] | `- log within this block
+;;  [info] | `- second log within the same block
 ;;  [errs] `- a std error
 ;;  [crit] `- a major issue
 ;;  [info] `- entering a block
-;;  [info] |   `- log within this block
-;;  [info] |   `- second log within the same block
-;;  [info] |   `- second log within the same block
-;;  [info] |   |   `- second log within the same block
-;;  [info] |   |   `- second log within the same block
-;;  [info] |   |   `- second log within the same block
-;;  [info] |   `- second log within the same block
+;;  [info] | `- log within this block
+;;  [info] | `- second log within the same block
+;;  [info] | `- second log within the same block
+;;  [info] | | `- second log within the same block
+;;  [info] | | `- second log within the same block
+;;  [info] | | `- second log within the same block
+;;  [info] | `- second log within the same block
 ;;  [todo] `- A todo item
 ;;  [note] `- Just a comment
 

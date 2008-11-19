@@ -46,43 +46,43 @@ The command run (after changing into DIR) is
 except that the variable `find-ls-option' specifies what to use
 as the final argument."
   (interactive (list (read-file-name "Run find in directory: " nil "" t)
-             (read-string "Run find (with args): " find-args
-                  '(find-args-history . 1))))
+		     (read-string "Run find (with args): " find-args
+				  '(find-args-history . 1))))
   (let ((dired-buffers dired-buffers)
-    (full-path (file-name-as-directory (expand-file-name dir))))
+	(full-path (file-name-as-directory (expand-file-name dir))))
     ;; Expand DIR ("" means default-directory), and make sure it has a
     ;; trailing slash.
     (setq dir (abbreviate-file-name full-path))
     ;; Check that it's really a directory.
     (or (file-directory-p dir)
-    (error "find-dired needs a directory: %s" dir))
+	(error "find-dired needs a directory: %s" dir))
     (switch-to-buffer (get-buffer-create "*Find*"))
 
     ;; See if there's still a `find' running, and offer to kill
     ;; it first, if it is.
     (let ((find (get-buffer-process (current-buffer))))
       (when find
-    (if (or (not (eq (process-status find) 'run))
-        (yes-or-no-p "A `find' process is running; kill it? "))
-        (condition-case nil
-        (progn
-          (interrupt-process find)
-          (sit-for 1)
-          (delete-process find))
-          (error nil))
-      (error "Cannot have two processes in `%s' at once" (buffer-name)))))
+	(if (or (not (eq (process-status find) 'run))
+		(yes-or-no-p "A `find' process is running; kill it? "))
+	    (condition-case nil
+		(progn
+		  (interrupt-process find)
+		  (sit-for 1)
+		  (delete-process find))
+	      (error nil))
+	  (error "Cannot have two processes in `%s' at once" (buffer-name)))))
       
     (widen)
     (kill-all-local-variables)
     (setq buffer-read-only nil)
     (erase-buffer)
     (setq default-directory full-path
-      find-args args        ; save for next interactive call
-      args (concat find-dired-find-program " . "
-               (if (string= args "")
-               ""
-             (concat "\\( " args " \\) "))
-               (car find-ls-option)))
+	  find-args args		; save for next interactive call
+	  args (concat find-dired-find-program " . "
+		       (if (string= args "")
+			   ""
+			 (concat "\\( " args " \\) "))
+		       (car find-ls-option)))
     ;; The next statement will bomb in classic dired (no optional arg allowed)
     (dired-mode full-path (cdr find-ls-option))
     ;; This really should rerun the find command, but I don't
@@ -91,13 +91,13 @@ as the final argument."
     (define-key (current-local-map) "g" 'undefined)
     ;; Set subdir-alist so that Tree Dired will work:
     (if (fboundp 'dired-simple-subdir-alist)
-    ;; will work even with nested dired format (dired-nstd.el,v 1.15
-    ;; and later)
-    (dired-simple-subdir-alist)
+	;; will work even with nested dired format (dired-nstd.el,v 1.15
+	;; and later)
+	(dired-simple-subdir-alist)
       ;; else we have an ancient tree dired (or classic dired, where
       ;; this does no harm) 
       (set (make-local-variable 'dired-subdir-alist)
-       (list (cons default-directory (point-min-marker)))))
+	   (list (cons default-directory (point-min-marker)))))
     (setq buffer-read-only nil)
     ;; Subdir headlerline must come first because the first marker in
     ;; subdir-alist points there.

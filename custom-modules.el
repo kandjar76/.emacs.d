@@ -162,12 +162,12 @@
 (require 'iswitchb)
 (iswitchb-default-keybindings)
 (add-hook 'iswitchb-define-mode-map-hook
-	  '(lambda ()
-	     (define-key iswitchb-mode-map " " 'iswitchb-next-match)
-	     (define-key iswitchb-mode-map [del] 'iswitchb-prev-match)
-	     (define-key iswitchb-mode-map [bs] 'iswitchb-prev-match)
-	     (define-key iswitchb-mode-map [right] 'iswitchb-next-match)
-	     (define-key iswitchb-mode-map [left] 'iswitchb-prev-match)))
+	    '(lambda ()
+	       (define-key iswitchb-mode-map " " 'iswitchb-next-match)
+	       (define-key iswitchb-mode-map [del] 'iswitchb-prev-match)
+	       (define-key iswitchb-mode-map [bs] 'iswitchb-prev-match)
+	       (define-key iswitchb-mode-map [right] 'iswitchb-next-match)
+	       (define-key iswitchb-mode-map [left] 'iswitchb-prev-match)))
 (icomplete-mode 1)
 
 (defadvice iswitchb-visit-buffer (after iswitchb-visit-buffer(buffer))
