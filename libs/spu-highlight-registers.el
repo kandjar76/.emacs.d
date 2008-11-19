@@ -39,24 +39,24 @@
 ;;
 
 (make-face  'spu-highlight-registers-1)
-(set-face-background 'spu-highlight-registers-1 (first-valid-color "darkslategray2" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-1 (first-valid-color "palegreen1" "chartreuse1"))
 (defvar spu-highlight-registers-1 'spu-highlight-registers-1
   "Font to highlight the first register of a SPU line.")
 
 
 (make-face  'spu-highlight-registers-2)
-(set-face-background 'spu-highlight-registers-2 (first-valid-color "palegreen1" "chartreuse1"))
+(set-face-background 'spu-highlight-registers-2 (first-valid-color "moccasin" "coral1"))
 (defvar spu-highlight-registers-2 'spu-highlight-registers-2
   "Font to highlight the second register of a SPU line.")
 
 
 (make-face  'spu-highlight-registers-3)
-(set-face-background 'spu-highlight-registers-3 (first-valid-color "moccasin" "coral1"))
+(set-face-background 'spu-highlight-registers-3 (first-valid-color "plum1" "rosybrown1" "misty rose" "plum1" "orchid1"))
 (defvar spu-highlight-registers-3 'spu-highlight-registers-3
   "Font to highlight the third register of a SPU line.")
 
 (make-face  'spu-highlight-registers-4)
-(set-face-background 'spu-highlight-registers-4 (first-valid-color "plum1" "rosybrown1" "misty rose" "plum1" "orchid1"))
+(set-face-background 'spu-highlight-registers-4 (first-valid-color "darkslategray2" "deepskyblue1"))
 (defvar spu-highlight-registers-4 'spu-highlight-registers-3
   "Font to highlight the fourth register of a SPU line.")
 
@@ -70,7 +70,7 @@
 	    'spu-highlight-registers-3
 	    'spu-highlight-registers-4))
 
-(defvar spu-highlight-registers-with-definition-lookup t
+(defvar spu-highlight-registers-with-definition-lookup nil
   "t means: the highlighting will also search for the register definition")
 
 (defvar spu-highlight-registers-line-range -1
@@ -108,13 +108,17 @@ above and below the current line. -1 to narrow to the current page only")
 	    
 		  
 
+(defun spu-bounded-search(reg end)
+  "Do a search-forward-regexp. But returns nil if the string is after the END point."
+  (and (search-forward-regexp reg nil t)
+       (<= (match-beginning 0) end)))
 
-(defun spu-highlight-register(reg cnt)
+(defun spu-highlight-register(reg cnt start end)
   "Highlight the occurence of the register REG in the buffer"
   (save-excursion
     (save-match-data
-      (goto-char (point-min))
-      (while (search-forward-regexp reg nil t)
+      (goto-char start)
+      (while (spu-bounded-search reg end)
 	(let ((ovl (make-overlay (match-beginning 0)
 				 (match-end 0)))
 	      (def (and spu-highlight-registers-with-definition-lookup
@@ -123,8 +127,7 @@ above and below the current line. -1 to narrow to the current page only")
 	  (overlay-put ovl 'face (nth cnt spu-highlight-registers-font-list))
 	  (overlay-put ovl 'spu-highlight-register  t)
 	  ;;(overlay-put highlight-current-line-overlay 'priority spu-highlight-registers-overlay-priority)
-	  (if def (overlay-put ovl 'help-echo def))
-	  )))))
+	  (if def (overlay-put ovl 'help-echo def)))))))
 
 (defun spu-highlight-register-clear-overlays()
   "Remove all highlighting on registers"
@@ -140,7 +143,7 @@ above and below the current line. -1 to narrow to the current page only")
 	      (pop ovls)))))
     count))
 
-(defun spu-highlight-register-list(reglist)
+(defun spu-highlight-register-list(reglist start end)
   "Highlight the register from the list"
   (let ((count 0))
     (spu-highlight-register-clear-overlays)
@@ -148,25 +151,26 @@ above and below the current line. -1 to narrow to the current page only")
     (while reglist
       (let ((reg (pop reglist)))
       (if (string-match "\\<[$A-Za-z_][A-Za-z_0-9]*\\>" reg)
-	  (progn (spu-highlight-register reg count)
+	  (progn (spu-highlight-register reg count start end)
 		 (setq count (+ count 1))))))))
 
 (defun spu-highlight-registers()
   "Highlight the register of the current line."
   (save-restriction
-    (if spu-highlight-registers-line-range
-	(if (> spu-highlight-registers-line-range 0 )
-	    (save-excursion
-	      (let (start end)
+    (let ((start (point-min))
+	  (end (point-max)))
+      (if spu-highlight-registers-line-range
+	  (if (> spu-highlight-registers-line-range 0 )
+	      (save-excursion
 		(forward-line (- spu-highlight-registers-line-range))
 		(setq start (point-at-bol))
 		(forward-line (* spu-highlight-registers-line-range 2))
-		(setq end (point-at-eol))
-		(narrow-to-region start end)))
-	    (narrow-to-region (window-start) (window-end))))
-    (if (spu-detect-opcodes-line)
-	(spu-highlight-register-list (remove-duplicates (spu-extract-registers) :test 'string= :from-end t))
-	(spu-highlight-register-clear-overlays))))
+		(setq end (point-at-eol)))
+	      (setq start (window-start)
+		    end   (window-end))))
+      (if (spu-detect-opcodes-line)
+	  (spu-highlight-register-list (remove-duplicates (spu-extract-registers) :test 'string= :from-end t) start end)
+	  (spu-highlight-register-clear-overlays)))))
 
 
 (defsubst spu-highlight-registers-post-hook()
@@ -185,7 +189,7 @@ above and below the current line. -1 to narrow to the current page only")
   :global nil
   :lighter " HiRegs"
   ;; Body of the function:
-  (make-local-variable 'post-command-hook)
+  (make-local-hook 'post-command-hook)
   (if (not spu-highlight-registers-mode)
       (progn (remove-hook 'post-command-hook 'spu-highlight-registers-post-hook)
 	     (spu-highlight-register-clear-overlays)

@@ -192,6 +192,7 @@
 
 (require 'spu-mode)
 (require 'spu-highlight-registers)
+(require 'spu-highlight-stalls)
 
 ;;------------------------------------------------------------------------------
 ;;

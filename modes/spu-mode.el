@@ -321,7 +321,7 @@ spaces / tabs present at the beginning of the line."
       (setq end (point))
       (beginning-of-line)
       (setq start (point))
-      (setq line (spu-clean-comments (buffer-substring start end)))
+      (setq line (spu-clean-c-comments (spu-clean-line-comment (buffer-substring start end))))
       (or (string-match spu-even-opcode-regexp line)
 	  (string-match spu-odd-opcode-regexp line)))))
   
@@ -702,7 +702,7 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 			  (if even-column-1
 			      (goto-char (spu-column-to-pos even-column-1)))))))))
       
-
+      
 
 (defun spu-extract-instruction()
   "Extract the current instruction
@@ -969,6 +969,7 @@ line, leaving the corresponding instructions in the other pipe unaffected."
     (define-key spu-mode-map [(control meta right)]       'spu-next-opcode)
     (define-key spu-mode-map [(control meta left)]        'spu-previous-opcode)
     (define-key spu-mode-map [(control c) ?a]             'spu-add-current-word-to-register-list)
+    (define-key spu-mode-map [(control c) ?s]             'spu-region-report)
     (define-key spu-mode-map [(control f7)]               'compile)
     spu-mode-map))
 

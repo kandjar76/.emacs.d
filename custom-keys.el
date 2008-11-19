@@ -79,3 +79,6 @@
 (define-key dired-mode-map [(control ?=)] 'diredp-ediff)
 (define-key dired-mode-map [?=] 'dired-ediff-marked-files)
 
+;; Spu keys:
+(define-key spu-mode-map [(control c) ?h] 'spu-highlight-registers-mode)
+(define-key spu-mode-map [(control c) ?s] 'spu-stall-check)
