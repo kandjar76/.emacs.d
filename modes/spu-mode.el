@@ -31,6 +31,9 @@
 ;; - BUG: When the text scroll left.. weird behavior... 
 
 ;; History:
+;;  v1.4: Update by Cedric Lallain
+;;        - fix invalid regular expression
+;;
 ;;  v1.3: Update by Cedric Lallain
 ;;        - spu-swap-next-instruction (C-M-down) and spu-swap-previous-instruction (C-M-up)
 ;;          are now working again
@@ -863,7 +866,8 @@ line, leaving the corresponding instructions in the other pipe unaffected."
 
 (defconst spu-font-lock-keywords-3
   (list '("\\.global\\s-+\\(\\(\\sw\\|\\s_\\)+\\)" . 1) ; exported symbol names
-	'("\\_*\\<\\(\\sw\\|\\s_\\)+\\>\\_*:" . font-lock-function-name-face) ; labels
+;	'("\\_*\\<\\(\\sw\\|\\s_\\)+\\>\\_*:" . font-lock-function-name-face) ; labels
+	'("\\<\\(\\sw\\|\\s_\\)+\\>:" . font-lock-function-name-face) ; labels
 	'("\\(\\s-\\|^\\)\\.\\(\\(\\sw\\|\\s_\\)+\\)" . font-lock-builtin-face) ; preprocessor commands
 	'("\\<nop\\>" . spu-nop-opcode-face)
 	'("\\<lnop\\>" . spu-lnop-opcode-face)
