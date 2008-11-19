@@ -277,6 +277,20 @@ matches any of the individual opcodes."
 	(substring str 0 pos)
 	str)))
 
+
+(defun spu-clean-square-brackets(str)
+  "Return the string STR after having removed all string formed with [ and ] inside."
+  (let* ((pos (string-match "\\[\\|]" str))
+	 (chr (and pos (substring str pos (+ pos 1)))))
+    (cond ((not chr) str)
+	  ((string= chr "[") 
+	   (if (string-match "\\]" str)
+	       (concat (substring str 0 pos) 
+		       (spu-clean-square-brackets (substring str (+ pos 1))))
+	       (substring str 0 pos)))
+	  ((string= chr "]") (spu-clean-square-brackets (substring str (+ 1 pos))))
+	  )))
+
 (defun spu-clean-comments(str)
   (spu-clean-c-comments 
    (spu-clean-curly-comments 
@@ -749,6 +763,7 @@ Note: this function assume that this is a line with opcodes"
 						    (or (and odd (spu-column-to-pos odd))
 							(point-at-eol)))))
     (setq instr (spu-clean-comments instr))
+    (setq instr (spu-clean-square-brackets instr))
     (setq wl    (split-string (subst-char-in-string 40 32 (subst-char-in-string 41 32 (subst-char-in-string ?, 32 instr)))))
     (if (or (member (car wl) spu-even-opcodes)
 	    (member (car wl) spu-odd-opcodes))
@@ -776,6 +791,31 @@ even if it's used in the commented section of the line."
 	reg-used))))
 
 
+
+(defun spu-delete-current-instruction()
+  "Delete the current instruction, replace it with a nop."
+  (interactive)
+  (let ((curcol (current-column)))
+    (save-excursion
+      (let* ((odd   (spu-find-odd-opcode))
+	     (cmt   (and odd (spu-find-comment-before-opcode odd)))
+	     (delim (or (and cmt (car cmt)) 
+			(and odd (spu-column-to-pos odd))))
+	     delimcol)
+	(when delim
+	  (save-excursion (goto-char delim)
+			  (setq delimcol (current-column)))
+	  (if (>= (point) delim)
+	      (progn (delete-region delim (point-at-eol))
+		     (indent-to-column odd)
+		     (insert "lnop"))
+	      (progn (delete-region (point-at-bol) delim)
+		     (beginning-of-line)
+		     (indent-to-column spu-even-column)
+		     (insert "nop ")
+		     (indent-to-column delimcol))))))
+    (move-to-column curcol)))
+		 
 ;;
 ;;
 ;;    SPU Interactive command:
@@ -807,8 +847,10 @@ even if it's used in the commented section of the line."
 	    (spu-next-opcode))
 	(setq bol2 (point))))
     (if (not bol2)
-	(message "End of Buffer!")
-	(goto-char bol2))))
+	(when (interactive-p)
+	  (message "End of Buffer!"))
+	(goto-char bol2))
+    bol2))
 
 (defun spu-move-down()
   "Move down to the next instruction"
@@ -834,8 +876,10 @@ even if it's used in the commented section of the line."
 	  (spu-next-opcode))
 	(setq bol2 (point))))
     (if (not bol2)
-	(message "End of Buffer!")
-	(goto-char bol2))))
+	(when (interactive-p)
+	    (message "End of Buffer!"))
+	(goto-char bol2))
+    bol2))
 
 (defun spu-move-left()
   "Move furthest left opcode of the current line"
@@ -1273,6 +1317,7 @@ If the register already exist, edit the comment instead."
     (define-key spu-mode-map [(control meta left)]        'spu-previous-opcode)
     (define-key spu-mode-map [(control c) ?a]             'spu-add-current-word-to-register-list)
     (define-key spu-mode-map [(control c) ?s]             'spu-region-report)
+    (define-key spu-mode-map [(control c) ?d]             'spu-delete-current-instruction)
     (define-key spu-mode-map [(control tab)]              'spu-swap-with-marked-line)
     (define-key spu-mode-map [(control f7)]               'compile)
     spu-mode-map))
