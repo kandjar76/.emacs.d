@@ -146,15 +146,17 @@
   (setq isearch-string (current-word))
   (highlight-selected-word 1)
   (add-hook 'pre-command-hook 'dehighlight-current-word)
-  ;(add-local-hook 'pre-command-hook 'isearch-pre-command-hook)
+  ;(add-hook 'pre-command-hook 'isearch-pre-command-hook)
   )
 
 (defun dehighlight-current-word()
   "Hook -- Cancel the previous current-word highlighted"
-  (remove-hook 'pre-command-hook 'dehighlight-current-word)
   (sit-for 0)
   (dehighlight-selected-word)
-  (pending-delete-mode 1)) ;; For unknown reason, pending-mode is corrupted by this function... linked to the remove-hook call
+  (remove-local-hook 'pre-command-hook 'dehighlight-current-word))
+
+
+
 
 
 ;;------------------------------------------------------------------------------
