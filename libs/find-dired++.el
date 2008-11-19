@@ -35,7 +35,7 @@
 
 (require 'find-dired)
 
-
+;;;###autoload
 (defun find-dired-full-path (dir args)
   "{Modified version of 'find-dired'}
 Run `find' and go into Dired mode on a buffer of the output.
@@ -113,8 +113,11 @@ as the final argument."
       (move-marker (process-mark proc) 1 (current-buffer)))
     (setq mode-line-process '(":%s"))))
 
+;;;###autoload
 (defadvice find-dired (around anytime(dir args))
   (find-dired-full-path dir args))
+
+;;;###autoload
 (ad-activate 'find-dired)
 
 (provide 'find-dired++)

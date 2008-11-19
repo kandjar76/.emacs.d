@@ -47,6 +47,7 @@
 ;;
 ;;------------------------------------------------------------------------------
 
+;;;###autoload
 (defmacro defenum-define-predicate (enum-type)
   "PRIVATE - Define the predicate function for the enum type ENUM-TYPE"
   (let ((enum-name (make-symbol "enum-name"))
@@ -68,6 +69,7 @@
 ;;
 ;;------------------------------------------------------------------------------
 
+;;;###autoload
 (defmacro defenum(enum-type &rest args)
   "Create a enumerated type ENUM-TYPE."
   (let ((symbols-list (make-symbol "fields"))
@@ -80,6 +82,7 @@
 		  (defenum-define-predicate ,enum-type))
 	  (error "Invalid symbols list. Syntax: (defenum [comment] {symbol})")))))
 
+;;;###autoload
 (defun enump(enum-type)
   "Returns t if ENUM-TYPE is a enumerated type"
   (and (eq :enum-type (car-safe enum-type))
