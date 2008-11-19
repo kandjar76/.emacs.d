@@ -1,6 +1,6 @@
 ;;; tcp-client.el -- Providing a network interface
 ;;
-;; Author:   Cedric Lallain
+;; Author: Cedric Lallain
 ;; Version:  1.0
 ;; Keywords: tcp network connection client
 ;; Description: Provide a tcp client interface 

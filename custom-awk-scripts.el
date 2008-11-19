@@ -193,3 +193,8 @@ Those dependency must be filled up during the previous loop!"
 	 "-f" gawk-script-format-dump-file-path)
 	(dos-to-unix)))
 
+;;------------------------------------------------------------------------------
+;;
+;; DDF related script
+;;
+;;------------------------------------------------------------------------------

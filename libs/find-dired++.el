@@ -1,6 +1,6 @@
 ;;; find-dired++.el -- Redefinition of find-dired
-;;
-;; Author:   Cedric Lallain
+;; 
+;;   Author: Cedric Lallain
 ;; Version:  1.0
 ;; Keywords: find-dired
 ;; Description: Modified version of find-dired.
