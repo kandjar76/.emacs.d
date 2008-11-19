@@ -23,6 +23,9 @@
 (define-key global-map [(control ?x) (?+)]	        'increment-numbers-region)
 (define-key global-map [(control ?z)]                   nil)
 
+(define-key global-map [(control +)]                    'redo)
+
+
 ;; Disable mouse-2 default behavior which is "kill" or "yank" something like that... 
 (define-key global-map [(mouse-2)]               	nil)
 (define-key global-map [(drag-mouse-1)]                 nil)
@@ -61,3 +64,15 @@
 (define-key global-map [(control shift f11)]            'cscope-find-functions-calling-this-function)
 (define-key global-map [(control shift f12)]            'cscope-find-global-definition)
 (define-key global-map [(control ?*)]                   'cscope-pop-mark)
+
+;; Dired+ keys:
+(define-key dired-mode-map [?S] 'dired-mark-files-containing-regexp)
+(define-key dired-mode-map [?s] 'dired-mark-files-regexp)
+(define-key dired-mode-map [?K] 'diredp-omit-unmarked)
+(define-key dired-mode-map [?I] 'dired-kill-subdir)
+(define-key dired-mode-map [(control up)] 'dired-tree-up)
+(define-key dired-mode-map [(control down)] 'dired-tree-down)
+(define-key dired-mode-map [(control left)] 'dired-hide-subdir)
+(define-key dired-mode-map [return] 'dired-find-alternate-file)
+(define-key dired-mode-map [(control return)] 'dired-find-file)
+(define-key dired-mode-map [backspace] 'dired-up-directory)
