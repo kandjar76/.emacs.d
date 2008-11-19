@@ -7,7 +7,6 @@
          "~/.emacs.d/libs"
          "~/.emacs.d/modes"
          "~/.emacs.d/personal"
-	 "~/.emacs.d/speedbar"
         )
        load-path))
 
@@ -39,10 +38,8 @@
 (load-library "custom-keys")                       ; setup the emacs keys
 (load-library "custom-colors")                     ; color customization
 
-
 (load-library "my-cpp")
 (load-library "my-awk")
-(load-library "my-asm")
 
 
 ;; Welcome message:

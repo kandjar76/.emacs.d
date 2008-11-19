@@ -44,7 +44,7 @@
 ;; Bookmark keys:
 (define-key global-map [(control f2)]                   'bm-toggle)
 (define-key global-map [(f2)]                           'bm-next)
-(define-key global-map [(shift f2)]                     'bm-prev)
+(define-key global-map [(shift f2)]                     'bm-previous)
 (define-key global-map [(control shift f2)]             'bm-remove-all)
 
 ;; Quick-Research keys:
@@ -86,9 +86,6 @@
 (define-key spu-mode-map [(control c) ?s] 'spu-stall-check)
 (define-key spu-mode-map [(control c) ?n] 'spu-nopify)
 (define-key spu-mode-map [(control c) ?l] 'spu-highlight-loop-mode)
-
-;; Speedbar keys:
-(define-key global-map [(f5)] 'speedbar-get-focus)
 
 ;; Rectangle keys:
 (define-key global-map [(control ?x) (?r) (?i)]	'increase-numbers-on-rectangle)
