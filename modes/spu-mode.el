@@ -7,11 +7,7 @@
 ;; Author: Cort Stratton (cstratton@naughtydog.com)
 ;;         Cedric Lallain (clallain@naughtydog.com) 
 ;;
-;; This file provides some extensions to the standard emacs asm-mode
-;; which are useful when editing SPU code.  It's kinda hacky, and relies
-;; more heavily than it probably should on the assumption that your code
-;; meets the official NDI SPU coding standard.  Nevertheless, I've been using
-;; it for months and it's treated me well.
+;; Major mode to edit SPU Assembly code.
 ;;
 ;; Notable features:
 ;; - Full syntax highlighting
@@ -23,9 +19,6 @@
 ;;   can be used (C-c C-r)
 ;; - Insert a properly-indented nop/lnop pair (C-c C-n for uncommented, C-c C-b for
 ;;   commented)
-;; - Automatically schedule a block of code using the external spuscheduler program
-;;   (no shortcut currently defined; to use, set the region to encompass the code you
-;;   wish to schedule, then use the spu-schedule-region command)
 ;;
 ;; Potential improvements
 ;; - spu-indent-buffer command that tidies up ALL whitespace according
@@ -37,7 +30,8 @@
 
 ;; History:
 ;;  v1.1: Modified version by Cedric Lallain
-;;        - spu-mode is now emacs compatible
+;;        - spu-mode is being converted to be emacs compatible
+;;        - the syntax highlighing works.
 ;;
 ;;  v1.0: Original version wrote by Cord Stratton, 
 ;;        - Full syntax highlighting
@@ -49,18 +43,79 @@
 ;;          can be used (C-c C-r)
 ;;        - Insert a properly-indented nop/lnop pair (C-c C-n for uncommented, C-c C-b for
 ;;          commented)
-;;        - Automatically schedule a block of code using the external spuscheduler program
-;;          (no shortcut currently defined; to use, set the region to encompass the code you
-;;          wish to schedule, then use the spu-schedule-region command)
-;;        
+
+
+
+
+
+
+;;
+;;
+;;    Opcopde definition:
+;;
+;;
+
+;; List of all even opcodes
+(setq spu-even-opcodes '("nop" "heq" "heqi" "hgt" "hgti" "hlgt" "hlgti" "fa" "fs" "fm" "fma"
+			 "fms" "fnma" "fnms" "dfa" "dfs" "dfm" "dfma" "dfms" "dfnma" "dfnms"
+			 "cntb" "avgb" "absdb" "sumb" "shlh" "shlhi" "shl" "shli" "roth" "rothi"
+			 "rot" "roti" "rothm" "rothmi" "rotm" "rotmi" "rotmah" "rotmahi" "rotma"
+			 "rotmai" "mpy" "mpyi" "mpyu" "mpyui" "mpya" "mpys" "mpyh" "mpyhh"
+			 "mpyhhu" "mpyhha" "mpyhhau" "fi" "cuflt" "csflt" "cfltu" "cflts" "fesd"
+			 "frds" "ceqb" "ceqbi" "cgtb" "cgtbi" "clgtb" "clgtbi" "ceqh" "ceqhi"
+			 "cgth" "cgthi" "clgth" "clgthi" "ceq" "ceqi" "cgt" "cgti" "clgt" "clgti"
+			 "fceq" "fcmeq" "fcgt" "fcmgt" "and" "nand" "andc" "andbi" "andhi" "andi"
+			 "or" "nor" "orc" "orbi" "orhi" "ori" "xor" "eqv" "xorbi" "xorhi" "xori"
+			 "il" "ilh" "ila" "ilhu" "iohl" "ah" "ahi" "a" "ai" "sfh" "sfhi" "sf"
+			 "sfi" "bg" "bgx" "sfx" "cg" "cgx" "addx" "xsbh"  "xshw" "xswd" "clz"
+			 "selb" "sync" "syncc" "dsync" "fscrrd" "fscrwr" "mfspr" "mtspr" "iretd"
+			 "irete" "iret" "rchcnt" "rdch" "wrch" "stopd"))
+
+;; List of all odd opcodes
+(setq spu-odd-opcodes '("lnop" "br" "brsl" "brhnz" "brhz" "brnz" "brz" "hbrr" "bi" "bisl"
+			"bisled" "bihnz" "bihz" "binz" "biz" "hbr" "hbrp" "bra" "brasl" "hbra"
+			"stop" "lqa" "lqd" "lqr" "lqx" "stqa" "stqd" "stqr" "stqx" "shlqby"
+			"shlqbyi" "shlqbybi" "shlqbi" "shlqbii" "rotqby" "rotqbyi" "rotqbybi"
+			"rotqbi" "rotqbii" "rotqmby" "rotqmbyi" "rotqmbybi" "rotqmbi" "rotqmbii"
+			"shufb" "cbd" "cbx" "chd" "chx" "cwd" "cwx" "cdd" "cdx" "fsmbi" "fsmb"
+			"fsmh" "fsm" "gbb" "gbh" "gb" "frest" "frsqest" "orx"))
+
+
+;;
+;;
+;;    SPU Faces:
 ;;
 ;;
 
 
-(defun spu-valid-opcode-p (opcode)
-  "Returns t if opcode is a valid SPU opcode; returns nil otherwise."
-  (and (or (member opcode spu-even-opcodes) (member opcode spu-odd-opcodes)) t))
+;; Create faces for various opcode classes.
+(make-face 'spu-even-opcode-face)
+(set-face-foreground 'spu-even-opcode-face (first-valid-color "salmon1" "brightcyan"))
+(defvar spu-even-opcode-face 'spu-even-opcode-face
+  "Font to highlight even instructions set in SPU Assembly mode.")
 
+(make-face  'spu-odd-opcode-face)
+(set-face-foreground 'spu-odd-opcode-face (first-valid-color "cornflowerblue" "brightblue"))
+(defvar spu-odd-opcode-face 'spu-odd-opcode-face
+  "Font to highlight odd instructions set in SPU Assembly mode.")
+
+(make-face  'spu-nop-opcode-face)
+(set-face-foreground 'spu-nop-opcode-face (first-valid-color "salmon4" "darkgrey"))
+(defvar spu-nop-opcode-face 'spu-nop-opcode-face
+  "Font to highlight nop in SPU Assembly mode.")
+
+(make-face  'spu-lnop-opcode-face)
+(set-face-foreground 'spu-lnop-opcode-face (first-valid-color "darkslateblue" "darkgrey"))
+(defvar spu-lnop-opcode-face 'spu-lnop-opcode-face
+  "Font to highlight lnop in SPU Assembly mode.")
+
+
+
+;;
+;;
+;;    SPU Internal Data
+;;
+;;
 
 ;; Lists of opcodes in each opcode class.  Used to determine
 ;; cycle counts.
@@ -99,6 +154,20 @@
 			"fsmbi" "fsmb" "fsmh" "fsm" "gbb" "gbh" "gb" "frest" "frsqest" "orx"))
 
 
+;;
+;;
+;;    Functions to help defining the major-mode / commands:
+;;
+;;
+
+
+(defun spu-string-list-to-regexp (inst-list)
+  "Produce from a list of strings a single regular expression which
+matches any of the individual opcodes."
+  (reduce (lambda (x y) (concat x "\\|" y))
+	  (mapcar (lambda (x) (concat "\\<" x "\\>"))
+		  inst-list)))
+
 (defun spu-cycle-count (opcode)
   "Returns the cycle count of the specified opcode."
   (cond
@@ -113,11 +182,6 @@
    ((member opcode '("lnop" "nop" "stop")) 1)
    (t (error (format "Unknown opcode: %s" opcode)))))
 
-(defun spu-print-cycle-count (opcode)
-  "Prints the cycle count of the specified opcode."
-  (interactive "sOpcode: ")
-  (message (format "%d cycle(s)" (spu-cycle-count opcode))))
-
 
 ;(defun spu-mark-end-of-instruction ()
 ;  "Places the mark at the end of the current instruction."
@@ -129,8 +193,7 @@
 ;		  (set-mark (point))
 ;		  (move-to-column (spu-odd-instruction-column))
 ;		  (exchange-point-and-mark))
-;	  (mark-end-of-line nil))
-;	))
+;	  (mark-end-of-line nil))))
 
 
 ;(defun spu-current-opcode ()
@@ -151,50 +214,8 @@
 ;	  (setq result (current-word))
 ;	  (widen)
 ;	  (zmacs-deactivate-region)
-;	  result
-;	  )))
+;	  result)))
 
-;(defun spu-insert-nops ()
-;  "Insert a nop/lnop pair at the current line."
-;  (interactive "*")
-;  (let ((old-column (current-column)))
-;	(beginning-of-line)
-;	(insert-string (concat "\tnop" (make-string spu-odd-instruction-indent-tabs ?\t) "lnop\n"))
-;	(previous-line 1)
-;	(move-to-column old-column)))
-
-;(defun spu-insert-nops-commented ()
-;  "Insert a commented nop/lnop pair at the current line."
-;  (interactive "*")
-;  (let ((old-column (current-column)))
-;	(beginning-of-line)
-;	(insert-string (concat "\t{nop}" (make-string spu-odd-instruction-indent-tabs ?\t) "{lnop}\n"))
-;	(previous-line 1)
-;	(move-to-column old-column)))
-
-
-;(defun spu-goto-result ()
-;  "Moves the point to the first line where the result of the current instruction
-;can safely be used."
-;  (interactive)
-;  (let ((num-lines (spu-cycle-count (spu-current-opcode)))
-;		(col (current-column))
-;		)
-;	(if num-lines
-;		(progn
-;		  (save-excursion
-;			(while (> num-lines 0)
-;			  (cond ((bobp) (error "Reached beginning of buffer"))
-;					((eobp) (error "Reached end of buffer")))
-;			  (forward-line 1)
-;			  (if (spu-valid-line-p) (setq num-lines (- num-lines 1))))
-;			(point-to-register ?r)
-;			)
-;		  (jump-to-register ?r))
-;	  )
-;	(move-to-column col)
-;	(message nil)
-;	))
 
 ;(setq spu-odd-instruction-regexp
 ;	  (concat "\\({\\(o[0-9?]\\(.[0-9]\\)?\\)?}\\s-*\\)\\|\t" ; optional leading comment for odd instruction
@@ -219,13 +240,7 @@
 ;	(mark-end-of-line nil)
 ;	(copy-to-register ?v (point) (mark) nil)
 ;	(zmacs-deactivate-region)
-;	(or (string-match spu-line-regexp (get-register ?v)))
-;	))
-
-;(defvar spu-odd-instruction-indent-tabs 8
-;  "*The number of tabs to indent the odd instruction.  More specifically, the
-;optional comment will be indented by this many tabs; the opcode will be indented
-;this many tabs plus one.")
+;	(or (string-match spu-line-regexp (get-register ?v)))))
 
 ;(defun spu-odd-instruction-column ()
 ;  "Returns the column number to the beginning of the odd instruction on the
@@ -255,8 +270,49 @@
 ;	(spu-mark-end-of-instruction)
 ;	(copy-to-register reg (point) (mark) delete-flag)
 ;	(pop-mark)
-;	(zmacs-deactivate-region)
-;	))
+;	(zmacs-deactivate-region)))
+
+
+;;
+;;
+;;    SPU Interactive command:
+;;
+;;
+
+
+(defun spu-valid-opcode-p (opcode)
+  "Returns t if opcode is a valid SPU opcode; returns nil otherwise."
+  (and (or (member opcode spu-even-opcodes) (member opcode spu-odd-opcodes)) t))
+
+
+
+(defun spu-print-cycle-count (opcode)
+  "Prints the cycle count of the specified opcode."
+  (interactive "sOpcode: ")
+  (message (format "%d cycle(s)" (spu-cycle-count opcode))))
+
+
+;(defun spu-goto-result ()
+;  "Moves the point to the first line where the result of the current instruction
+;can safely be used."
+;  (interactive)
+;  (let ((num-lines (spu-cycle-count (spu-current-opcode)))
+;		(col (current-column))
+;		)
+;	(if num-lines
+;		(progn
+;		  (save-excursion
+;			(while (> num-lines 0)
+;			  (cond ((bobp) (error "Reached beginning of buffer"))
+;					((eobp) (error "Reached end of buffer")))
+;			  (forward-line 1)
+;			  (if (spu-valid-line-p) (setq num-lines (- num-lines 1))))
+;			(point-to-register ?r)
+;			)
+;		  (jump-to-register ?r))
+;	  )
+;	(move-to-column col)
+;	(message nil)))
 
 ;(defun spu-kill-current-instruction ()
 ;  "Replaces the current instruction with a nop/lnop.  The instruction is
@@ -351,133 +407,7 @@
 ;  (interactive "*P")
 ;  (spu-swap-next-instruction (- (prefix-numeric-value n))))
 
-;(defvar spu-scheduler-executable "~/src/main/bin/linux/spuscheduler"
-;  "Path to the spuscheduler executable.")
 
-;(defun spu-schedule-region (&optional loop-flag)
-;  "Passes the text in the current region to the spuscheduler program, replacing it
-;with the tool's output.  If loop-flag is non-nil, the scheduler is run in loop mode"
-;  (interactive "*P")
-;  (if loop-flag 
-;	  (call-process-region (region-beginning) (region-end) spu-scheduler-executable t t t "-maxroll" "4" "-noearlyout")
-;	(call-process-region (region-beginning) (region-end) spu-scheduler-executable t t t "-straight" "-noearlyout")
-;	))
-
-
-;(require 'derived)
-;(define-derived-mode spu-mode asm-mode "SPU"
-;  "Major mode for editing SPU assembly code.
-;Special commands:
-;\\{spu-mode-map}"
-;  ;; Define keys
-;  (define-key spu-mode-map [(control c) (control down)] 'spu-swap-next-instruction)
-;  (define-key spu-mode-map [(control c) (down)]         'spu-swap-next-instruction)
-;  (define-key spu-mode-map [(control c) (control up)]   'spu-swap-prev-instruction)
-;  (define-key spu-mode-map [(control c) (up)]           'spu-swap-prev-instruction)
-;  (define-key spu-mode-map [(control c) (control r)]    'spu-goto-result)
-;  (define-key spu-mode-map [(control c) (control k)]    'spu-kill-current-instruction)
-;  (define-key spu-mode-map [(control c) (control y)]    'spu-yank-instruction)
-;  (define-key spu-mode-map [(control c) (control n)]	'spu-insert-nops)
-;  (define-key spu-mode-map [(control c) (control b)]	'spu-insert-nops-commented)
-;  (define-key spu-mode-map [(control c) (control f)]    'spu-reformat-region)
-;  (define-key spu-mode-map [(control c) (control d)]    'spu-rollup-dependency-report-region)
-;  (define-key spu-mode-map [(control c) (control r)]    'spu-rollup-fusion-region)
-;  (define-key spu-mode-map [(control c) (control o)]    'spu-schedule-region)
-
-
-
-  ;; Create faces for various opcode classes.
-;  (make-face 'spu-even-opcode-face)
-;  (set-face-foreground 'spu-even-opcode-face
-;					   (or (and (valid-color-name-p "salmon1") "salmon1")
-;						   "brightcyan"))
-;  (make-face 'spu-odd-opcode-face)
-;  (set-face-foreground 'spu-odd-opcode-face
-;					   (or (and (valid-color-name-p "cornflowerblue") "cornflowerblue")
-;						   "brightblue"))
-;  (make-face 'spu-nop-opcode-face)
-;  (set-face-foreground 'spu-nop-opcode-face
-;					   (or (and (valid-color-name-p "salmon4") "salmon4")
-;						   "darkgrey"))
-;  (make-face 'spu-lnop-opcode-face)
-;  (set-face-foreground 'spu-lnop-opcode-face
-;					   (or (and (valid-color-name-p "darkslateblue") "darkslateblue")
-;						   "darkgrey"))
-
-;  ;; asm-mode always inserts ";" comments at the end of the current
-;  ;; line.  I prefer to use ";" comments to quickly disable an entire
-;  ;; line, so let's remove its special behavior!
-;  (local-set-key (vector asm-comment-char) 'self-insert-command)
-
-;  ;; Treat curly braces as comments
-;  (modify-syntax-entry ?{ "< a" spu-mode-syntax-table)
-;  (modify-syntax-entry ?} "> a" spu-mode-syntax-table)
-
-;  ;; Add _ as part of the word definition:
-;  (modify-syntax-entry ?_ "w"   spu-mode-syntax-table)
-
-;  ;; C and C++-style comments should be treated as such.  Since Emacs
-;  ;; only offers two styles of comments, C-style comments will
-;  ;; regretably pair with {}-style comments and vice-versa.
-;  (modify-syntax-entry ?/ ". 1456" spu-mode-syntax-table)
-;  (modify-syntax-entry ?* ". 23" spu-mode-syntax-table)
-  
-;  ;; Keywords should be case-insensitive keywords
-;  (setq font-lock-keywords-case-fold-search t) 
-;  (put 'spu-mode 'font-lock-defaults '(spu-font-lock-keywords))
-;  (setq font-lock-defaults '(spu-font-lock-keywords))
-;  (setq tab-width 8)
-;  (setq font-lock-maximum-decoration t)
-;  (font-lock-mode 0)
-;  (font-lock-mode 1))
-  
-;(provide 'spu-mode)
-
-
-
-;;
-;;
-;;    Opcopde definition:
-;;
-;;
-
-;; List of all even opcodes
-(setq spu-even-opcodes '("nop" "heq" "heqi" "hgt" "hgti" "hlgt" "hlgti" "fa" "fs" "fm" "fma"
-			 "fms" "fnma" "fnms" "dfa" "dfs" "dfm" "dfma" "dfms" "dfnma" "dfnms"
-			 "cntb" "avgb" "absdb" "sumb" "shlh" "shlhi" "shl" "shli" "roth" "rothi"
-			 "rot" "roti" "rothm" "rothmi" "rotm" "rotmi" "rotmah" "rotmahi" "rotma"
-			 "rotmai" "mpy" "mpyi" "mpyu" "mpyui" "mpya" "mpys" "mpyh" "mpyhh"
-			 "mpyhhu" "mpyhha" "mpyhhau" "fi" "cuflt" "csflt" "cfltu" "cflts" "fesd"
-			 "frds" "ceqb" "ceqbi" "cgtb" "cgtbi" "clgtb" "clgtbi" "ceqh" "ceqhi"
-			 "cgth" "cgthi" "clgth" "clgthi" "ceq" "ceqi" "cgt" "cgti" "clgt" "clgti"
-			 "fceq" "fcmeq" "fcgt" "fcmgt" "and" "nand" "andc" "andbi" "andhi" "andi"
-			 "or" "nor" "orc" "orbi" "orhi" "ori" "xor" "eqv" "xorbi" "xorhi" "xori"
-			 "il" "ilh" "ila" "ilhu" "iohl" "ah" "ahi" "a" "ai" "sfh" "sfhi" "sf"
-			 "sfi" "bg" "bgx" "sfx" "cg" "cgx" "addx" "xsbh"  "xshw" "xswd" "clz"
-			 "selb" "sync" "syncc" "dsync" "fscrrd" "fscrwr" "mfspr" "mtspr" "iretd"
-			 "irete" "iret" "rchcnt" "rdch" "wrch" "stopd"))
-
-;; List of all odd opcodes
-(setq spu-odd-opcodes '("lnop" "br" "brsl" "brhnz" "brhz" "brnz" "brz" "hbrr" "bi" "bisl"
-			"bisled" "bihnz" "bihz" "binz" "biz" "hbr" "hbrp" "bra" "brasl" "hbra"
-			"stop" "lqa" "lqd" "lqr" "lqx" "stqa" "stqd" "stqr" "stqx" "shlqby"
-			"shlqbyi" "shlqbybi" "shlqbi" "shlqbii" "rotqby" "rotqbyi" "rotqbybi"
-			"rotqbi" "rotqbii" "rotqmby" "rotqmbyi" "rotqmbybi" "rotqmbi" "rotqmbii"
-			"shufb" "cbd" "cbx" "chd" "chx" "cwd" "cwx" "cdd" "cdx" "fsmbi" "fsmb"
-			"fsmh" "fsm" "gbb" "gbh" "gb" "frest" "frsqest" "orx"))
-
-
-;;
-;;
-;;    Function to help defining the major-mode:
-;;
-;;
-
-
-(defun spu-string-list-to-regexp (inst-list)
-  "Produce from a list of strings a single regular expression which
-matches any of the individual opcodes."
-    (concat "\\<" (regexp-opt inst-list "\\>")))
 
 ;;
 ;;
@@ -493,16 +423,65 @@ matches any of the individual opcodes."
 ;; Define the key mapping for the spu mode:
 (defvar spu-mode-map
   (let ((spu-mode-map (make-keymap)))
-    (define-key spu-mode-map [(control c) (control f)]    'spu-reformat-region)))
+    (define-key spu-mode-map [(control c) (control f)]    'spu-reformat-region)
+    (define-key spu-mode-map [(control c) (control d)]    'spu-rollup-dependency-report-region)
+    (define-key spu-mode-map [(control c) (control r)]    'spu-rollup-fusion-region)
 
-;; Keyword definition for syntax highlighting:
-(defconst spu-font-lock-keywords
+;    (define-key spu-mode-map [(control c) (control down)] 'spu-swap-next-instruction)
+;    (define-key spu-mode-map [(control c) (control up)]   'spu-swap-prev-instruction)
+;    (define-key spu-mode-map [(control c) (control r)]    'spu-goto-result)
+;    (define-key spu-mode-map [(control c) (control k)]    'spu-kill-current-instruction)
+;    (define-key spu-mode-map [(control c) (control y)]    'spu-yank-instruction)
+
+    spu-mode-map))
+
+(defconst spu-font-lock-keywords-3
   (list '("\\.global\\s-+\\(\\(\\sw\\|\\s_\\)+\\)" . 1) ; exported symbol names
 	'("\\_*\\<\\(\\sw\\|\\s_\\)+\\>\\_*:" . font-lock-function-name-face) ; labels
 	'("\\(\\s-\\|^\\)\\.\\(\\(\\sw\\|\\s_\\)+\\)" . font-lock-builtin-face) ; preprocessor commands
 	'("\\<nop\\>" . spu-nop-opcode-face)
 	'("\\<lnop\\>" . spu-lnop-opcode-face)
-	(list (spu-string-list-to-regexp spu-even-opcodes) 0 'spu-even-opcode-face)
-	(list (spu-string-list-to-regexp spu-odd-opcodes) 0 'spu-odd-opcode-face)
-	)
+	(cons (spu-string-list-to-regexp spu-even-opcodes) 'spu-even-opcode-face)
+	(cons (spu-string-list-to-regexp spu-odd-opcodes) 'spu-odd-opcode-face))
   "Additional expressions to highlight in SPU mode.")
+
+(defvar spu-font-lock-keywords spu-font-lock-keywords-3)
+
+;; Syntax table:
+(defvar spu-syntax-table
+  (let ((spu-syntax-table (make-syntax-table)))
+
+    ;; Add _ as part of the word definition:
+    (modify-syntax-entry ?_ "w"   spu-syntax-table)
+
+    ;; C and C++-style comments should be treated as such.  Since Emacs
+    ;; only offers two styles of comments, C-style comments will
+    ;; regretably pair with {}-style comments and vice-versa. 
+    ;; Those comments will be from the category "a", the "b" comments
+    ;; style will indeed be the comment "line"
+    (modify-syntax-entry ?{  "<"      spu-syntax-table)
+    (modify-syntax-entry ?}  ">"      spu-syntax-table)
+    (modify-syntax-entry ?/  ". 124b" spu-syntax-table)
+    (modify-syntax-entry ?*  ". 23"   spu-syntax-table)
+    (modify-syntax-entry ?\# "< b"    spu-syntax-table)
+    (modify-syntax-entry ?\; "< b"    spu-syntax-table)
+    (modify-syntax-entry ?\n "> b"    spu-syntax-table)
+    spu-syntax-table)
+  "Spu syntax mode definition -- word and comments")
+
+
+;; Spu-mode entry function:
+(defun spu-mode ()
+  "Major mode for editing SPU assembly code."
+  (interactive)
+  (kill-all-local-variables)
+  (set-syntax-table spu-syntax-table)
+  (use-local-map spu-mode-map)
+  (make-local-variable 'tab-width)
+  (set (make-local-variable 'font-lock-defaults) '(spu-font-lock-keywords nil t))
+  (setq tab-width 8)
+  (setq major-mode 'spu-mode)
+  (setq mode-name "SPU Assembly Code")
+  (run-hooks 'spu-mode-hook))
+
+(provide 'spu-mode)
