@@ -9,7 +9,7 @@
 ;;
 ;;------------------------------------------------------------------------------
 
-(defvar gawk-executable-path "qawk"
+(defvar gawk-executable-path "gawk"
   "Path to gawk (if required)")
 
 (defun user-home-directory() (expand-file-name "script" "~/.emacs.d"))
