@@ -51,6 +51,8 @@
 ;;  [todo] `- A todo item
 ;;  [note] `- Just a comment
 
+;;  [ext~] The title in that case is truncated...
+
 (require 'log-buffer)
 (require 'enum-type)
 
