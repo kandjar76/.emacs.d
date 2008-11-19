@@ -1,16 +1,43 @@
-;; 
-;;   Author: Cedric Lallain
+;;; find-dired++.el -- Redefinition of find-dired
 ;;
-;; Redefinition of find-dired due to an issue where it was introducing "~" in the path name which creates trouble while running shell command.
+;; Author:   Cedric Lallain
+;; Version:  1.0
+;; Keywords: find-dired
+;; Description: Modified version of find-dired.
+;; Tested with: GNU Emacs 21.x and GNU Emacs 22.x
+
+;; This file is *NOT* part of GNU Emacs.
+
+;;    This program is free software; you can redistribute it and/or modify
+;;    it under the terms of the GNU General Public License as published by
+;;    the Free Software Foundation; either version 2 of the License, or
+;;    (at your option) any later version.
 ;;
+;;    This program is distributed in the hope that it will be useful,
+;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;    GNU General Public License for more details.
 ;;
+;;    You should have received a copy of the GNU General Public License
+;;    along with this program; if not, write to the Free Software
+;;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;;; Commentary:
+
+;;
+;; Modified version of find-dired due to an issue. 
+;; The current find-dired surround the filename with quote (") and replace the home
+;; path with "~"; this creates issue while running shell commands which doesn't interpret
+;; the symbol "~" as home folder.
+;;
+;; This version leaves the quotes, but call the shell command with the full path instead.
 ;;
 
 (require 'find-dired)
 
 
 (defun find-dired-full-path (dir args)
-  "{Rewrote version of 'find-dired'}
+  "{Modified version of 'find-dired'}
 Run `find' and go into Dired mode on a buffer of the output.
 The command run (after changing into DIR) is
 
