@@ -192,6 +192,8 @@ Returns \"black\" if no valid color is found."
 (setq undo-limit         800000)
 (setq undo-strong-limit 1000000)
 
+;; Don't bother checking for KnR style (to speed up the analyze)
+(setq c-recognize-knr-p nil)
 
 ;;------------------------------------------------------------------------------
 ;;
