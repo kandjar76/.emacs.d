@@ -4,8 +4,9 @@
        (list 
          "~/.emacs.d"
          "~/.emacs.d/external"
-		 "~/.emacs.d/libs"
+         "~/.emacs.d/libs"
          "~/.emacs.d/modes"
+         "~/.emacs.d/personal"
         )
        load-path))
 
@@ -27,8 +28,6 @@
 (load-library "my-cpp")
 (load-library "my-awk")
 (load-library "my-asm")
-
-
 
 
 ;; Automatically load the desktop:
