@@ -84,6 +84,12 @@
 	    'spu-highlight-stalls-5c-font
 	    'spu-highlight-stalls-6c-font))
 
+(defvar spu-highlight-latency-highlight-line t
+  "Defined how to highlight the latency issue, t means, it will highlight the first stall free 
+line for the current instruction, where if set to nil, it will highlight all lines which will
+cause a stall")
+
+
 ;;
 ;;
 ;;    SPU command:
@@ -358,7 +364,7 @@ Returns a list of opcode / stalling time"
 	      (pop ovls)))))
     count))
 
-(defun spu-highlight-latency-line()
+(defun spu-highlight-latency-stallfree-line()
   (spu-highlight-latency-clear-overlays)
   (save-excursion
     (if (spu-detect-opcodes-line)
@@ -373,10 +379,27 @@ Returns a list of opcode / stalling time"
 		(overlay-put ovl 'face 'spu-highlight-latency-line-font)
 		(overlay-put ovl 'spu-highlight-latency-line  t))))))))
 
+(defun spu-highlight-latency-stall-lines()
+  (spu-highlight-latency-clear-overlays)
+  (save-excursion
+    (if (spu-detect-opcodes-line)
+	(let ((instr-latency (spu-get-opcode-latency (spu-extract-instruction))))
+	  (when (> instr-latency 1)
+	    (setq instr-latency (1- instr-latency))
+	    (while (and (> instr-latency 0)
+			(spu-move-down))
+	      (let ((ovl (make-overlay (point-at-bol) (1+ (point-at-eol)))))
+		(overlay-put ovl 'face 'spu-highlight-latency-line-font)
+		(overlay-put ovl 'spu-highlight-latency-line  t))
+	      (setq instr-latency (1- instr-latency))))))))
+
+
 (defun spu-highlight-latency-post-hook()
   "Post command"
   (interactive)
-  (spu-highlight-latency-line))
+  (if spu-highlight-latency-highlight-line
+   (spu-highlight-latency-stallfree-line)
+   (spu-highlight-latency-stall-lines)))
 
 (define-minor-mode spu-highlight-latency-mode
   "Highlight the line which won't stall after running the current instruction 
