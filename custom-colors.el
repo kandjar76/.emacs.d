@@ -1,4 +1,17 @@
-;; Files used to setup the different color within xemacs:
+;;
+;; Files used to setup the different color within emacs:
+;;
+
+;; Creation of fonts used by the C++ mode:
+(make-face 'font-lock-operator-face)
+(make-face 'font-lock-end-statement)
+(setq font-lock-operator-face 'font-lock-operator-face)
+(setq font-lock-end-statement 'font-lock-end-statement)
+
+
+
+
+
 
 (setq default-background-color (first-valid-color "#F0F0F0" "white"))
 
@@ -11,7 +24,7 @@
 (set-face-foreground 'bm-face      (first-valid-color "black" "blue"))
 
 ;; Highlight the current line:
-(set-face-background 'highlight-current-line-face (first-valid-color "#C0E0FF" "lightblue" "cyan"))
+(set-face-background 'highlight-current-line-face (first-valid-color "#C0E0FF" "lightblue" "grey" "cyan"))
 
 ;; I-Search:
 (set-face-foreground 'isearch (first-valid-color "red"))
@@ -27,6 +40,11 @@
 ;; Show-matching parent / Highlight current-word:
 (set-face-background 'show-paren-match-face    (first-valid-color "#E0C0FF"))
 (set-face-foreground 'show-paren-match-face    (first-valid-color "red"))
+
+;; Highlight C++ operators.... 
+(set-face-foreground 'font-lock-operator-face (first-valid-color "red"))
+(set-face-foreground 'font-lock-end-statement (first-valid-color "red"))
+
 
 
 ;; Remove some background colors from diredp:
