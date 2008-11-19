@@ -15,6 +15,7 @@
   ;;(c-set-style "gnu")
   (setq tab-width 4)
   (local-set-key [(tab)] 'my-awk-smart-tab)
+  (local-set-key [(delete)] 'special-delete-for-region)
   (c-set-offset 'substatement 4 nil)
   (c-set-offset 'statement-block-intro 4 nil)
   (c-set-offset 'substatement-open 0 nil)

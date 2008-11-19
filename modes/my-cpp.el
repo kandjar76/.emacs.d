@@ -73,6 +73,7 @@
   (ad-activate 'self-insert-command)
 
   (local-set-key [(tab)] 'my-c-smart-tab)
+  (local-set-key [(delete)] 'special-delete-for-region)
   (local-set-key [(control ?c) (?m)] 'manual-entry)
   (local-set-key [(control ?x) (?a) (?a)] 'cpp-align-variable-assignment) 
   (local-set-key [(control ?x) (?a) (?f)] 'cpp-align-function-bracket)
