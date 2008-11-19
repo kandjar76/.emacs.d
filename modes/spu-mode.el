@@ -546,6 +546,50 @@ Assumes that the current line has / will have opcodes on it."
 				 spu-odd-column)
 			     1 spu-instr-max-length)))))
 
+;;(defun spu-indent-end-of-line()
+;;  "Helper function for the indent function."
+;;  (let ((col (current-column)))
+;;    (end-of-line)
+;;    (spu-clear-whitespaces-before (point))
+;;    (delete-backward-char 1)
+;;    (let ((even (spu-find-even-opcode))
+;;	  (odd  (spu-find-odd-opcode))
+;;	  (added-new-line nil))
+;;      (save-excursion
+;;	(cond
+;;	 ;; Case 1: no even but odd
+;;	 ((and (not even) odd)
+;;	  (spu-indent-and-comment-opcodes))
+;;	 
+;;	 ;; Case 2: even but no odd
+;;	 ((and even (not odd))
+;;	  (if (>= col spu-odd-column)
+;;	      (progn (insert "{lnop}")
+;;		     (spu-indent-and-comment-opcodes)
+;;		     (newline)
+;;		     (setq added-new-line t)
+;;		     (indent-to-column spu-even-column))
+;;	      (progn (spu-indent-and-comment-opcodes)
+;;		     (indent-to-column spu-odd-column))))
+;;	 ;; Case 3: odd and even 
+;;	 ((and even odd)
+;;	  (spu-indent-and-comment-opcodes)
+;;	  (newline)
+;;	  (setq added-new-line t)
+;;	  (indent-to-column spu-even-column))
+;;
+;;	 ;; Case 4: no even, no odd
+;;	 ((and (not even) (not odd))
+;;	  (if (>= col spu-even-column)
+;;	      (progn (insert "{nop}")
+;;		     (spu-indent-and-comment-opcodes)
+;;		     (end-of-line)
+;;		     (indent-to-column spu-odd-column))
+;;	      (indent-to-column spu-even-column)))))
+;;      (if added-new-line
+;;	  (next-line 1))
+;;      (end-of-line))))
+
 (defun spu-indent-end-of-line()
   "Helper function for the indent function."
   (let ((col (current-column)))
@@ -565,18 +609,13 @@ Assumes that the current line has / will have opcodes on it."
 	 ((and even (not odd))
 	  (if (>= col spu-odd-column)
 	      (progn (insert "{lnop}")
-		     (spu-indent-and-comment-opcodes)
-		     (newline)
-		     (setq added-new-line t)
-		     (indent-to-column spu-even-column))
+		     (spu-indent-and-comment-opcodes))
 	      (progn (spu-indent-and-comment-opcodes)
 		     (indent-to-column spu-odd-column))))
+
 	 ;; Case 3: odd and even 
 	 ((and even odd)
-	  (spu-indent-and-comment-opcodes)
-	  (newline)
-	  (setq added-new-line t)
-	  (indent-to-column spu-even-column))
+	  (spu-indent-and-comment-opcodes))
 
 	 ;; Case 4: no even, no odd
 	 ((and (not even) (not odd))
@@ -586,29 +625,7 @@ Assumes that the current line has / will have opcodes on it."
 		     (end-of-line)
 		     (indent-to-column spu-odd-column))
 	      (indent-to-column spu-even-column)))))
-      (if added-new-line
-	  (next-line 1))
       (end-of-line))))
-
-;(defun spu-indent-and-comment(end-of-line)
-;  "Internal Indent function for SPU-mode"
-;  (let ((no-opcodes-result (spu-detect-no-opcodes-line)))
-;    (if no-opcodes-result
-;	;; Comment / Label / Preprocessor command -> beginning of the line
-;	(save-excursion
-;	  (beginning-of-line)
-;	  (delete-char no-opcodes-result)
-;	  ;; Simple comment (; as opposed to ;;): aligned to the even column
-;	  (forward-char 1)
-;	  (if (and (/= (char-after) ?\;)
-;		   (= (char-before) ?\;))
-;	      (progn (beginning-of-line)
-;		     (indent-to-column spu-even-column))))
-;	;; Otherwise we are dealing with an opcode line.
-;	(if (and end-of-line 
-;		 (spu-end-of-line (point)))
-;	    (spu-indent-end-of-line)
-;	    (spu-indent-and-comment-opcodes)))))
 
 
 (defun spu-indent-and-comment-core(end-of-line)
@@ -779,7 +796,7 @@ Note: this function assume that this is a line with opcodes"
 						    (or (and odd (spu-column-to-pos odd))
 							(point-at-eol)))))
     (setq instr (spu-clean-comments instr))
-    (setq wl    (split-string (subst-char-in-string ?, 32 instr)))
+    (setq wl    (split-string (subst-char-in-string 40 32 (subst-char-in-string 41 32 (subst-char-in-string ?, 32 instr)))))
     (if (or (member (car wl) spu-even-opcodes)
 	    (member (car wl) spu-odd-opcodes))
 	 wl)))
@@ -817,10 +834,11 @@ Note: this function assume that this is a line with opcodes"
 		      (not (bobp))
 		      (> (point) start))
 	    (save-excursion
-	      (if (and (spu-find-even-opcode) 
-		       (not (spu-find-odd-opcode)))
-		  (progn (end-of-line)
-			 (insert " {lnop}"))))
+	      (if (not (spu-detect-no-opcodes-line))
+		  (if (and (spu-find-even-opcode) 
+			   (not (spu-find-odd-opcode)))
+		      (progn (end-of-line)
+			     (insert " {lnop}")))))
 	    (spu-indent-and-comment nil)
 	    (forward-line -1))
 	  (save-excursion
@@ -1067,6 +1085,32 @@ is a nop/lnop, leaving the corresponding instructions in the other pipe unaffect
 	    (message "Beginning of buffer!")))))
 
 
+
+(defun spu-swap-with-marked-line()
+  "Swaps the SPU instruction currently under the point with the 'same pipe' instruction
+which is on the marked line."
+  (interactive "*")
+  (if (spu-detect-no-opcodes-line)
+      (message "The current line doesn't contain any opcodes.")
+      (let* ((column   (current-column))
+	     (bol1     (point-at-bol))
+	     (odd      (spu-find-odd-opcode))
+	     (swap-odd (and odd (>= column odd)))
+	     bol2)
+	;; Check the marked line:
+	(exchange-dot-and-mark)
+	(if (spu-detect-no-opcodes-line)
+	    (message "The marked line doesn't contain any opcodes.")
+	    (setq bol2 (point-at-bol)))
+	(deactivate-mark)
+	;; Swap:
+	(if bol2
+	    (spu-swap-instructions bol1 bol2 column)))))
+
+
+
+
+
 (defun spu-valid-opcode-p (opcode)
   "Returns t if opcode is a valid SPU opcode; returns nil otherwise."
   (and (or (member opcode spu-even-opcodes) (member opcode spu-odd-opcodes)) t))
@@ -1145,6 +1189,7 @@ is a nop/lnop, leaving the corresponding instructions in the other pipe unaffect
     (define-key spu-mode-map [(control meta left)]        'spu-previous-opcode)
     (define-key spu-mode-map [(control c) ?a]             'spu-add-current-word-to-register-list)
     (define-key spu-mode-map [(control c) ?s]             'spu-region-report)
+    (define-key spu-mode-map [(control tab)]              'spu-swap-with-marked-line)
     (define-key spu-mode-map [(control f7)]               'compile)
     spu-mode-map))
 
