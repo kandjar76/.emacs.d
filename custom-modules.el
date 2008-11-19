@@ -205,6 +205,7 @@
 (require 'spu-highlight-registers)
 (require 'spu-highlight-stalls)
 (require 'spu-tooltip)
+(require 'spu-highlight-loop)
 
 ;; Autoactivate the loading of the SPU registers:
 (add-hook 'spu-mode-hook 'spu-highlight-registers-mode)
