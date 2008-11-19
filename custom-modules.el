@@ -96,11 +96,21 @@
 ;;------------------------------------------------------------------------------
 
 (require 'highlight-regexp)
+(setq highlight-regexp-faces '(secondary-selection
+			       highlight-selected-word-face))
+
 
 (defun highlight-selected-word(word index)
   "Highlight the current word"
   (let ((highlight-regexp--face-index index))
     (highlight-regexp-string word)))
+
+(defun dehighlight-current-word()
+  "Hook -- Cancel the previous current-word highlighted"
+  (remove-hook 'pre-command-hook 'dehighlight-current-word)
+  (sit-for 0)
+  (highlight-regexp-clear)
+  (pending-delete-mode 1)) ;; For unknown reason, pending-mode is corrupted by this function... linked to the remove-hook call
 
 (setq quick-search-current-text "")
 (defun quick-search-text()
@@ -145,19 +155,23 @@
 ;; Use of the isearch interface to highlight the current word
 ;;
 
+(setq highlist-selected-word-toggle-state nil)
+(make-face 'highlight-selected-word-face)
+(set-face-background 'highlight-selected-word-face (first-valid-color "lightcyan" "white"))
+(set-face-foreground 'highlight-selected-word-face (first-valid-color "blue" "black"))
+(defvar highlight-selected-word-face 'highlight-selected-word-face
+  "Font used to highlight the selected / current word.")
+
 (defun highlight-current-word()
   "Use isearch library to highlight the current word"
   (interactive)
-  (let ((highlight-regexp--face-index 1))
-    (highlight-regexp-current-word))
-  (add-hook 'pre-command-hook 'dehighlight-current-word))
-
-(defun dehighlight-current-word()
-  "Hook -- Cancel the previous current-word highlighted"
-  (remove-hook 'pre-command-hook 'dehighlight-current-word)
-  (sit-for 0)
-  (highlight-regexp-clear)
-  (pending-delete-mode 1)) ;; For unknown reason, pending-mode is corrupted by this function... linked to the remove-hook call
+  (if (not (member (current-buffer) highlist-selected-word-toggle-state))
+      (progn (push (current-buffer) highlist-selected-word-toggle-state)
+	     (let ((highlight-regexp--face-index 1))
+	       (highlight-regexp-current-word)))
+      (progn (setq highlist-selected-word-toggle-state (remq (current-buffer) highlist-selected-word-toggle-state))
+	     (sit-for 0)
+	     (highlight-regexp-clear))))
 
 
 
