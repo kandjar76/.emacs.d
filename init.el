@@ -13,8 +13,13 @@
 
 ;; Set the default font:
 (if (eq window-system 'x)
-    (progn  (create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
-	    (set-face-font 'default "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")))
+    (cond
+     ((x-list-fonts "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
+      (create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
+      (set-face-font 'default "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*"))
+     ((x-list-fonts "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*")
+      (set-face-font 'default "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*"))
+     ))
 
 (if (eq window-system 'w32)
     (progn  ;(create-fontset-from-fontset-spec "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1"))

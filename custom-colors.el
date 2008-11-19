@@ -1,5 +1,7 @@
 ;; Files used to setup the different color within xemacs:
 
+(setq default-background-color (first-valid-color "#F0F0F0" "white"))
+
 
 ;; Bookmark color:
 (set-face-background 'bm-face      (first-valid-color "lightcyan" "blue"))
@@ -25,12 +27,12 @@
 
 
 ;; Remove some background colors from diredp:
-(set-face-background 'diredp-flag-mark              "#F0F0F0")
+(set-face-background 'diredp-flag-mark              default-background-color)
 (set-face-foreground 'diredp-flag-mark              "blue")
-(set-face-background 'diredp-read-priv              "#F0F0F0")
-(set-face-background 'diredp-write-priv             "#F0F0F0")
-(set-face-background 'diredp-no-priv                "#F0F0F0")
-(set-face-background 'diredp-exec-priv              "#F0F0F0")
+(set-face-background 'diredp-read-priv              default-background-color)
+(set-face-background 'diredp-write-priv             default-background-color)
+(set-face-background 'diredp-no-priv                default-background-color)
+(set-face-background 'diredp-exec-priv              default-background-color)
 (set-face-background 'diredp-flag-mark-line         (first-valid-color "#FFE0D0" "white"))
 (set-face-foreground 'diredp-compressed-file-suffix "red")
 
@@ -46,7 +48,7 @@
 
 ;; Default color:
 (set-face-foreground 'default "black")
-(set-face-background 'default (first-valid-color "#F0F0F0" "white"))
+(set-face-background 'default (first-valid-color default-background-color "white"))
 
 
 ;; Elisp Reference -- :size... 
