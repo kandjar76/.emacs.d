@@ -29,6 +29,10 @@
 
 
 ;; History:
+;;  v1.7: Update by Cedric Lallain
+;;        - the "add register" function now checks if a variable already exist, 
+;;        in that case, just edit the current comment.
+;;
 ;;  v1.6: Update by Cedric Lallain
 ;;        - fix undo function while using the indent function
 ;;        - the indent function doesn't create new lines anymore
@@ -549,50 +553,6 @@ Assumes that the current line has / will have opcodes on it."
 				 spu-odd-column)
 			     1 spu-instr-max-length)))))
 
-;;(defun spu-indent-end-of-line()
-;;  "Helper function for the indent function."
-;;  (let ((col (current-column)))
-;;    (end-of-line)
-;;    (spu-clear-whitespaces-before (point))
-;;    (delete-backward-char 1)
-;;    (let ((even (spu-find-even-opcode))
-;;	  (odd  (spu-find-odd-opcode))
-;;	  (added-new-line nil))
-;;      (save-excursion
-;;	(cond
-;;	 ;; Case 1: no even but odd
-;;	 ((and (not even) odd)
-;;	  (spu-indent-and-comment-opcodes))
-;;	 
-;;	 ;; Case 2: even but no odd
-;;	 ((and even (not odd))
-;;	  (if (>= col spu-odd-column)
-;;	      (progn (insert "{lnop}")
-;;		     (spu-indent-and-comment-opcodes)
-;;		     (newline)
-;;		     (setq added-new-line t)
-;;		     (indent-to-column spu-even-column))
-;;	      (progn (spu-indent-and-comment-opcodes)
-;;		     (indent-to-column spu-odd-column))))
-;;	 ;; Case 3: odd and even 
-;;	 ((and even odd)
-;;	  (spu-indent-and-comment-opcodes)
-;;	  (newline)
-;;	  (setq added-new-line t)
-;;	  (indent-to-column spu-even-column))
-;;
-;;	 ;; Case 4: no even, no odd
-;;	 ((and (not even) (not odd))
-;;	  (if (>= col spu-even-column)
-;;	      (progn (insert "{nop}")
-;;		     (spu-indent-and-comment-opcodes)
-;;		     (end-of-line)
-;;		     (indent-to-column spu-odd-column))
-;;	      (indent-to-column spu-even-column)))))
-;;      (if added-new-line
-;;	  (next-line 1))
-;;      (end-of-line))))
-
 (defun spu-indent-end-of-line()
   "Helper function for the indent function."
   (let ((col (current-column)))
@@ -670,20 +630,6 @@ Assumes that the current line has / will have opcodes on it."
 	  (progn (delete-region (point-at-bol) (point-at-eol))
 		 (insert indented-line)
 		 (move-to-column col)))))
-		     
-
-
-;(defun spu-get-end-of-line-position()
-;  "Return the position of the end of the buffer"
-;  (save-excursion
-;    (end-of-line)
-;    (point)))
-
-;(defun spu-get-beginning-of-line-position()
-;  "Return the position of the end of the buffer"
-;  (save-excursion
-;    (beginning-of-line)
-;    (point)))
 
 (defun spu-column-to-pos(column)
   "Convert the column into a position assuming that the cursor is at the current line"
@@ -812,6 +758,18 @@ Note: this function assume that this is a line with opcodes"
   (let ((instr (spu-extract-instruction)))
     (if instr (cdr instr))))
 
+(defun spu-register-used-p(reg)
+  "Returns t if the register REG is used.
+A register is consider as used if it's present on a code line;
+even if it's used in the commented section of the line."
+  (let ((reg-used nil))
+    (save-excursion
+      (save-match-data
+	(goto-char (point-min))
+	(while (and (not reg-used)
+		    (search-forward-regexp (concat "\\<" reg "\\>") nil t))
+	  (setq reg-used (spu-detect-opcodes-line)))
+	reg-used))))
 
 
 ;;
@@ -1124,40 +1082,90 @@ which is on the marked line."
   (interactive "sOpcode: ")
   (message (format "%d cycle(s)" (spu-cycle-count opcode))))
 
-(defun spu-add-current-word-to-register-list(comment)
-  "Add the current word in the register section. ( i.e: after ';; <Registers>' )"
-  (interactive "sComment: ")
+
+(defun spu-add-current-word-to-register-list()
+  "Add the current word in the register section. ( i.e: after ';; <Registers>' )
+If the register already exist, edit the comment instead."
+  (interactive "*")
   (save-excursion
     (save-match-data
-      (let ((register-name (current-word)))
+      (let ((curpt (point))
+	    (register-name (current-word)))
 	(beginning-of-buffer)
-	(if (not (search-forward "<Registers>" nil t))
-	    (message "[error] Can't add the register, register list not found. Make sure you have the text: '<Registers>' in your file")
-	    (forward-line 1)
-	    (beginning-of-line)
-	    (while (and (bolp)
-			(not (eobp))
-			(string-match "^\\.[Rr][Ee][Gg][ \t]"
-				      (buffer-substring (point-at-bol) 
-							(point-at-eol))))
-	      (forward-line 1))
-	    (forward-line -1)
-	    (end-of-line)
-	    (newline)
-	    (insert (concat ".reg " register-name))
-	    (if (> (length comment) 0)
-		(progn (indent-to-column spu-reg-comment-column)
-		       (insert (concat " ; " comment)))))))))
+	(let ((known-register (search-forward-regexp (concat "^\\.reg[\t ]*\\<" register-name "\\>") nil t)))
+	  (if known-register
+	      (progn (goto-char known-register)
+		     (let ((comment-pos (search-forward-regexp ";+[ \t]*" (point-at-eol) t))
+			   comment comment-beg)
+		       (when comment-pos 
+			 (setq comment (buffer-substring-no-properties comment-pos (point-at-eol)))
+			 (setq comment-beg (search-backward-regexp "\\>[ \t]*;+[ \t]*" (point-at-bol) t)))
+		       (goto-char curpt)
+		       (setq comment (read-string (concat "[" register-name "] Edit comment: ") comment))
+		       (goto-char known-register)
+		       (if (or (not comment)
+			       (= (length comment) 0))
+			   (if comment-beg 
+			       (progn (delete-region comment-beg (point-at-eol))
+				      (message (format "Point: %i" comment-beg))
+				      ))
+			   (progn (if comment-pos
+				      (progn (delete-region comment-pos (point-at-eol))
+					     (end-of-line)
+					     (insert comment))
+				      (progn (end-of-line)
+					     (indent-to-column spu-reg-comment-column)
+					     (insert (concat " ; " comment))))))))
+	      (progn (goto-char curpt)
+		     (let ((comment (read-string (concat "[" register-name "] New register, Enter comment: "))))
+		       (beginning-of-buffer)
+		       (if (not (search-forward "<Registers>" nil t))
+			   (message "[error] Can't add the register, register list not found. Make sure you have the text: '<Registers>' in your file")
+			   (forward-line 1)
+			   (beginning-of-line)
+			   (while (and (bolp)
+				       (not (eobp))
+				       (string-match "^\\.[Rr][Ee][Gg][ \t]"
+						     (buffer-substring (point-at-bol) 
+								       (point-at-eol))))
+			     (forward-line 1))
+			   (forward-line -1)
+			   (end-of-line)
+			   (newline)
+			   (insert (concat ".reg " register-name))
+			   (if (> (length comment) 0)
+			       (progn (indent-to-column spu-reg-comment-column)
+				      (insert (concat " ; " comment)))))))))))))
 
 
-
-
-;(defun spu-swap-next-instruction (&optional n)
-;  "Swaps the SPU instruction currently under the point with the one on the next
-;line, leaving the corresponding instructions in the other pipe unaffected. If
-;the optional parameter n is provided, the operation is repeated n times.  If n
-;is negative, the instruction is swapped into the previous line instead of the
-;next one."
+(defun spu-comment-unused-register-out()
+  "Check the usage of each register definition, and remove the ones which are not used in the code."
+  (interactive)
+  (if (is-region-active)
+      (apply-on-region-lines
+       (region-beginning)
+       (region-end)
+       (lambda (bol eol)
+	 (let ((line (buffer-substring-no-properties bol eol))
+	       (none-used t)
+	       work-line reg-list current
+	       reg-not-used)
+	   (if (string-match "^\.reg[ \t]" line)
+	       (progn (setq work-line (substring (spu-clean-comments line) 4))
+		      (setq reg-list  (split-string (subst-char-in-string ?, 32 work-line)))
+		      (while reg-list
+			(setq current (pop reg-list))
+			(if (spu-register-used-p current)
+			    (setq none-used nil)
+			    (setq reg-not-used (cons current reg-not-used))))
+		      (if none-used
+			  (progn (delete-region bol eol)
+				 (insert (concat "; " line)))
+			  (while reg-not-used
+			    (setq current (pop reg-not-used))
+			    (beginning-of-line)
+			    (replace-regexp (concat "\\<" current "\\>[ \t]*,?") "{\\&}" nil bol eol))))))))
+      (message "No Selected Region.")))
 
 
 
