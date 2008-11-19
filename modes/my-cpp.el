@@ -13,7 +13,8 @@
 	  )))
 
 (defun surround-with-curly-brackets(&optional ARG)
-  "Add curly brackets around the selected block"
+  "Add curly brackets around the selected block
+Side effect: copy the selected region inside the kill buffer"
   (interactive "P") 
   (if (is-region-active)
       (let ((start (region-beginning))
@@ -32,7 +33,8 @@
 
 
 (defun surround-with-paren(&optional ARG)
-  "Add curly brackets around the selected block"
+  "Add curly brackets around the selected block
+Side effect: copy the selected region inside the kill buffer"
   (interactive "P") 
   (if (is-region-active)
       (let ((start (region-beginning))
