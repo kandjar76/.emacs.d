@@ -25,6 +25,10 @@
 ;; - correct latency for double-precision instructions.
 ;; - Function to automatically find the best column
 ;; - Function to reindent the whole spu code
+;; - Function to count how many even/odd/cycles for a given region.
+;; - Highlight the register used by the current instruction
+;; - Highlight the latency (all the time / on a selected region? / What about loops?)
+;; - BUG: When the text scroll left.. weird behavior... 
 
 ;; History:
 ;;  v1.3: Update by Cedric Lallain
@@ -225,7 +229,7 @@ matches any of the individual opcodes."
 (defun spu-find-even-opcode()
   "Return the column of the even opcode in this line (nil if no even opcodes are found)"
   (save-excursion
-    (let (start end line fwd)
+    (let (start end line fwd cmt)
       (end-of-line)
       (setq end (point))
       (beginning-of-line)
@@ -351,19 +355,28 @@ Assumes that the char before POINT is a whitespace or a tab"
 	      (or (= (char-before) 32)
 		  (= (char-before) ?\t)))
     (delete-backward-char 1))
-  (insert " "))
+   (insert " "))
 
 (defun spu-end-of-line(pos)
-  "Returns t if POS is at the end of line or if the only chars after are spaces/tabs"
+  "Returns t if POS is at the 'end of line'.
+POS is consider at the end of line iff:
+. POS is not at the end of an opcode
+. it can only be spaces / tabs between POS and the real end of line."
   (save-excursion 
     (goto-char pos)
-    (while (and (char-after)
-		(or (= (char-after) 32)
-		    (= (char-after) ?\t)))
-      (forward-char 1))
-    (let ((cur (point)))
-      (end-of-line)
-      (= cur (point)))))
+    (if (not (spu-end-of-opcode pos))
+	(progn (while (and (char-after) 
+			   (or (= (char-after) 32)
+			       (= (char-after) ?\t)))
+		 (forward-char 1))
+	       (let ((cur (point)))
+		 (end-of-line)
+		 (= cur (point)))))))
+
+(defun spu-end-of-opcode(pos)
+  "Returns t if POS is at the end of an opcode"
+  (and (alphanumericp (char-before))
+       (> (spu-cycle-count (current-word)) 0)))
 
 (defun spu-indent-args(opcode-column)
   "Helper function for the indent function.
@@ -465,7 +478,11 @@ Assumes that the current line has / will have opcodes on it."
 	  (spu-clear-whitespaces-before (point))
 	  (indent-to-column spu-odd-column)
 	  (spu-indent-args (current-column)))))
-	)))
+     )
+    (if (spu-end-of-opcode (point))
+	(indent-to-column (+ (or (and (member (current-word) spu-even-opcodes) spu-even-column)
+				 spu-odd-column)
+			     1 spu-instr-max-length)))))
 
 (defun spu-indent-end-of-line()
   "Helper function for the indent function."
@@ -518,9 +535,16 @@ Assumes that the current line has / will have opcodes on it."
 	;; Comment / Label / Preprocessor command -> beginning of the line
 	(save-excursion
 	  (beginning-of-line)
-	  (delete-char no-opcodes-result))
+	  (delete-char no-opcodes-result)
+	  ;; Simple comment (; as opposed to ;;): aligned to the even column
+	  (forward-char 1)
+	  (if (and (/= (char-after) ?\;)
+		   (= (char-before) ?\;))
+	      (progn (beginning-of-line)
+		     (indent-to-column spu-even-column))))
 	;; Otherwise we are dealing with an opcode line.
-	(if (and end-of-line (spu-end-of-line (point)))
+	(if (and end-of-line 
+		 (spu-end-of-line (point)))
 	    (spu-indent-end-of-line)
 	    (spu-indent-and-comment-opcodes)))))
 
@@ -647,18 +671,28 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
   (if (is-region-active)
       (let ((start (region-beginning))
 	    (end   (region-end)))
+	(if ( > start end )
+	    (let (tmp) (setq tmp end end start start tmp)))
 	(save-excursion
-	  (goto-char start)
+	  (goto-char end)
+	  (if (bolp) (forward-line -1))
 	  (beginning-of-line)
 	  (while (and (bolp)
-		      (not (eobp))
-		      (< (point) end))
-	    (if (not (spu-find-odd-opcode))
-		(save-excursion
-		  (end-of-line)
-		  (insert " {lnop}")))
+		      (not (bobp))
+		      (> (point) start))
+	    (save-excursion
+	      (if (and (spu-find-even-opcode) 
+		       (not (spu-find-odd-opcode)))
+		  (progn (end-of-line)
+			 (insert " {lnop}"))))
 	    (spu-indent-and-comment nil)
-	    (forward-line 1))))
+	    (forward-line -1))
+	  (save-excursion
+	    (if (and (spu-find-even-opcode) 
+		     (not (spu-find-odd-opcode)))
+		(progn (end-of-line)
+		       (insert " {lnop}"))))
+	  (spu-indent-and-comment nil)))
       (spu-indent-and-comment t)))
 
 
@@ -687,8 +721,6 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 	     (backward-char) ; the function will stop if we reach the beginning of the buffer
 	     (spu-previous-opcode)))))
 
-
-
 ;;(defun spu-swap-point-and-mark()
 ;;   (interactive)
 ;;   (let ((col (current-column)))
@@ -698,7 +730,6 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 ;;       (beginning-of-line)
 ;;       (let ((bol2 (point)))
 ;; 	(spu-swap-instructions bol1 bol2 col)))))
-
 
 
 
@@ -798,42 +829,7 @@ line, leaving the corresponding instructions in the other pipe unaffected."
 ;the optional parameter n is provided, the operation is repeated n times.  If n
 ;is negative, the instruction is swapped into the previous line instead of the
 ;next one."
-;  (interactive "*P")
-;  (let ((num-lines (abs (prefix-numeric-value n)))
-;		(spu-evenp (< (current-column) (spu-odd-instruction-column)))
-;		(move-direction (if (> (prefix-numeric-value n) 0) 1 -1))
-;		)
-;	;; Store the difference between the current column and the beginning og the
-;	;; current instruction, so we can restore point to the "same" place after
-;	;; swapping.
-;	(set-register ?e (- (current-column) (if spu-evenp 0 (spu-odd-instruction-column))))
-;	(while (progn (setq num-lines (- num-lines 1)) (>= num-lines 0))
-;	  (move-to-column (if spu-evenp 0 (spu-odd-instruction-column)))
-;	  (point-to-register ?c)
-;	  ;; Figure out where we're swapping to, first.  If we can't find
-;	  ;; a destination, abort without changing anything.
-;	  (save-excursion
-;		(while (progn (forward-line move-direction) (not (spu-valid-line-p)))
-;		  (cond ((bobp) (error "Reached beginning of buffer"))
-;				((eobp) (error "Reached end of buffer"))))
-;		(move-to-column (if spu-evenp 0 (spu-odd-instruction-column)))
-;		(point-to-register ?d)
-;		)
-;	  ;; Grab the instruction under the cursor.
-;	  (jump-to-register ?c)
-;	  (spu-store-current-instruction ?a t)
-;	  (jump-to-register ?d)
-;	  (spu-store-current-instruction ?b t)
-;	  ;; Yank the instructions into each other's lines.
-;	  (insert-register ?a)
-;	  (jump-to-register ?c)
-;	  (insert-register ?b)
-;	  ;; Restore state
-;	  (jump-to-register ?d)
-;	  (move-to-column (+ (get-register ?e)
-;						 (if spu-evenp 0 (spu-odd-instruction-column))))
-;	  (message nil)
-;	  )))
+
 
 
 
@@ -859,9 +855,10 @@ line, leaving the corresponding instructions in the other pipe unaffected."
     (define-key spu-mode-map [(control <)]                'spu-previous-opcode)
     (define-key spu-mode-map [(control meta down)]        'spu-swap-next-instruction)
     (define-key spu-mode-map [(control meta up)]          'spu-swap-previous-instruction)
-    (define-key spu-mode-map [(control meta left)]        'spu-next-opcode)
-    (define-key spu-mode-map [(control meta right)]       'spu-previous-opcode)
+    (define-key spu-mode-map [(control meta right)]       'spu-next-opcode)
+    (define-key spu-mode-map [(control meta left)]        'spu-previous-opcode)
     (define-key spu-mode-map [(control c) ?a]             'spu-add-current-word-to-register-list)
+    (define-key spu-mode-map [(control f7)]               'compile)
     spu-mode-map))
 
 (defconst spu-font-lock-keywords-3
