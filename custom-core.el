@@ -58,8 +58,14 @@ Returns \"black\" if no valid color is found."
 ;; Inihibit the splash screen:
 (setq inhibit-startup-message t)
 
-;; Disable backup files « ~ »
-(setq make-backup-files nil)
+
+;; Backup all wiles in a specific folder:
+(if (eq window-system 'x)
+    (progn 
+      (setq make-backup-files t)
+      (add-to-list 'backup-directory-alist (cons "." "~/.emacs-backup")))
+    ;; Disable backup files « ~ »
+    (setq make-backup-files nil))
 
 ;; Make sure list doesn't ident the 'else' differently from the 'then'
 (put 'if 'lisp-indent-function nil)
@@ -174,6 +180,9 @@ Returns \"black\" if no valid color is found."
 
 ;; Enable shift+key to select a region:
 (pc-selection-mode)
+
+;; Global cwarn mode on: highlight assignment within a if, if with no instruction...
+(global-cwarn-mode 1)
 
 ;;------------------------------------------------------------------------------
 ;;
