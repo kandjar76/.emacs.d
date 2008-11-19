@@ -54,6 +54,15 @@ Side effect: copy the selected region inside the kill buffer"
 (setq c++-font-lock-keywords c++-font-lock-keywords-3)
 
 
+
+;; Add symbol highlighting:
+(font-lock-add-keywords 'c++-mode 
+			'(;; Currently support for []|&!.+=-/%*,()<>{}
+			  ("\\(\\[\\|\\]\\|[|!?:\\.\\+\\=\\&]\\|->?\\|\\/\\|\\%\\|\\*\\|,\\|(\\|)\\|>\\ |<\\|{\\|}\\)" 1 font-lock-operator-face )
+			  ;; End of c++ statement 
+			  ("\\(;\\)" 1 font-lock-end-statement ) ))
+
+
 ;; Perform my C/C++-specific customizations.
 (defun my-c-setup ()
   (c-set-style "gnu")
