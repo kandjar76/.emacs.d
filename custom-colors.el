@@ -36,15 +36,15 @@
 (set-face-background 'diredp-flag-mark-line         (first-valid-color "#FFE0D0" "white"))
 (set-face-foreground 'diredp-compressed-file-suffix "red")
 
-
+;; Font used to highlight warnings:
+(set-face-foreground 'font-lock-warning-face   (first-valid-color "violetred" "darkmagenta" "magenta"))
+(set-face-background 'font-lock-warning-face   (first-valid-color "#F0D0D0" "grey" "white"))
 
 
 ;; ???
 (set-face-foreground 'font-lock-builtin-face   (first-valid-color "darkcyan" "violetred" "darkmagenta" "magenta"))
 
 (make-face-unbold 'font-lock-builtin-face)
-
-(set-face-foreground 'font-lock-warning-face   (first-valid-color "violetred" "darkmagenta" "magenta"))
 
 ;; Default color:
 (set-face-foreground 'default "black")
