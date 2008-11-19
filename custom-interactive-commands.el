@@ -109,6 +109,13 @@
 (ad-activate 'yank-pop)
 
 
+(defun kill-selected-region (&optional arg)
+  "Equivalent to kill-region, except, it won't kill it if the selected region isn't active"
+  (interactive)
+  (if (is-region-active)
+      (kill-region (mark) (point))))
+
+
 ;; To move to another lib:
 
 (defun detect-decimal-or-hexa-number()

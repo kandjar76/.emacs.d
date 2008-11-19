@@ -36,7 +36,7 @@
 
 ;; Copy/Cut/Paste keys:
 (define-key global-map [(control insert)]               'copy-region-as-kill) ; kill-ring-save -- will add a delay to show the "copied" area
-(define-key global-map [(control delete)]        	'kill-region)
+(define-key global-map [(control delete)]        	'kill-selected-region)
 (define-key global-map [(shift insert)]                 'yank)
 (define-key global-map [(shift delete)]          	'yank-pop)
 
