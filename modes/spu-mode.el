@@ -202,10 +202,10 @@ matches any of the individual opcodes."
 
 
 (setq spu-odd-opcode-regexp
-      (concat "\\(\\({\\s-*lnop\\s-*}\\)\\|" (spu-string-list-to-regexp spu-odd-opcodes) "\\)"))
+      (concat "\\(\\({\\s-*lnop\\s-*}\\)\\|" "{~>[^~]+~}\\|" (spu-string-list-to-regexp spu-odd-opcodes) "\\)"))
 
 (setq spu-even-opcode-regexp
-      (concat "\\(\\({\\s-*nop\\s-*}\\)\\|" (spu-string-list-to-regexp spu-even-opcodes) "\\)"))
+      (concat "\\(\\({\\s-*nop\\s-*}\\)\\|" "{~<[^~]+~}\\|" (spu-string-list-to-regexp spu-even-opcodes) "\\)"))
 
 (setq spu-no-opcodes-lines-regexp  "^[ \t]*\\([;.]\\|\\w+:\\)")
 
@@ -324,6 +324,23 @@ spaces / tabs present at the beginning of the line."
       (setq line (spu-clean-c-comments (spu-clean-line-comment (buffer-substring start end))))
       (or (string-match spu-even-opcode-regexp line)
 	  (string-match spu-odd-opcode-regexp line)))))
+
+(defun spu-detect-nop-line(swap-odd &optional pure-nop)
+  "Return t if an nop (if SWAP-ODD is nil) or a lnop (if SWAP-ODD is t)  has been found at that line."
+  (save-excursion
+    (let (start end line fwd regexp)
+      (end-of-line)
+      (setq end (point))
+      (beginning-of-line)
+      (setq start (point))
+      (setq line (spu-clean-c-comments (spu-clean-line-comment (buffer-substring start end))))
+      (if pure-nop
+	  (setq regexp (or (and swap-odd "\\(\\<lnop\\>[^}]\\|\\<lnop\\>$\\)")
+			   "\\(\\<nop\\>[^}]\\|\\<nop\\>$\\)"))
+	  (setq regexp (or (and swap-odd "\\({lnop}\\|\\<lnop\\>\\)")
+			   "\\({nop}\\|\\<nop\\>\\)")))
+      (or (string-match regexp line)
+	  (string-match regexp line)))))
   
 (defun spu-find-comment-before-opcode(column)
   "Starting at the column COLUMN, the function will search backward up to the beginning of the line
@@ -573,8 +590,29 @@ Assumes that the current line has / will have opcodes on it."
 	  (next-line 1))
       (end-of-line))))
 
-(defun spu-indent-and-comment(end-of-line)
-  "Internal Indent function for SPU-mode"
+;(defun spu-indent-and-comment(end-of-line)
+;  "Internal Indent function for SPU-mode"
+;  (let ((no-opcodes-result (spu-detect-no-opcodes-line)))
+;    (if no-opcodes-result
+;	;; Comment / Label / Preprocessor command -> beginning of the line
+;	(save-excursion
+;	  (beginning-of-line)
+;	  (delete-char no-opcodes-result)
+;	  ;; Simple comment (; as opposed to ;;): aligned to the even column
+;	  (forward-char 1)
+;	  (if (and (/= (char-after) ?\;)
+;		   (= (char-before) ?\;))
+;	      (progn (beginning-of-line)
+;		     (indent-to-column spu-even-column))))
+;	;; Otherwise we are dealing with an opcode line.
+;	(if (and end-of-line 
+;		 (spu-end-of-line (point)))
+;	    (spu-indent-end-of-line)
+;	    (spu-indent-and-comment-opcodes)))))
+
+
+(defun spu-indent-and-comment-core(end-of-line)
+  "Internal Indent function for SPU-mode (core)"
   (let ((no-opcodes-result (spu-detect-no-opcodes-line)))
     (if no-opcodes-result
 	;; Comment / Label / Preprocessor command -> beginning of the line
@@ -592,6 +630,27 @@ Assumes that the current line has / will have opcodes on it."
 		 (spu-end-of-line (point)))
 	    (spu-indent-end-of-line)
 	    (spu-indent-and-comment-opcodes)))))
+
+(defun spu-indent-and-comment(end-of-line)
+  "Internal Indent function for SPU-mode (manage undo buffer)"
+    (let ((line  (buffer-substring (point-at-bol) (point-at-eol)))
+	  (col   (current-column))
+	  (modif (buffer-modified-p))
+	  (newl nil)
+	  indented-line)
+      (let (buffer-undo-list)
+	(spu-indent-and-comment-core end-of-line)
+	(setq col (current-column))
+	(setq indented-line (buffer-substring (point-at-bol) (point-at-eol)))
+	(delete-region (point-at-bol)(point-at-eol))
+	(insert line)
+	(move-to-column col)
+	(set-buffer-modified-p modif))
+      (if (not (string= indented-line line))
+	  (progn (delete-region (point-at-bol) (point-at-eol))
+		 (insert indented-line)
+		 (move-to-column col)))))
+		     
 
 
 ;(defun spu-get-end-of-line-position()
@@ -840,7 +899,8 @@ Note: this function assume that this is a line with opcodes"
 	    (message (format "SPU Report: even=%i (%i cycles) ; odd=%i (%i cycles) -- max ratio: %f." 
 			     even-count even-cycle-count 
 			     odd-count odd-cycle-count
-			     (/ (+ .0 (max even-cycle-count odd-cycle-count)) (max even-count odd-count))))
+			     (/ (+ .0 (max even-cycle-count odd-cycle-count) )
+				(+ .0 (max even-count odd-count)))))
 	    )))))
 
 
@@ -889,6 +949,117 @@ line, leaving the corresponding instructions in the other pipe unaffected."
 	    (forward-line -1))
 	  (if (and (not (spu-detect-no-opcodes-line))
 		   (spu-detect-opcodes-line))
+	      (setq bol2 (point-at-bol))))
+	;; Swap:
+	(if bol2
+	    (spu-swap-instructions bol1 bol2 column)
+	    (message "Beginning of buffer!")))))
+
+
+(defun spu-swap-next-nop() 
+  "Swaps the SPU instruction currently under the point with the next instruction
+which is a nop/lnop, leaving the corresponding instructions in the other pipe unaffected."
+  (interactive "*")
+  (if (spu-detect-no-opcodes-line)
+      (message "The current line doesn't contain any opcodes.")
+      (let* ((column   (current-column))
+	     (bol1     (point-at-bol))
+	     (odd      (spu-find-odd-opcode))
+	     (swap-odd (and odd (>= column odd)))
+	     bol2)
+
+	;; Find the next line:
+	(save-excursion 
+	  (forward-line 1)
+	  (while (and (or (spu-detect-no-opcodes-line)
+			  (not (spu-detect-nop-line swap-odd)))
+		      (not (eobp)))
+	    (forward-line 1))
+	  (if (and (not (spu-detect-no-opcodes-line))
+		   (spu-detect-nop-line swap-odd))
+	      (setq bol2 (point-at-bol))))
+	;; Swap:
+	(if bol2
+	    (spu-swap-instructions bol1 bol2 column)
+	    (message "End of buffer!")))))
+
+
+(defun spu-swap-previous-nop()
+  "Swaps the SPU instruction currently under the point with the previous one which
+is a nop/lnop, leaving the corresponding instructions in the other pipe unaffected."
+  (interactive "*")
+  (if (spu-detect-no-opcodes-line)
+      (message "The current line doesn't contain any opcodes.")
+      (let* ((column   (current-column))
+	     (bol1     (point-at-bol))
+	     (odd      (spu-find-odd-opcode))
+	     (swap-odd (and odd (>= column odd)))
+	     bol2)
+
+	;; Find the next line:
+	(save-excursion 
+	  (forward-line -1)
+	  (while (and (or (spu-detect-no-opcodes-line)
+			  (not (spu-detect-nop-line swap-odd)))
+		      (not (bobp)))
+	    (forward-line -1))
+	  (if (and (not (spu-detect-no-opcodes-line))
+		   (spu-detect-nop-line swap-odd))
+	      (setq bol2 (point-at-bol))))
+	;; Swap:
+	(if bol2
+	    (spu-swap-instructions bol1 bol2 column)
+	    (message "Beginning of buffer!")))))
+
+(defun spu-swap-next-pure-nop() 
+  "Swaps the SPU instruction currently under the point with the next instruction
+which is a nop/lnop, leaving the corresponding instructions in the other pipe unaffected."
+  (interactive "*")
+  (if (spu-detect-no-opcodes-line)
+      (message "The current line doesn't contain any opcodes.")
+      (let* ((column   (current-column))
+	     (bol1     (point-at-bol))
+	     (odd      (spu-find-odd-opcode))
+	     (swap-odd (and odd (>= column odd)))
+	     bol2)
+
+	;; Find the next line:
+	(save-excursion 
+	  (forward-line 1)
+	  (while (and (or (spu-detect-no-opcodes-line)
+			  (not (spu-detect-nop-line swap-odd t)))
+		      (not (eobp)))
+	    (forward-line 1))
+	  (if (and (not (spu-detect-no-opcodes-line))
+		   (spu-detect-nop-line swap-odd t))
+	      (setq bol2 (point-at-bol))))
+	;; Swap:
+	(if bol2
+	    (spu-swap-instructions bol1 bol2 column)
+	    (message "End of buffer!")))))
+
+
+(defun spu-swap-previous-pure-nop()
+  "Swaps the SPU instruction currently under the point with the previous one which
+is a nop/lnop, leaving the corresponding instructions in the other pipe unaffected."
+  (interactive "*")
+  (if (spu-detect-no-opcodes-line)
+      (message "The current line doesn't contain any opcodes.")
+      (let* ((column   (current-column))
+	     (bol1     (point-at-bol))
+	     (odd      (spu-find-odd-opcode))
+	     (swap-odd (and odd (>= column odd)))
+	     bol2)
+
+	;; Find the next line:
+	(save-excursion 
+	  (forward-line -1)
+	  (while (and (or (spu-detect-no-opcodes-line)
+			  (not (spu-detect-nop-line swap-odd t)))
+		      (not (bobp)))
+	    (forward-line -1))
+	  (if (and (not (spu-detect-no-opcodes-line))
+		   (spu-detect-nop-line swap-odd t))
 	      (setq bol2 (point-at-bol))))
 	;; Swap:
 	(if bol2
@@ -964,8 +1135,12 @@ line, leaving the corresponding instructions in the other pipe unaffected."
     (define-key spu-mode-map [(tab)]                      'spu-indent)
     (define-key spu-mode-map [(control >)]                'spu-next-opcode)
     (define-key spu-mode-map [(control <)]                'spu-previous-opcode)
-    (define-key spu-mode-map [(control meta down)]        'spu-swap-next-instruction)
-    (define-key spu-mode-map [(control meta up)]          'spu-swap-previous-instruction)
+    (define-key spu-mode-map [(shift meta down)]          'spu-swap-next-instruction)
+    (define-key spu-mode-map [(shift meta up)]            'spu-swap-previous-instruction)
+    (define-key spu-mode-map [(control meta down)]        'spu-swap-next-nop)
+    (define-key spu-mode-map [(control meta up)]          'spu-swap-previous-nop)
+    (define-key spu-mode-map [(control meta next)]        'spu-swap-next-pure-nop)
+    (define-key spu-mode-map [(control meta prior)]       'spu-swap-previous-pure-nop)
     (define-key spu-mode-map [(control meta right)]       'spu-next-opcode)
     (define-key spu-mode-map [(control meta left)]        'spu-previous-opcode)
     (define-key spu-mode-map [(control c) ?a]             'spu-add-current-word-to-register-list)
@@ -1019,8 +1194,10 @@ line, leaving the corresponding instructions in the other pipe unaffected."
   (set-syntax-table spu-syntax-table)
   (use-local-map spu-mode-map)
   (make-local-variable 'tab-width)
-  (set (make-local-variable 'font-lock-defaults) '(spu-font-lock-keywords nil t))
+  ;(make-local-variable 'case-fold-search)
+  (set (make-local-variable 'font-lock-defaults) '(spu-font-lock-keywords nil nil))
   (setq tab-width 8)
+  ;(setq case-fold-search t)
   (setq major-mode 'spu-mode)
   (setq mode-name "SPU Assembly Code")
   (run-hooks 'spu-mode-hook))
