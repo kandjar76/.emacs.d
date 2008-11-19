@@ -103,6 +103,7 @@ Returns \"black\" if no valid color is found."
 ;; unlock the downcase function -- useful for keyboard macros:
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
+(put 'narrow-to-region 'disabled nil)
 
 ;; Enable only one command in Buffers menu (select that buffer)
 (if using-xemacs 
@@ -183,6 +184,10 @@ Returns \"black\" if no valid color is found."
 
 ;; Global cwarn mode on: highlight assignment within a if, if with no instruction...
 (global-cwarn-mode 1)
+
+;; Smaller delay before showing the tooltip.
+(setq tooltip-delay 0.3)
+
 
 ;;------------------------------------------------------------------------------
 ;;
