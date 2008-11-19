@@ -2,6 +2,9 @@
 
 (setq default-background-color (first-valid-color "#F0F0F0" "white"))
 
+;; Default color:
+(set-face-foreground 'default "black")
+(set-face-background 'default (first-valid-color default-background-color "white"))
 
 ;; Bookmark color:
 (set-face-background 'bm-face      (first-valid-color "lightcyan" "blue"))
@@ -37,45 +40,24 @@
 (set-face-foreground 'diredp-compressed-file-suffix "red")
 
 ;; Font used to highlight warnings:
-(set-face-foreground 'font-lock-warning-face   (first-valid-color "violetred" "darkmagenta" "magenta"))
-(set-face-background 'font-lock-warning-face   (first-valid-color "#F0D0D0" "grey" "white"))
-
-
-;; ???
-(set-face-foreground 'font-lock-builtin-face   (first-valid-color "darkcyan" "violetred" "darkmagenta" "magenta"))
-
-(make-face-unbold 'font-lock-builtin-face)
-
-;; Default color:
-(set-face-foreground 'default "black")
-(set-face-background 'default (first-valid-color default-background-color "white"))
-
-
-;; Elisp Reference -- :size... 
-;(set-face-foreground 'font-lock-reference-face					"red")
+(set-face-foreground 'font-lock-warning-face    (first-valid-color "violetred" "darkmagenta" "magenta"))
+(set-face-background 'font-lock-warning-face    (first-valid-color "#F0D0D0" "grey" "white"))
 
 ;; Comment:
-;(set-face-foreground 'font-lock-comment-face 					(first-valid-color "darkgreen" "green"))
-
-;; C/C++ Strings:
-;(set-face-foreground 'font-lock-string-face					    (first-valid-color "#1515C3" "midnightblue" "darkblue" "darkcyan"))
-
-;; C/C++ Found types:
-;(set-face-foreground 'font-lock-type-face						(first-valid-color "violetred" "medium orchid" "purple"))
-
-;; Lisp Strings / in compile mode: successful lines
-;(set-face-foreground 'font-lock-doc-string-face					(first-valid-color "darkgreen" "green"))
-
-;; Preprocessor command:
-;(set-face-foreground 'font-lock-preprocessor-face				(first-valid-color "red" "darkgreen" "green"))
+(set-face-foreground 'font-lock-comment-face 	(first-valid-color "sea green" "green"))
 
 ;; Color of the language keyword: const, if, else...
-;(set-face-foreground 'font-lock-keyword-face (first-valid-color "blue"))
+(set-face-foreground 'font-lock-keyword-face    (first-valid-color "blue"))
 
-;; Color of the cursor:
-;(set-face-background 'text-cursor (first-valid-color "red"))
+;; C/C++ Found types:
+(set-face-foreground 'font-lock-type-face	(first-valid-color "firebrick" "violetred" "medium orchid" "purple"))
 
-;(set-face-foreground 'font-lock-variable-name-face				"yellow")
-;(set-face-foreground 'font-lock-function-name-face 				(first-valid-color '("orange" "brightred")))
-;(make-face-unitalic   'font-lock-type-face)
+;; ??? / SPU preproc (.reg / .global)
+(set-face-foreground 'font-lock-builtin-face    (first-valid-color "violetred" "darkcyan" "darkmagenta" "magenta"))
+(make-face-unbold 'font-lock-builtin-face)
 
+;; C/C++ Strings:
+(set-face-foreground 'font-lock-string-face	(first-valid-color "royal blue" "#1515C3" "midnightblue" "darkblue" "darkcyan"))
+
+;; elisp: function name
+(set-face-foreground 'font-lock-function-name-face (first-valid-color "red" "purple3"))
