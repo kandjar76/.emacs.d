@@ -2325,7 +2325,9 @@ instruction.")))
     (save-match-data
       (goto-char (point-min))
       ;;(let ((regdef (search-forward-regexp (concat "^[\t ]*\\.reg[\t ]*" reg) nil t)))
-      (let ((regdef (search-forward-regexp (concat "^\\.reg[\t ]*\\<" reg "\\>") nil t)))
+      (let ((regdef (or (search-forward-regexp (concat "^\\.reg[\t ]*\\<" reg "\\>") nil t)
+			(search-forward-regexp (concat "^\\.reg\\([\t ]*[A-Za-z_0-9]+[\t ]*,\\)*[\t ]\\<" reg "\\>") nil t)
+			)))
 	(when regdef
 	  (goto-char regdef)
 	  (let* ((line (buffer-substring-no-properties (point-at-bol) (point-at-eol)))
