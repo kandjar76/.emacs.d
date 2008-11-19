@@ -16,7 +16,7 @@
 ;; - show-file-name
 ;; - setup-text-mode
 ;; - delete-backward-word
-
+;; - swap-windows
 
 ;;
 ;; Miscellaneous function:
@@ -398,3 +398,19 @@ With prefix arg, use single quotes, not double quotes, as delimeters."
                              (error "Point is not inside string"))
                          (point)))))
         (message "String has %d (0x%x) characters" length length)))))
+
+(defun swap-windows ()
+ "Swap the buffer in the first two windows.
+  Error is generated if there is more than 2 windows :)"
+ (interactive) 
+ (if (not (= (count-windows) 2)) (message "You need exactly 2 windows to do this.")
+     (let* ((win1 (first (window-list)))
+	    (win2 (second (window-list)))
+	    (buf1 (window-buffer win1))
+	    (buf2 (window-buffer win2))
+	    (pos1 (window-start win1))
+	    (pos2 (window-start win2)))
+       (set-window-buffer win1 buf2)
+       (set-window-buffer win2 buf1)
+       (set-window-start win1 pos2)
+       (set-window-start win2 pos1))))
