@@ -218,6 +218,67 @@ the code can be changed"
       (message "There is no active region!")))
 
 
+(defun increase-numbers-on-current-line(colstart colend incr)
+  "Increase the number found on the current line between the column [COLSTART; COLEND] by INCR"
+  (save-restriction
+    (let (bor)
+      (move-to-column colstart)
+      (setq bor (point))
+      (move-to-column colend)
+      (narrow-to-region bor (point))
+      (goto-char (point-min))
+      (while (search-forward-regexp "[0123456789]" nil t)
+	(backward-char)
+	(let* ((number-region (detect-decimal-or-hexa-number))
+	       (start         (car number-region))
+	       (end           (cdr number-region))
+	       (lgt           (- end start))
+	       (hex-number    (and (> lgt 1) (= (char-after (+ start 1)) ?x)))
+	       (hex-prefix    (or (and hex-number 2) 0))
+	       (str           (buffer-substring (+ start hex-prefix) end))
+	       (new-number    (+ incr (string-to-number str (and hex-number 16))))
+	       new-string)
+	  (if hex-number
+	      (setq new-string (concat "0x" (format (concat "%0" (number-to-string (- lgt 2)) "X") new-number)))
+	      (setq new-string (format (concat "%0" (number-to-string lgt) "d") new-number)))
+	  (delete-region start end)
+	  (goto-char start)
+	  (insert new-string))))))
+
+(defun increase-numbers-on-rectangle(start end &optional count)
+  "Increment each number in the selected rectangle depending on the prefix argument COUNT:
+if COUNT is integer value, each number is increased by COUNT
+if COUNT is a simple prefix value (C-U), each number is increased by 1
+if COUNT is nil, each number is increased by line number within the selection (starting at 0)"
+  (interactive "*r\nP")
+  (save-excursion
+    (save-match-data
+      (let ((line-ndx   0)
+	    (line-count (count-lines start end))
+	    colstart colend)
+	;; Retrieve the initial and final column for the operation
+	(save-excursion
+	  (goto-char start)
+	  (setq colstart (current-column))
+	  (goto-char end)
+	  (setq colend   (current-column))
+	  (when (> colstart colend)
+	    (let (tmp) (setq tmp colend colend colstart colstart tmp))))
+	;; Proceed line by line:
+	(goto-char start)
+	(while (< line-ndx line-count)
+	  ;; Do the job!
+	  (cond ((not count)      (increase-numbers-on-current-line colstart colend line-ndx))
+		((listp count)    (increase-numbers-on-current-line colstart colend 1))
+		((integerp count) (increase-numbers-on-current-line colstart colend count))
+		(t (error "Invalid COUNT value!")))
+	  (forward-line 1)
+	  (setq line-ndx (1+ line-ndx)))))))
+
+
+      
+(define-key global-map [(control ?x) (?r) (?i)]	'increase-numbers-on-rectangle)
+
 
 
 (defsubst dired-one-or-two-files-p ()
