@@ -233,9 +233,10 @@ A record is constituated with a list of coupe symbol / type-checker"
 	      (defrecord-define-make-new ,record-type)
 	    (let ((fields (cddr ,record-type)))
 	      (while fields 
-		(let ((current-field-name (caar fields)))
-		  (defrecord-define-field-functions ,record-type current-field-name)
-		    (pop fields))))))))
+		(if (caar fields)
+		    (let ((current-field-name (caar fields)))
+		      (defrecord-define-field-functions ,record-type current-field-name)
+		      (pop fields)))))))))
 
 (defun recordp(record)
   "Return t if RECORD's type if record"

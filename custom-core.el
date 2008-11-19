@@ -26,7 +26,7 @@ Returns \"black\" if no valid color is found."
   "Check if a region is active"
   (if (boundp 'region-active-p)
       (region-active-p) 
-    mark-active))
+      mark-active))
 
 (defun is-color-valid(col)
   "Check if the color COL is valid"
@@ -187,6 +187,10 @@ Returns \"black\" if no valid color is found."
 
 ;; Smaller delay before showing the tooltip.
 (setq tooltip-delay 0.3)
+
+;; Increase the size of the undo buffer:
+(setq undo-limit         800000)
+(setq undo-strong-limit 1000000)
 
 
 ;;------------------------------------------------------------------------------
