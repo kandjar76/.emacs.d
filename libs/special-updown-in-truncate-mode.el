@@ -1,0 +1,47 @@
+(defun down-one-line()
+  (interactive)
+  (let* ((width (window-width))
+	 (col (current-column))
+	 (cb  (*(/ col width) width))
+	 ceol)
+    (save-excursion
+      (end-of-line)
+      (setq ceol (current-column)))
+    (if (> (- ceol cb) width)
+	(move-to-column (+ col width))
+	(progn (next-line-nomark 1)
+	       (move-to-column (- col cb))))))
+
+(defun up-one-line()
+  (interactive)
+  (let ((width (window-width))
+	(col (current-column))
+	ceol)
+    (if (> col width)
+	(move-to-column (- col width))
+	(progn (previous-line-nomark 1)
+	       (save-excursion
+		 (end-of-line)
+		 (setq ceol (current-column)))
+	       (if (> ceol width)
+		   (move-to-column (+ (* (/ ceol width) width) col)))
+	       ))))
+
+(defun beginning-of-line-special()
+  (interactive)
+  (let ((width (window-width))
+	(col (current-column)))
+    (move-to-column (* (/ col width) width))))
+
+(defun end-of-line-special()
+  (interactive)
+  (let ((width (window-width))
+	(col (current-column)))
+    (move-to-column (+ (* (/ col width) width) (- width 1)))))
+
+
+(define-key global-map [up] 'up-one-line)
+(define-key global-map [down] 'down-one-line)
+(define-key global-map [home] 'beginning-of-line-special)
+(define-key global-map [end] 'end-of-line-special)
+
