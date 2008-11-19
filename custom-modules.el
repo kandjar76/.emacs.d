@@ -222,6 +222,8 @@
 ;; find ~/work -name \*.cpp -or -name \*.h -or -name \*.c > ~/.cscope/cscope.files
 ;; cscope -b -q -k
 
+(defvar cscope-calling-buffer-stack '())
+
 (defun cscope-find-this-symbol-no-updates(symbol)
   "Locate a symbol in source code [no database update performed]."
   (interactive (list (cscope-prompt-for-symbol "Find this symbol [without updating the database]: " nil)))
@@ -298,7 +300,6 @@
 ;;
 ;;------------------------------------------------------------------------------
 
-;; Enable autoloading of various major modes
 (require 'spu-mode)
 
 
@@ -308,7 +309,6 @@
 ;;
 ;;------------------------------------------------------------------------------
 
-;; Enable autoloading of various major modes
 (require 'ddf-mode)
 
 
@@ -328,6 +328,35 @@
 		 auto-save-hash-p nil
 		 auto-save-interval 2000)))
 
+
+;;------------------------------------------------------------------------------
+;;
+;; Module: dired+
+;;
+;;------------------------------------------------------------------------------
+
+(require 'dired+)
+(define-key dired-mode-map [?S] 'dired-mark-files-containing-regexp)
+(define-key dired-mode-map [?s] 'dired-mark-files-regexp)
+(define-key dired-mode-map [?K] 'diredp-omit-unmarked)
+(define-key dired-mode-map [?I] 'dired-kill-subdir)
+(define-key dired-mode-map [(control up)] 'dired-tree-up)
+(define-key dired-mode-map [(control down)] 'dired-tree-down)
+(define-key dired-mode-map [(control left)] 'dired-hide-subdir)
+(define-key dired-mode-map [return] 'dired-find-alternate-file)
+(define-key dired-mode-map [(control return)] 'dired-find-file)
+(define-key dired-mode-map [backspace] 'dired-up-directory)
+(put 'dired-find-alternate-file 'disabled nil)
+
+
+
+;;------------------------------------------------------------------------------
+;;
+;; Module: find-dired++
+;;
+;;------------------------------------------------------------------------------
+
+(require 'find-dired++)
 
 
 ;;------------------------------------------------------------------------------

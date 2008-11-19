@@ -18,9 +18,11 @@
 
 (define-key global-map [(control ?c) (?r)]		'revert-buffer-now)
 (define-key global-map [(control ?x) (?k)]		'kill-buffer-now)
+(define-key global-map [(control ?x) (control ?d)]	'dired)
 
 ;; Disable mouse-2 default behavior which is "kill" or "yank" something like that... 
 (define-key global-map [(mouse-2)]               	nil)
+(define-key global-map [(drag-mouse-1)]                 nil)
 
 ;; Electric split window:
 (define-key global-map [(control ?x)(?2)]               'electric-split-window-vertically)
@@ -55,3 +57,4 @@
 (define-key global-map [(control shift f10)]            'cscope-find-this-symbol)
 (define-key global-map [(control shift f11)]            'cscope-find-functions-calling-this-function)
 (define-key global-map [(control shift f12)]            'cscope-find-global-definition)
+(define-key global-map [(control ?*)]                   'cscope-pop-mark)

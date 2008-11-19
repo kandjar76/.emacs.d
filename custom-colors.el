@@ -6,7 +6,7 @@
 (set-face-foreground 'bm-face      (first-valid-color "black" "blue"))
 
 ;; Highlight the current line:
-(set-face-background 'highlight-current-line-face (first-valid-color "#C0E0FF" "lightblue" "white"))
+(set-face-background 'highlight-current-line-face (first-valid-color "#C0E0FF" "lightblue" "cyan"))
 
 ;; I-Search:
 (set-face-foreground 'isearch (first-valid-color "red"))
@@ -22,6 +22,17 @@
 ;; Show-matching parent / Highlight current-word:
 (set-face-background 'show-paren-match-face    (first-valid-color "#E0C0FF"))
 (set-face-foreground 'show-paren-match-face    (first-valid-color "red"))
+
+
+;; Remove some background colors from diredp:
+(set-face-background 'diredp-flag-mark              "#F0F0F0")
+(set-face-foreground 'diredp-flag-mark              "blue")
+(set-face-background 'diredp-read-priv              "#F0F0F0")
+(set-face-background 'diredp-write-priv             "#F0F0F0")
+(set-face-background 'diredp-no-priv                "#F0F0F0")
+(set-face-background 'diredp-exec-priv              "#F0F0F0")
+(set-face-background 'diredp-flag-mark-line         (first-valid-color "#FFE0D0" "white"))
+(set-face-foreground 'diredp-compressed-file-suffix "red")
 
 
 

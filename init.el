@@ -12,9 +12,14 @@
 
 
 ;; Set the default font:
-(create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
-(set-face-font 'default "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
+(if (eq window-system 'x)
+    (progn  (create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
+	    (set-face-font 'default "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")))
 
+(if (eq window-system 'w32)
+    (progn  ;(create-fontset-from-fontset-spec "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1"))
+	    (set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1")))
+    
 
 (load-library "custom-core")                       ; must be loaded before -- setup the core emacs
 (load-library "custom-modules")                    ; load the external modules
@@ -33,4 +38,3 @@
 ;; Automatically load the desktop:
 ;;(desktop-read)
 ;;(message "Startup files loaded succesfully -- M^x desktop-read : to restore the previously opened files.")))
-
