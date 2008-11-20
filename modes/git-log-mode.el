@@ -3,6 +3,7 @@
 ;; This file provides a major mode to view the git logs
 
 
+(require 'cl)
 
 ;;
 ;;
@@ -23,6 +24,7 @@
 (defvar git-log-selected-commit-line-face 'git-log-selected-commit-line-face
   "Font to highlight the commit header line of the git log.")
 
+(setq git-log-header-color '(foreground-color . "red"))
 
 ;;
 ;;
@@ -93,7 +95,16 @@
 	 (apply #'git-run-command-buffer "*git-diff*" "diff" "-p" "-M" cur-rev marked-rev git-log-files-list)
 	 (apply #'git-run-command-buffer "*git-diff*" "diff-index" "-p" "-M" cur-rev git-log-files-list)
 	 ))
-     ))
+    ))
+
+(defun git-log-view-current()
+  (interactive)
+  (let ((cur-rev    (git-log-get-current-commit-rev))
+	(coding-system-for-read git-commits-coding-system))
+    (git-setup-diff-buffer
+     (apply #'git-run-command-buffer "*git-diff*" "log" "-p" "-M" "-1" cur-rev git-log-files-list)
+     )
+  ))
 
 (defun git-log-swap-current-marked-commit()
   (interactive)
@@ -114,7 +125,10 @@
 
 (defun git-log-set-files-list(files)
   "Set the list of files attached to the log window"
-  (setq git-log-files-list))
+  (setq header-line-format (concat (propertize " " 'display '(space :align-to 0))
+				   (propertize "Git log: " 'face git-log-header-color)
+				   (reduce (lambda(a b) (concat a " " b)) files)))
+  (setq git-log-files-list files))
 
 ;; User hook...
 (defvar git-log-mode-hook nil)
@@ -130,11 +144,13 @@
   (let ((git-log-mode-map (make-keymap)))
     (define-key git-log-mode-map [(?n)]    'git-log-next-commit-block)
     (define-key git-log-mode-map [(?p)]    'git-log-previous-commit-block)
-    (define-key git-log-mode-map [(?\ )]   'git-log-mark-commit)
+    (define-key git-log-mode-map [(?m)]    'git-log-mark-commit)
     (define-key git-log-mode-map [(?=)]    'git-log-diff-commit)
     (define-key git-log-mode-map [(?q)]    'bury-buffer)
     (define-key git-log-mode-map [(?u)]    'git-log-unmark-all)
     (define-key git-log-mode-map [(?r)]    'git-log-swap-current-marked-commit)
+    (define-key git-log-mode-map [(?\ )]   'git-log-next-commit-block)
+    (define-key git-log-mode-map [(?v)]    'git-log-view-current)
     git-log-mode-map))
 
 
@@ -155,6 +171,9 @@
   (setq tab-width 4)
   (setq major-mode 'git-log-mode)
   (setq mode-name "Git Log")
+  (setq header-line-format (concat (propertize " " 'display '(space :align-to 0))
+				   (propertize "Git log: " 'face git-log-header-color)
+				   "<current branch>"))
   (run-hooks 'git-log-mode-hook))
 
 
