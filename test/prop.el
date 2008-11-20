@@ -1,4 +1,30 @@
 (set-window-margins (get-buffer-window (current-buffer)) 7)
+
+;;********************************************************************************
+;;********************************************************************************
+
+
+(setq header-line-format header) ;; Set the header of the window...
+(setq header-line-format
+      (concat (propertize " " 
+			  'display 
+			  '(space :align-to 0))
+	      "Very interesting"))
+
+;; Turn whitespace chars in the header into stretch specs so
+;; they work regardless of the header-line face.
+(while (string-match "[ \t\n]+" header pos)
+  (setq pos (match-end 0))
+  (put-text-property (match-beginning 0) pos 'display
+		     ;; Assume fixed-size chars in the buffer.
+		     (list 'space :align-to pos)
+		     header)))
+
+
+;;********************************************************************************
+;;********************************************************************************
+
+
 (remove-text-properties  1 10 (list 'display))
 
 (add-text-properties 1 2 (list 'display
