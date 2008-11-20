@@ -30,6 +30,31 @@ static char * sb_tag+_xpm[] = {
   "Image used for the display of a codestack entry.")
 
 
+
+
+(defimage codestack-entry-image ((:type xpm :ascent center :data "/* XPM */
+static char * sb_tag+_xpm[] = {
+\"20 12 4 1\",
+\"      c None\",
+\".     c #828282\",
+\"+     c #000000\",
+\"@     c #FFF993\",
+\"                                                          \",
+\"                                                          \",
+\"                                                          \",
+\"   @@@@@@@    @@@@@    @@@@@      @@@@@                   \",
+\"      @      @     @   @    @    @     @                  \",
+\"      @      @     @   @     @   @     @                  \",
+\"      @      @     @   @     @   @     @                  \",
+\"      @      @     @   @    @    @     @                  \",
+\"      @       @@@@@    @@@@@      @@@@@                   \",
+\"                                                          \",
+\"                                                          \",
+\"                                                          \",
+\"                                                          \"};"))
+  "Image used for the display of a codestack entry.")
+
+
 (insert-image codestack-entry-image)
 
 
@@ -80,3 +105,30 @@ static char * sb_tag+_xpm[] = {
 \"************\",
 \"            \"};")))
 (insert-image itst)
+
+
+
+(defimage t10 ((:type xpm :ascent center :data "/* XPM */
+static char * sb_tag+_xpm[] = {
+\"26 12 4 1\",
+\"      c None\",
+\".     c #FF0000\",
+\"+     c #000000\",
+\"@     c #424242\",
+\"                          \",
+\"                          \",
+\"..........................\",
+\".                        .\",
+\". @@@@@  @@  @@@    @@   .\",
+\".   @   @  @ @  @  @  @  .\",
+\".   @   @  @ @   @ @  @  .\",
+\".   @   @  @ @   @ @  @  .\",
+\".   @   @  @ @  @  @  @  .\",
+\".   @    @@  @@@    @@   .\",
+\".                        .\",
+\"..........................\",
+\"                          \"};"))
+  "Image used for the display of a codestack entry.")
+
+(insert-image t9)
+                 TODO
