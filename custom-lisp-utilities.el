@@ -42,26 +42,6 @@
 	   (eq ch ?_))
        nil))
 
-;; Emacs function which doesn't exist in XEmacs
-(if using-xemacs
-    (progn 
-      (defun assoc-string (key list ignore-case)
-	"Return non-nil if KEY is `equal' to the car of an element of LIST. IGNORE-CASE if true will do the research ignoring the case of the key"
-	(if ignore-case
-	    (assoc-ignore-case key list)
-	    (assoc key list)))
-
-      ; Emacs function which doesn't exist in XEmacs
-      (defun minibuffer-contents ()
-	"Return the content of the minibuffer"
-	(buffer-substring (point-min) (point-max)))
-
-      ; Emacs function which doesn't exist in XEmacs
-      (defun delete-minibuffer-contents ()
-	"Delete the contents of the minibuffer"
-	(erase-buffer))))
-
-
 (defun apply-on-region-lines(start end func &rest rest)
   "Call the function FUNC for every line of the region defined by: START END.
 The function will receive as param BOL and EOL which will represent the two 
@@ -74,7 +54,7 @@ For example:
     (interactive \"*\")
     (let ((buffer (get-buffer-create \"*test*\")))
       (display-buffer buffer)
-      (if (is-region-active)
+      (if mark-active
    	  (apply-on-region-lines 
    	   (region-beginning)
    	   (region-end)

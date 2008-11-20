@@ -35,7 +35,7 @@
 ;;
 
 (make-face  'highlight-current-word-font)
-(set-face-background 'highlight-current-word-font (first-valid-color "lightskyblue2" "thistle1"  ))
+(set-face-background 'highlight-current-word-font "lightskyblue2")
 (defvar highlight-current-word-font 'highlight-current-word-font
   "Font to highlight the current word.")
 

@@ -39,32 +39,14 @@
 ;;
 
 (make-face  'spu-highlight-loop-inactive-line)
-(set-face-foreground 'spu-highlight-loop-inactive-line (first-valid-color "gray90" "gray"))
+(set-face-foreground 'spu-highlight-loop-inactive-line "gray90")
 (defvar spu-highlight-loop-inactive-line 'spu-highlight-loop-inactive-line
   "Font to highlight the inactive line in the loop code.")
 
 (make-face  'spu-highlight-loop-previous-index-line)
-(set-face-foreground 'spu-highlight-loop-previous-index-line (first-valid-color  "gray"))
+(set-face-foreground 'spu-highlight-loop-previous-index-line "gray")
 (defvar spu-highlight-loop-previous-index-line 'spu-highlight-loop-previous-index-line
   "Font to highlight the inactive line in the loop code.")
-;; 
-;; 
-;; (make-face  'spu-highlight-registers-2)
-;; (set-face-background 'spu-highlight-registers-2 (first-valid-color "light sky  blue" "moccasin" "coral1"))
-;; (defvar spu-highlight-registers-2 'spu-highlight-registers-2
-;;   "Font to highlight the second register of a SPU line.")
-;; 
-;; 
-;; (make-face  'spu-highlight-registers-3)
-;; (set-face-background 'spu-highlight-registers-3 (first-valid-color "plum1" "rosybrown1" "misty rose" "plum1" "orchid1"))
-;; (defvar spu-highlight-registers-3 'spu-highlight-registers-3
-;;   "Font to highlight the third register of a SPU line.")
-;; 
-;; (make-face  'spu-highlight-registers-4)
-;; (set-face-background 'spu-highlight-registers-4 (first-valid-color "darkslategray2" "deepskyblue1"))
-;; (defvar spu-highlight-registers-4 'spu-highlight-registers-3
-;;   "Font to highlight the fourth register of a SPU line.")
-;; 
 
 ;;
 ;; Global variables:

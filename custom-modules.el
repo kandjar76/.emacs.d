@@ -11,7 +11,7 @@
 ;;
 ;;------------------------------------------------------------------------------
 
-; Loaded by default with xemacs, but not with emacs.
+; Doesn't seems to be loaded by default with emacs.
 (require 'cl) 
 
 
@@ -147,8 +147,8 @@
 
 (setq highlist-selected-word-toggle-state nil)
 (make-face 'highlight-selected-word-face)
-(set-face-background 'highlight-selected-word-face (first-valid-color "lightcyan" "white"))
-(set-face-foreground 'highlight-selected-word-face (first-valid-color "blue" "black"))
+(set-face-background 'highlight-selected-word-face "lightcyan")
+(set-face-foreground 'highlight-selected-word-face "blue")
 (defvar highlight-selected-word-face 'highlight-selected-word-face
   "Font used to highlight the selected / current word.")
 

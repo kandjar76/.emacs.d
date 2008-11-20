@@ -5,7 +5,7 @@
   "Intelligently decides whether to indent or do word-completion."
   (interactive "P")
   ;; Special case: a region has been selected -- run the alignment on the selected region
-  (if (is-region-active)
+  (if mark-active
       (c-indent-line-or-region)
       ;(if (looking-at "\\>")
           ;(dabbrev-expand nil)
@@ -17,7 +17,7 @@
   "Add curly brackets around the selected block
 Side effect: copy the selected region inside the kill buffer"
   (interactive "P") 
-  (if (is-region-active)
+  (if mark-active
       (let ((start (region-beginning))
 	    (end   (region-end)))
 	(let ((reg (extend-region-to-full-lines start end)))
@@ -37,7 +37,7 @@ Side effect: copy the selected region inside the kill buffer"
   "Add curly brackets around the selected block
 Side effect: copy the selected region inside the kill buffer"
   (interactive "P") 
-  (if (is-region-active)
+  (if mark-active
       (let ((start (region-beginning))
 	    (end   (region-end)))
 	(kill-region start end)

@@ -112,7 +112,7 @@
 (defun kill-selected-region (&optional arg)
   "Equivalent to kill-region, except, it won't kill it if the selected region isn't active"
   (interactive "*")
-  (if (is-region-active)
+  (if mark-active
       (kill-region (mark) (point))))
 
 
@@ -139,7 +139,7 @@ the code can be changed"
 (defun increment-numbers-multilines()
   "Increment the value on each lines"
   (interactive "*")
-  (if (is-region-active)
+  (if mark-active
       (save-excursion
 	(save-match-data
 	  (let* ((region (extend-region-to-full-lines (region-beginning) (region-end)))
@@ -179,7 +179,7 @@ the code can be changed"
 (defun increment-numbers-region(&optional arg)
   "Increment each number in the selected region by 1 or by the value of the prefix argument"
   (interactive "*p")
-  (if (is-region-active)
+  (if mark-active
       (save-excursion
 	(save-match-data
 	  (let* ((incr (or arg 1))

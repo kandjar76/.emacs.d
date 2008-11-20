@@ -131,22 +131,22 @@
 
 ;; Create faces for various opcode classes.
 (make-face 'spu-even-opcode-face)
-(set-face-foreground 'spu-even-opcode-face (first-valid-color "salmon1" "brightcyan"))
+(set-face-foreground 'spu-even-opcode-face "salmon1")
 (defvar spu-even-opcode-face 'spu-even-opcode-face
   "Font to highlight even opcodes set in SPU Assembly mode.")
 
 (make-face  'spu-odd-opcode-face)
-(set-face-foreground 'spu-odd-opcode-face (first-valid-color "cornflowerblue" "brightblue"))
+(set-face-foreground 'spu-odd-opcode-face "cornflowerblue")
 (defvar spu-odd-opcode-face 'spu-odd-opcode-face
   "Font to highlight odd opcodes set in SPU Assembly mode.")
 
 (make-face  'spu-nop-opcode-face)
-(set-face-foreground 'spu-nop-opcode-face (first-valid-color "salmon4" "darkgrey"))
+(set-face-foreground 'spu-nop-opcode-face "salmon4")
 (defvar spu-nop-opcode-face 'spu-nop-opcode-face
   "Font to highlight nop in SPU Assembly mode.")
 
 (make-face  'spu-lnop-opcode-face)
-(set-face-foreground 'spu-lnop-opcode-face (first-valid-color "darkslateblue" "darkgrey"))
+(set-face-foreground 'spu-lnop-opcode-face "darkslateblue")
 (defvar spu-lnop-opcode-face 'spu-lnop-opcode-face
   "Font to highlight lnop in SPU Assembly mode.")
 
@@ -899,7 +899,7 @@ even if it's used in the commented section of the line."
 (defun spu-indent()
   "Indent function for SPU-mode"
   (interactive "*")
-  (if (is-region-active)
+  (if mark-active
       (let ((start (region-beginning))
 	    (end   (region-end)))
 	(if ( > start end )
@@ -958,7 +958,7 @@ even if it's used in the commented section of the line."
 (defun spu-region-report()
   "Report how many odd / even / cycle counts per pipeline in the selected region"
   (interactive "*")
-  (if (not (is-region-active))
+  (if (not mark-active)
       (message "No region selected")
       (let ((start (region-beginning))
 	    (end   (region-end)))
@@ -1256,7 +1256,7 @@ If the register already exist, edit the comment instead."
 (defun spu-comment-unused-register-out()
   "Check the usage of each register definition, and remove the ones which are not used in the code."
   (interactive)
-  (if (is-region-active)
+  (if mark-active
       (apply-on-region-lines
        (region-beginning)
        (region-end)

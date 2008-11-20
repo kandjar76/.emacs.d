@@ -13,27 +13,27 @@
   "Font to highlight mtp messages.")
 
 (make-face  'mtpchat-emacs-face)
-(set-face-foreground 'mtpchat-emacs-face (first-valid-color "cornflowerblue" "brightblue"))
+(set-face-foreground 'mtpchat-emacs-face "cornflowerblue")
 (defvar mtpchat-emacs-face 'mtpchat-emacs-face
   "Font to highlight emacs messages.")
 
 (make-face  'mtpchat-your-line-face)
-(set-face-foreground 'mtpchat-your-line-face (first-valid-color "blue" "darkgrey"))
+(set-face-foreground 'mtpchat-your-line-face "blue")
 (defvar mtpchat-your-line-face 'mtpchat-your-line-face
   "Font to highlight a mtp chat line you sent.")
 
 (make-face  'mtpchat-your-name-face)
-(set-face-foreground 'mtpchat-your-name-face (first-valid-color "darkslateblue" "darkgrey"))
+(set-face-foreground 'mtpchat-your-name-face "darkslateblue")
 (defvar mtpchat-your-name-face 'mtpchat-your-name-face
   "Font to highlight a mtpchat line with your name in it.")
 
 (make-face 'mtpchat-you-tell-face)
-(set-face-foreground 'mtpchat-you-tell-face (first-valid-color "cadet blue" "blue"))
+(set-face-foreground 'mtpchat-you-tell-face "cadet blue")
 (defvar mtpchat-you-tell-face 'mtpchat-you-tell-face
   "Font to highlight a private msg you sent on mtpchat.")
 
 (make-face 'mtpchat-private-tell-face)
-(set-face-foreground 'mtpchat-private-tell-face (first-valid-color "forest green" "sea green"))
+(set-face-foreground 'mtpchat-private-tell-face "forest green")
 (defvar mtpchat-private-tell-face 'mtpchat-private-tell-face
   "Font to highlight a private msg you received on mtpchat.")
 

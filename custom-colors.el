@@ -2,6 +2,19 @@
 ;; Files used to setup the different color within emacs:
 ;;
 
+;;------------------------------------------------------------------------------
+;;
+;;                      Utility Functions                           
+;;
+;;------------------------------------------------------------------------------
+
+(defun first-valid-color (&rest colors)
+  "Returns the first valid color from color-list (a list of color names).
+Returns \"black\" if no valid color is found."
+  (cond ((null colors) "black")
+	((color-defined-p (car colors)) (car colors))
+	((apply 'first-valid-color (cdr colors)))))
+
 ;; Creation of fonts used by the C++ mode:
 (make-face 'font-lock-operator-face)
 (make-face 'font-lock-end-statement)
@@ -126,3 +139,40 @@
 
 ;; elisp: function name
 (set-face-foreground 'font-lock-function-name-face (first-valid-color "red" "purple3"))
+
+;; Spu:
+(make-face  'spu-highlight-registers-1)
+(make-face  'spu-highlight-registers-2)
+(make-face  'spu-highlight-registers-3)
+(make-face  'spu-highlight-registers-4)
+(make-face  'spu-highlight-registers-5)
+(make-face  'spu-highlight-registers-6)
+(make-face  'spu-highlight-registers-7)
+(make-face  'spu-highlight-registers-8)
+(make-face  'spu-highlight-registers-9)
+(make-face  'spu-highlight-registers-10)
+(set-face-background 'spu-highlight-registers-1 (first-valid-color "palegreen1" "chartreuse1"))
+(set-face-background 'spu-highlight-registers-2 (first-valid-color "light sky  blue" "moccasin" "coral1"))
+(set-face-background 'spu-highlight-registers-3 (first-valid-color "plum1" "rosybrown1" "misty rose" "plum1" "orchid1"))
+(set-face-background 'spu-highlight-registers-4 (first-valid-color "darkslategray2" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-5 (first-valid-color "gold" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-6 (first-valid-color "peru" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-7 (first-valid-color "MediumPurple2" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-8 (first-valid-color "medium sea green" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-9 (first-valid-color "orchid" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-10 (first-valid-color "light steel blue" "deepskyblue1"))
+
+(make-face  'spu-highlight-stalls-1c-font)
+(make-face  'spu-highlight-stalls-2c-font)
+(make-face  'spu-highlight-stalls-3c-font)
+(make-face  'spu-highlight-stalls-4c-font)
+(make-face  'spu-highlight-stalls-5c-font)
+(make-face  'spu-highlight-stalls-6c-font)
+(make-face  'spu-highlight-latency-line-font)
+(set-face-background 'spu-highlight-stalls-1c-font (first-valid-color "#FFCDCD" "orange red" "red"))
+(set-face-background 'spu-highlight-stalls-2c-font (first-valid-color "#FFC0C0" "orange red" "red"))
+(set-face-background 'spu-highlight-stalls-3c-font (first-valid-color "#FFA0A0" "orange red" "red"))
+(set-face-background 'spu-highlight-stalls-4c-font (first-valid-color "#FF8080" "orange red" "red"))
+(set-face-background 'spu-highlight-stalls-5c-font (first-valid-color "#FF4040""orange red" "red"))
+(set-face-background 'spu-highlight-stalls-6c-font (first-valid-color "#EF0000" "orange red" "red"))
+(set-face-background 'spu-highlight-latency-line-font (first-valid-color "#FFE0E0" "orange red" "red"))

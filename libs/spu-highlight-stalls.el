@@ -36,37 +36,37 @@
 ;;
 
 (make-face  'spu-highlight-stalls-1c-font)
-(set-face-background 'spu-highlight-stalls-1c-font (first-valid-color "#FFCDCD" "orange red" "red"))
+(set-face-background 'spu-highlight-stalls-1c-font "#FFCDCD")
 (defvar spu-highlight-stalls-1c-font 'spu-highlight-stalls-1c-font
   "Font to highlight the register which are responsible for a stall of 1 cycle.")
 
 (make-face  'spu-highlight-stalls-2c-font)
-(set-face-background 'spu-highlight-stalls-2c-font (first-valid-color "#FFC0C0" "orange red" "red"))
+(set-face-background 'spu-highlight-stalls-2c-font "#FFC0C0")
 (defvar spu-highlight-stalls-2c-font 'spu-highlight-stalls-2c-font
   "Font to highlight the register which are responsible for a stall of 2 cycles.")
 
 (make-face  'spu-highlight-stalls-3c-font)
-(set-face-background 'spu-highlight-stalls-3c-font (first-valid-color "#FFA0A0" "orange red" "red"))
+(set-face-background 'spu-highlight-stalls-3c-font "#FFA0A0")
 (defvar spu-highlight-stalls-3c-font 'spu-highlight-stalls-3c-font
   "Font to highlight the register which are responsible for a stall of 3 cycles.")
 
 (make-face  'spu-highlight-stalls-4c-font)
-(set-face-background 'spu-highlight-stalls-4c-font (first-valid-color "#FF8080" "orange red" "red"))
+(set-face-background 'spu-highlight-stalls-4c-font "#FF8080")
 (defvar spu-highlight-stalls-4c-font 'spu-highlight-stalls-4c-font
   "Font to highlight the register which are responsible for a stall of 4 cycles.")
 
 (make-face  'spu-highlight-stalls-5c-font)
-(set-face-background 'spu-highlight-stalls-5c-font (first-valid-color "#FF4040""orange red" "red"))
+(set-face-background 'spu-highlight-stalls-5c-font "#FF4040")
 (defvar spu-highlight-stalls-5c-font 'spu-highlight-stalls-5c-font
   "Font to highlight the register which are responsible for a stall of 5 cycles.")
 
 (make-face  'spu-highlight-stalls-6c-font)
-(set-face-background 'spu-highlight-stalls-6c-font (first-valid-color "#EF0000" "orange red" "red"))
+(set-face-background 'spu-highlight-stalls-6c-font "#EF0000")
 (defvar spu-highlight-stalls-6c-font 'spu-highlight-stalls-6c-font
   "Font to highlight the register which are responsible for a stall of 6 cycles.")
 
 (make-face  'spu-highlight-latency-line-font)
-(set-face-background 'spu-highlight-latency-line-font (first-valid-color "#FFE0E0" "orange red" "red"))
+(set-face-background 'spu-highlight-latency-line-font "#FFE0E0")
 (defvar spu-highlight-stalls-end-line-font 'spu-highlight-latency-line-line-font
   "Font to highlight the first line which won't stall with the current instruction.")
 
@@ -252,7 +252,7 @@ Returns a list of opcode / stalling time"
 (defun spu-stall-check()
   (interactive)
   (let ((stalls-count 0))
-    (if (not (is-region-active))
+    (if (not mark-active)
 	(message "No region selected")
 	(let ((start (region-beginning))
 	      (end   (region-end)))
@@ -425,7 +425,8 @@ Setting this variable directly does not change the mode; instead, use
 function `spu-highlight-latency-mode'."
   :set (lambda (symbol value) (spu-highlight-latency-mode (or value 0)))
   :initialize 'custom-initialize-default
-  :type 'boolean)
+  :type 'boolean
+  :group 'spu)
 
 
 (provide 'spu-highlight-stalls)

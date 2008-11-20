@@ -39,52 +39,52 @@
 ;;
 
 (make-face  'spu-highlight-registers-1)
-(set-face-background 'spu-highlight-registers-1 (first-valid-color "palegreen1" "chartreuse1"))
+(set-face-background 'spu-highlight-registers-1 "palegreen1")
 (defvar spu-highlight-registers-1 'spu-highlight-registers-1
   "Font to highlight the first register of a SPU line.")
 
 (make-face  'spu-highlight-registers-2)
-(set-face-background 'spu-highlight-registers-2 (first-valid-color "light sky  blue" "moccasin" "coral1"))
+(set-face-background 'spu-highlight-registers-2 "light sky blue")
 (defvar spu-highlight-registers-2 'spu-highlight-registers-2
   "Font to highlight the second register of a SPU line.")
 
 (make-face  'spu-highlight-registers-3)
-(set-face-background 'spu-highlight-registers-3 (first-valid-color "plum1" "rosybrown1" "misty rose" "plum1" "orchid1"))
+(set-face-background 'spu-highlight-registers-3 "plum1")
 (defvar spu-highlight-registers-3 'spu-highlight-registers-3
   "Font to highlight the third register of a SPU line.")
 
 (make-face  'spu-highlight-registers-4)
-(set-face-background 'spu-highlight-registers-4 (first-valid-color "darkslategray2" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-4 "darkslategray2")
 (defvar spu-highlight-registers-4 'spu-highlight-registers-4
   "Font to highlight the fourth register of a SPU line.")
 
 (make-face  'spu-highlight-registers-5)
-(set-face-background 'spu-highlight-registers-5 (first-valid-color "gold" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-5 "gold")
 (defvar spu-highlight-registers-5 'spu-highlight-registers-5
   "Font to highlight the fifth register of a SPU line.")
 
 (make-face  'spu-highlight-registers-6)
-(set-face-background 'spu-highlight-registers-6 (first-valid-color "peru" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-6 "peru" )
 (defvar spu-highlight-registers-6 'spu-highlight-registers-6
   "Font to highlight the sixth register of a SPU line.")
 
 (make-face  'spu-highlight-registers-7)
-(set-face-background 'spu-highlight-registers-7 (first-valid-color "MediumPurple2" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-7 "MediumPurple2")
 (defvar spu-highlight-registers-7 'spu-highlight-registers-7
   "Font to highlight the seventh register of a SPU line.")
 
 (make-face  'spu-highlight-registers-8)
-(set-face-background 'spu-highlight-registers-8 (first-valid-color "medium sea green" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-8 "medium sea green")
 (defvar spu-highlight-registers-8 'spu-highlight-registers-8
   "Font to highlight the eighth register of a SPU line.")
 
 (make-face  'spu-highlight-registers-9)
-(set-face-background 'spu-highlight-registers-9 (first-valid-color "orchid" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-9 "orchid")
 (defvar spu-highlight-registers-9 'spu-highlight-registers-9
   "Font to highlight the ninth register of a SPU line.")
 
 (make-face  'spu-highlight-registers-10)
-(set-face-background 'spu-highlight-registers-10 (first-valid-color "light steel blue" "deepskyblue1"))
+(set-face-background 'spu-highlight-registers-10 "light steel blue")
 (defvar spu-highlight-registers-10 'spu-highlight-registers-10
   "Font to highlight the tenth register of a SPU line.")
 

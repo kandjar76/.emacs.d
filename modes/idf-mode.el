@@ -95,7 +95,7 @@ matches any of the individual token."
 
 (defun idf-indent-line-or-region()
   (interactive)
-  (if (is-region-active)
+  (if mark-active
       (indent-region (region-beginning) (region-end) nil))
       (idf-indent-line))
       
