@@ -149,13 +149,20 @@
 ;; Automatic reload file:
 ;;(global-auto-revert-mode 1)
 
+;; Set the frame name (seems to only worked when the window is reduced in the taskbar)
+;; (setq frame-title-format "emacs - %b")
 
+(when window-system
+  (desktop-save-mode))
 
 ;;------------------------------------------------------------------------------
 ;;
 ;;              Customization of the different modes
 ;;
 ;;------------------------------------------------------------------------------
+
+;; Autoload the spu mode:
+;;(autoload 'spu-mode "spu-mode"  "Major mode for editing SPU assembly code." t)
 
 ;; Add additional extensions and their appropriate modes
 (setq auto-mode-alist
