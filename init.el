@@ -1,4 +1,6 @@
 ;; Add my elisp directory to the Emacs default load path
+;(modify-frame-parameters nil '((wait-for-wm . nil)))
+
 (setq orig-time (current-time))
 
 (setq load-path
@@ -68,6 +70,18 @@
 (insert ";;  . Tree of undo\n")
 (insert ";;  . Edit multiple text area at once (using ctrl+mouse to highlight those area for example)\n")
 (insert ";;  . Log viewer (`-, ...)\n")
+(insert ";;  . Gitk in emacs\n")
+(insert ";;  . See the git branches in emacs\n")
+(insert ";;  . Do git checkout in emacs\n")
+(insert ";;  . View the full branch diff within emacs (diff mode)\n")
+(insert ";;  . Git rebase in emacs\n")
+(insert ";;  . #if 0 recognize!!!\n")
+
+
+
+(insert ";;  . Log viewer (`-, ...)\n")
+
+
 
 (setq time4 (time-subtract time4 time3))
 (setq time3 (time-subtract time3 time2))
