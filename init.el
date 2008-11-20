@@ -15,8 +15,11 @@
        load-path))
 
 (defvar running-on-windows (memq system-type '(windows-nt cygwin)))
-(defvar running-on-linux (not running-on-windows))
-(defvar running-on-x (eq window-system 'x))
+(defvar running-on-linux   (not running-on-windows))
+(defvar running-on-x       (eq window-system 'x))
+(defvar running-at-work    (not (eq (or (and (boundp 'string-match-p)
+					     (string-match-p  "naughtydog" system-name))
+					(string-match "naughtydog" system-name)) nil)))
 
 
 ;; Set the default font:
@@ -25,7 +28,20 @@
 	(progn 
 	  ;;(set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1")
 	  (custom-set-faces
-	   '(default ((t (:stipple nil :background "#F0F0F0" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 102 :width normal :family "adobe-courier")))))
+	   '(default ((t (:stipple nil 
+			  :background "#F0F0F0" 
+			  :foreground "black" 
+			  :inverse-video nil 
+			  :box nil 
+			  :strike-through nil 
+			  :overline nil 
+			  :underline nil 
+			  :slant normal 
+			  :weight normal
+			  :height 102
+			  :width normal
+			  :family "adobe-courier"))))
+	   '(italic ((t (:slant oblique)))))
 	  )
 	(progn
 	  (create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
@@ -38,7 +54,24 @@
 
 (when (eq window-system 'w32)
   ;;(create-fontset-from-fontset-spec "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1"))
-  (set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1"))
+  ;;(set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-15-90-96-96-c-*-iso8859-1"))
+  (custom-set-faces
+   '(default ((t (:stipple nil 
+		  :background "#F0F0F0" 
+		  :foreground "black" 
+		  :inverse-video nil 
+		  :box nil 
+		  :strike-through nil 
+		  :overline nil 
+		  :underline nil 
+		  :slant normal 
+		  :weight normal
+		  :height 122
+		  :width normal
+		  :family "adobe-courier")))))
+)
+
+
 
 (setq time1 (current-time))
 
@@ -66,10 +99,13 @@
 (insert ";; Startup files loaded succesfully.\n")
 (insert ";;\n")
 (insert ";; TODO:\n")
-(insert ";;  . Bug    .. buff-menu++ -> if the file has been deleted, the refresh stops!\n")
+(insert ";;  . Config .. Put global-cwarn-mode in the C++-mode setup or as a hook function\n")
+(insert ";;  . Git    .. Create a git repository to store the emacs configuration!\n")
 (insert ";;  . Global .. Tree of undo\n")
+(insert ";;  . Lisp   .. buffer-menu++ -> Make the reload asynchronous\n")
 (insert ";;  . Code   .. Project view\n")
 (insert ";;  . Code   .. Edit multiple text area at once (using ctrl+mouse to highlight those area for example)\n")
+(insert ";;  . Mode   .. TODO mode\n")
 (insert ";;  . Mode   .. Log viewer (`-, ...)\n")
 (insert ";;  . Mode   .. Update git integration\n")
 (insert ";;  .        .. `- Gitk in emacs\n")
@@ -77,13 +113,12 @@
 (insert ";;  .        .. `- Do git checkout in emacs\n")
 (insert ";;  .        .. `- Git rebase in emacs\n")
 (insert ";;  . C/C++  .. #if 0 recognize!!!\n")
-(insert ";;  . C/C++  .. Online manual in C mode ( www.rt.com/man/<func>.3.html )!!!\n")
 (insert ";;  . C/C++  .. Check flymake\n")
 (insert ";;  . C/C++  .. Thread comment minor mode for C/C++ (to tag RW flags on variables)\n")
-(insert ";;  . C/C++  .. Split C/C++ mode into two distinct mode instead of one my-cpp\n")
+(insert ";;  . C/C++  .. Split C/C++ mode into two distinct modes instead of one my-cpp\n")
 (insert ";;  . C/C++  .. Function to add //----- above and below the case statement\n")
-(insert ";;  . C/C++  .. In general better // alignment... (for case, end of line command block)\n")
 (insert ";;  . C/C++  .. Better alignment macros (assignment, function, comment...)\n")
+(insert ";;  . C/C++  .. Fix indentation ('case', alignment, ...)\n")
 
 
 (when (> emacs-major-version 21)
