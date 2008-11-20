@@ -248,13 +248,16 @@
 ;;
 ;;------------------------------------------------------------------------------
 
-;(require 'find-dired++)
+;(require 'find-dired++) ;; -- doesn't work with emacs 23... 
 
 
 ;;------------------------------------------------------------------------------
 ;;
-;; Module: buff-mode++
+;; Module: Extra modules
 ;;
 ;;------------------------------------------------------------------------------
 
 (require 'buff-menu++)
+(require 'misc-tools)
+(require 'increment-numbers)
+(require 'replace-rect)

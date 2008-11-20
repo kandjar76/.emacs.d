@@ -33,15 +33,6 @@
 	     (substring string begpos endpos))
 	"")))
 
-(defun alphanumericp (ch)
-  "Returns t if the argument is an alphanumeric character (or underscore)."
-  (if ch
-       (or (and (>= ch ?a) (<= ch ?z))
-	   (and (>= ch ?A) (<= ch ?Z))
-	   (and (>= ch ?0) (<= ch ?9))
-	   (eq ch ?_))
-       nil))
-
 (defun apply-on-region-lines(start end func &rest rest)
   "Call the function FUNC for every line of the region defined by: START END.
 The function will receive as param BOL and EOL which will represent the two 
