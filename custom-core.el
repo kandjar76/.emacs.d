@@ -23,11 +23,13 @@
 
 ;
 ; don't display the wussy toolbar icons.
-(tool-bar-mode 0) ;; slowww!
-(menu-bar-mode 0) ;; slowww!
+(when window-system
+  (tool-bar-mode 0)  ;; slowww!
+  (menu-bar-mode 0)) ;; slowww!
 
 ;; by default mouse-wheel isn't active under emacs:
-(mouse-wheel-mode t)
+(when window-system
+  (mouse-wheel-mode t))
 
 ;; Set default tab width
 (setq tab-width 4)
@@ -108,7 +110,8 @@
 (pc-selection-mode) ;; Could be disabled if CUA mode is activated
 
 ;; Global cwarn mode on: highlight assignment within a if, if with no instruction...
-(global-cwarn-mode 1) ;; -- 0.2s slowww!!!
+(when window-system
+  (global-cwarn-mode 1)) ;; -- 0.2s slowww!!!
 
 ;; Smaller delay before showing the tooltip.
 (setq tooltip-delay 0.3)
