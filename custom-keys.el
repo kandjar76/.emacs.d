@@ -98,6 +98,7 @@
 (define-key Buffer-menu-mode-map [?R] 'Buffer-menu-mark-every-files-to-revert)
 (define-key Buffer-menu-mode-map [?S] 'Buffer-menu-mark-every-files-to-save)
 (define-key Buffer-menu-mode-map [?r] 'Buffer-menu-mark-file-to-revert)
+(define-key Buffer-menu-mode-map [?=] 'Buffer-menu-diff-buffer-with-file)
 
 ;; Spu keys:
 (define-key spu-mode-map [(control c) ?h] 'spu-highlight-registers-mode)
@@ -121,3 +122,11 @@
 
 ;; In emacs 23, c^spc will activate the transient mode... :(
 (define-key global-map [(control ? )]   '(lambda(arg) (interactive "P") (set-mark-command arg) (deactivate-mark)))
+
+;; Diff mode extra key *for read-only diff buffer*:
+(eval-after-load "diff-mode"
+  '(progn
+     (define-key diff-mode-shared-map [?a] 'diff-apply-hunk)
+     (define-key diff-mode-shared-map [?s] 'diff-split-hunk)
+     (define-key diff-mode-shared-map [?t] 'diff-test-hunk)))
+

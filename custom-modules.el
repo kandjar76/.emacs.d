@@ -8,21 +8,22 @@
 ; Doesn't seems to be loaded by default with emacs.
 (require 'cl) 
 
-
+(require 'highlight-regexp)
 (require 'p4)
 
 
 ;; Module: git
 (require 'git)
-(require 'git-blame)
-(require 'vc-git)
-
+(require 'gitsum)
+;(require 'git-blame) ;; support autoload
+;(require 'vc-git)
 
 ;; Module: redo
 ;; This module enable a redo function which is the exact opposite of the well
 ;; known undo function
 (require 'redo)
 
+;(load-file "~/.emacs.d/loaddefs.el")
 
 ;; Module: Bookmark
 ;; This library will emulate the visual studio's bookmark

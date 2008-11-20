@@ -55,6 +55,41 @@ Side effect: copy the selected region inside the kill buffer"
 (setq c++-font-lock-keywords c++-font-lock-keywords-3)
 
 
+;; (defun my-cpp-highlight ()
+;;   (setq cpp-known-face '(background-color . "dim gray"))
+;;   (setq cpp-unknown-face 'default)
+;;   (setq cpp-face-type 'dark)
+;;   (setq cpp-known-writable 't)
+;;   (setq cpp-unknown-writable 't)
+;;   (setq cpp-edit-list
+;; 	'((#("0" 0 1
+;; 	     (c-in-sws t fontified t))
+;; 	   (background-color . "dim gray")
+;; 	   nil both nil)
+;; 	  (#("1" 0 1
+;; 	     (c-in-sws t fontified t))
+;; 	   nil
+;; 	   (background-color . "dim gray")
+;; 	   both nil)))
+;;   (cpp-highlight-buffer t))
+;; 
+;; (defun my-c-mode-common-hook ()
+;;   (my-cpp-highlight)
+;;   )
+;; (add-hook 'c-mode-common-hook 'my-c-mode-common-hook)
+;; 
+;; (defun my-c-mode-recenter ()
+;;   "Recenter buffer and refresh highlighting."
+;;   (interactive)
+;;   (recenter)
+;;   (cpp-highlight-buffer t))
+;; 
+;; (defun my-c-initialization-hook ()
+;;   (define-key c-mode-base-map "\C-l" 'my-c-mode-recenter))
+;; 
+;; (add-hook 'c-initialization-hook 'my-c-initialization-hook)
+
+
 
 ;; Add symbol highlighting:
 (font-lock-add-keywords 'c++-mode 
@@ -88,6 +123,8 @@ Side effect: copy the selected region inside the kill buffer"
   (c-set-offset 'defun-block-intro 4 nil)
   (c-set-offset 'brace-list-open 0 nil)
   (c-set-offset 'statement-cont 'c-lineup-math)
+
+  (setq comment-column 70)
 
   (modify-syntax-entry ?_ "w"   c++-mode-syntax-table)
   (modify-syntax-entry ?_ "w"   c-mode-syntax-table)
