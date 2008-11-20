@@ -46,7 +46,77 @@ matches any of the individual token."
 (defvar ddf-mode-map
   (let ((ddf-mode-map (make-keymap)))
     ;(define-key ddf-mode-map [(control c) (control f)]    'ddf-to-inl)
+    (define-key ddf-mode-map [?{] '(lambda () (interactive) (insert "{") (ddf-indent-line)))
+    (define-key ddf-mode-map [?}] '(lambda () (interactive) (insert "}") (ddf-indent-line)))
+    (define-key ddf-mode-map [?:] '(lambda () (interactive) (insert ":") (save-excursion
+									   (beginning-of-line)
+									   (if (looking-at "^[ \t]*[A-Za-z_][A-Za-z_0-9]*:")
+									       (ddf-indent-line)))))
     ddf-mode-map))
+
+
+(defun ddf-indent-line()
+  "Indentation for idf file"
+  (interactive)
+  ;; We save the excursion here to not move the cursor if it is in the middle of the line
+  (save-excursion
+    (let (cur-indent)
+      (save-excursion
+	(beginning-of-line)
+	;; Beginning of buffer, indent -> 0
+	(if (bobp)
+	    (ident-line-to 0)
+	    ;; We are not in the beginning of the buffer, therefore we can consider the different indentation
+	    ;; option looking at the previous line:
+	    (let ((not-indented t))
+	      ;; End of block: } ?
+	      (if (looking-at "^[ \t]*}")
+		  (progn
+		    (save-excursion
+		      (forward-line -1)
+		      ;; We don't want an empty line
+		      (while (and (not (bobp))
+				  (looking-at "^[ \t]*$"))
+			(forward-line -1))
+		      ;; Didn't find any line non empty
+		      (if (bobp)
+			  (setq cur-indent 0)
+			  ;; If it's an empty block, don't increase the indentation...
+			  (if (and (not (looking-at "^[ \t]*{")) ; Beginning of block
+				   (not (looking-at "^[ \t]*[A-Za-z_][A-Za-z_0-9]*:")))	; Label
+			      (setq cur-indent (- (current-indentation) tab-width))
+			      (setq cur-indent (current-indentation))))
+		      (if (< cur-indent 0)
+			  (setq cur-indent 0))))
+		  (save-excursion
+		    (let ((on-label (looking-at "^[ \t]*[A-Za-z_][A-Za-z_0-9]*:")))
+		      (while not-indented
+			(forward-line -1)
+			;; We found the end of a previous block... -> same indentation
+			(cond ((looking-at "^[ \t]*}")
+			       (setq cur-indent (current-indentation)
+				     not-indented nil))
+			      ;; We found a beginning of a block or a label:
+			      ((or (looking-at "^[ \t]*{")
+				   (looking-at "^[ \t]*[A-Za-z_][A-Za-z_0-9]*:"))
+			       (setq cur-indent (+ (current-indentation) tab-width)
+				     not-indented nil))
+			      ;; We went up to the beginning of the buffer... let's stop
+			      ((bobp) (setq not-indented nil))))
+		      (when on-label
+			(setq cur-indent (- cur-indent tab-width))
+			(if (< cur-indent 0)
+			    (setq cur-indent 0)))
+		      ))))))
+      (if cur-indent
+	  (indent-line-to cur-indent)
+	  (indent-line-to 0))
+      ))
+  ;; One exception with the cursor:
+  (if (< (current-column) (current-indentation))
+      (move-to-column (current-indentation))
+  ))
+
 
 
 (defconst ddf-font-lock-keywords-3
@@ -77,6 +147,7 @@ matches any of the individual token."
   "DDF syntax mode definition -- word and comments")
 
 
+
 ;; Spu-mode entry function:
 (defun ddf-mode ()
   "Major mode for editing SPU assembly code."
@@ -89,6 +160,8 @@ matches any of the individual token."
   (setq tab-width 4)
   (setq major-mode 'ddf-mode)
   (setq mode-name "Data Definition File")
-  (run-hooks 'ddf-mode-hook))
+  (run-hooks 'ddf-mode-hook)
+  (make-local-variable 'indent-line-function)
+  (set 'indent-line-function 'ddf-indent-line))
 
 (provide 'ddf-mode)
