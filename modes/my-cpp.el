@@ -98,6 +98,13 @@ Side effect: copy the selected region inside the kill buffer"
 			  ;; End of c++ statement 
 			  ("\\(;\\)" 1 font-lock-end-statement ) ))
 
+(setq-default c++-font-lock-extra-types
+	      (append c++-font-lock-extra-types
+		      '("uint8_t" "int8_t"
+			"uint16_t" "int16_t"
+			"uint32_t" "int32_t"
+			"uint64_t" "int64_t"
+			"thread_t" "size_t")))
 
 ;; Perform my C/C++-specific customizations.
 (defun my-c-setup ()
@@ -128,7 +135,6 @@ Side effect: copy the selected region inside the kill buffer"
 
   (modify-syntax-entry ?_ "w"   c++-mode-syntax-table)
   (modify-syntax-entry ?_ "w"   c-mode-syntax-table)
-
 )
 
 ;;(font-lock-add-keywords
