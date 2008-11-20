@@ -5,7 +5,7 @@
 ;; Didn't really check what (Buffer-menu-no-header) was doing... 
 ;; The functions may required some 
 
-
+;;;###autoload
 (defun Buffer-menu-mark-file-to-revert()
   "Mark files to revert in the bufffer list"
   (interactive)
@@ -17,7 +17,7 @@
       (insert ?R)
       (forward-line 1))))
 
-
+;;;###autoload
 (defun Buffer-menu-mark-every-files-to-revert()
   "Mark files to which can be reverted in the bufffer list"
   (interactive)
@@ -34,6 +34,7 @@
 	    (insert ?R))
 	(forward-line 1))))))
 
+;;;###autoload
 (defun Buffer-menu-mark-every-files-to-save()
   "Mark files to which can be reverted in the bufffer list"
   (interactive)
@@ -55,7 +56,8 @@
 
 ;;================================================================================
 
-(defadvice Buffer-menu-unmark (around new-unmark-with-modified-flag (&optional backup))
+;;;###autoload
+(defadvice Buffer-menu-unmark (around new-unmark-with-modified-flag (&optional backup) activate)
   (interactive "P")
   (when (Buffer-menu-no-header)
     (let* ((buf (Buffer-menu-buffer t))
@@ -69,11 +71,11 @@
 	      (if mod ?* (if vis ?\s ?#)))))
   (forward-line (if backup -1 1)))
 
-(ad-activate 'Buffer-menu-unmark)
 
 ;;================================================================================
 
-(defadvice list-buffers-noselect (after update-external-modification-flag (&optional files-only buffer-list))
+;;;###autoload
+(defadvice list-buffers-noselect (after update-external-modification-flag (&optional files-only buffer-list) activate)
   (interactive)
   (with-current-buffer (get-buffer "*Buffer List*")
     (save-excursion
@@ -89,11 +91,10 @@
 	    (beginning-of-line))
 	  (forward-line 1))))))
 
-(ad-activate 'list-buffers-noselect)
-
 ;;================================================================================
 
-(defadvice Buffer-menu-execute (after revert-selected-files)
+;;;###autoload
+(defadvice Buffer-menu-execute (after revert-selected-files activate)
   (save-excursion
     (Buffer-menu-beginning)
     (while (re-search-forward "^R" nil t)
@@ -114,6 +115,5 @@
 		  (if rdp ?% ?\s)
 		  (if modp ?* (if visp ?\s ?#)))
 	  )))))
-(ad-activate 'Buffer-menu-execute)
 
 (provide 'buff-menu++)

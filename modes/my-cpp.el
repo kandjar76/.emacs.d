@@ -1,5 +1,5 @@
 (require 'cc-mode)
-
+(require 'apply-on-region)
 
 (defun my-c-smart-tab (&optional ARG)
   "Intelligently decides whether to indent or do word-completion."

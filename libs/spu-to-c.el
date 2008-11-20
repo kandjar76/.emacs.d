@@ -1,3 +1,6 @@
+
+(require 'apply-on-region)
+
 (defun spu-to-c--args(list)
   "Convert the list of argument into a string such as: arg0, arg1, arg2, ..."
   (reduce 'concat (append (list (car list)) 

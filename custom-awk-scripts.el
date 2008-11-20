@@ -9,6 +9,8 @@
 ;;
 ;;------------------------------------------------------------------------------
 
+(require 'apply-on-region)
+
 (defvar gawk-executable-path "gawk"
   "Path to gawk (if required)")
 

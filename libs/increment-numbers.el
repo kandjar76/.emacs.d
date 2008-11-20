@@ -42,6 +42,8 @@
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(require 'apply-on-region)
+
 (defun detect-decimal-or-hexa-number()
   "PRIVATE - Return a list with the min and max value surrounding a number
 Known issue: the detection of the hexadecimal number is not 100% accurate, if this come to be a problem

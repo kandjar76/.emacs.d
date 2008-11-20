@@ -29,114 +29,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(require 'highlight-regexp)
+(setq highlist-selected-word-toggle-state nil)
+(make-face 'highlight-selected-word-face)
+(set-face-background 'highlight-selected-word-face "lightcyan")
+(set-face-foreground 'highlight-selected-word-face "blue")
+(defvar highlight-selected-word-face 'highlight-selected-word-face
+  "Font used to highlight the selected / current word.")
 
-;;
-;; Font definition:
-;;
+(defun highlight-current-word()
+  "Use isearch library to highlight the current word"
+  (interactive)
+  (if (not (member (current-buffer) highlist-selected-word-toggle-state))
+      (progn (push (current-buffer) highlist-selected-word-toggle-state)
+	     (let ((highlight-regexp--face-index 1))
+	       (highlight-regexp-current-word)))
+      (progn (setq highlist-selected-word-toggle-state (remq (current-buffer) highlist-selected-word-toggle-state))
+	     (sit-for 0)
+	     (highlight-regexp-clear))))
 
-(make-face  'highlight-current-word-font)
-(set-face-background 'highlight-current-word-font "lightskyblue2")
-(defvar highlight-current-word-font 'highlight-current-word-font
-  "Font to highlight the current word.")
-
-(defvar highlight-current-word-line-range -1
-  "In order to speed up the process, the line range will specify how many line should be highlighted 
-above and below the current line. -1 to narrow to the current page only")
-
-
-;;
-;; Utility functions:
-;;
-
-(defun highlight-regexp-in-range(regexp start end font tag &optional priority)
-  "Highlight the occurence using FONT of the regular expression REGEXP in the current buffer between START and END; 
-also tag the overlays with TAG. In order to clear it with clear-tagged-overlays. The PRIORITY is optional."
-  (save-excursion
-    (save-match-data
-      (goto-char start)
-      (while (search-forward-regexp regexp end t)
-	(let ((ovl (make-overlay (match-beginning 0)
-				 (match-end 0))))
-	  (overlay-put ovl 'face font)
-	  (overlay-put ovl tag t)
-	  (if priority
-	      (overlay-put highlight-current-line-overlay 'priority priority))
-	  )))))
-
-(defun clear-tagged-overlays(tag)
-  "Remove all overlays in the current buffer tagged with TAG;
-Returns how many overlays has been found."
-  (let ((ovl-lists (overlay-lists))
-	(count 0))
-    (setq ovl-lists (list (car ovl-lists) (cdr ovl-lists)))
-    (while ovl-lists
-      (let ((ovls (pop ovl-lists)))
-	(while ovls
-	  (if (overlay-get (car ovls) tag)
-	      (progn (setq count (+ 1 count))
-		     (delete-overlay (pop ovls)))
-	      (pop ovls)))))
-    count))
-
-
-
-(defun highlight-current-word-in-range()
-  "Highlight the current word in the requested range."
-  (save-restriction
-    (when (length (current-word) > 0)
-      (let ((start (point-min))
-	    (end (point-max)))
-	(if highlight-current-word-line-range
-	    (if (> highlight-current-word-line-range 0 )
-		(save-excursion
-		  (forward-line (- highlight-current-word-line-range))
-		  (setq start (point-at-bol))
-		  (forward-line (* highlight-current-word-line-range 2))
-		  (setq end (point-at-eol)))
-		(setq start (window-start)
-		      end   (window-end))))
-	(highlight-regexp-in-range (concat "\\<" (regexp-quote (current-word)) "\\>")
-				   start end
-				   highlight-current-word-font
-				   'highlight-current-word-tag)
-      ))))
-
-
-(defsubst highlight-current-word-post-hook()
-  "Post command"
-  (let ((case-fold-search nil))
-    (clear-tagged-overlays 'highlight-current-word-tag)
-    (highlight-current-word-in-range)))
-
-
-;;
-;; Defining highlight-current-word-minor-mode
-;;
-
-
-(define-minor-mode highlight-current-word-mode
-  "Highlight the current word."
-  :init-value nil
-  :global nil
-  :lighter " HiCurWord"
-  ;; Body of the function:
-  (make-local-variable 'post-command-hook)
-  (if (not highlight-current-word-mode)
-      (progn (remove-hook 'post-command-hook 'highlight-current-word-post-hook)
-	     (clear-tagged-overlays 'highlight-current-word-tag))
-      (add-hook 'post-command-hook 'highlight-current-word-post-hook))
-  (when (interactive-p)
-    (message "Highlight Current Word Mode is now %s."
-	     (or (and highlight-current-word-mode "Enabled") "Disbaled"))))
-
-
-(defcustom highlight-current-word-mode nil
-  "*Non-nil means Highight Current Word  mode is enabled.
-In this mode, the current word is highlighted.
-Setting this variable directly does not change the mode; instead, use
-function `highlight-current-word-mode'."
-  :set (lambda (symbol value) (highlight-current-word-mode (or value 0)))
-  :initialize 'custom-initialize-default
-  :type 'boolean)
 
 (provide 'highlight-current-word)

@@ -73,7 +73,7 @@
 ;;        - Insert a properly-indented nop/lnop pair (C-c C-n for uncommented, C-c C-b for
 ;;          commented)
 
-
+(require 'apply-on-region)
 
 ;;
 ;;

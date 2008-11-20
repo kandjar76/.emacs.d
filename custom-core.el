@@ -13,9 +13,18 @@
 
 ;; Customize various settings
 
-;; don't display the wussy toolbar icons.
-(tool-bar-mode nil)
-(menu-bar-mode nil)
+
+;; Make sure yank-pop does at least a simple yank:
+(defadvice yank-pop (around anytime (arg) activate)
+  "Modification of yank-pop: if last action isn't yank, do it."
+  (if (not (eq last-command 'yank))
+      (yank arg)
+      ad-do-it))
+
+;
+; don't display the wussy toolbar icons.
+(tool-bar-mode 0) ;; slowww!
+(menu-bar-mode 0) ;; slowww!
 
 ;; by default mouse-wheel isn't active under emacs:
 (mouse-wheel-mode t)
@@ -27,7 +36,7 @@
 (setq inhibit-startup-message t)
 
 
-;; Backup all wiles in a specific folder:
+;; Backup all files in a specific folder:
 (if (eq window-system 'x)
     (progn 
       (setq make-backup-files t)
@@ -35,16 +44,14 @@
     ;; Disable backup files « ~ »
     (setq make-backup-files nil))
 
+;; Recover files:
+(setq auto-save-list-file-prefix "~/.emacs-backup/auto-save-list/.saves-")
+
 ;; Make sure list doesn't ident the 'else' differently from the 'then'
 (put 'if 'lisp-indent-function nil)
 
 ;; Disable anoying alarm bell
 (setq ring-bell-function 'ignore)
-
-;; Automatically resize the minibuffer when the user is entering
-;; input, so they can always see everything they type.
-(if (boundp 'resize-minibuffer-mode)
-    (resize-minibuffer-mode))
 
 ;; Enable the research to loop around:
 (setq isearch-wrapped t)
@@ -67,13 +74,9 @@
 (put 'set-goal-column 'disabled nil)
 
 ;; unlock the downcase function -- useful for keyboard macros:
-(put 'downcase-region 'disabled nil)
-(put 'upcase-region 'disabled nil)
-(put 'narrow-to-region 'disabled nil)
-
-;; In answers which are not valid completions, an extra RET must be typed 
-;; to confirm the response.
-;;(setq minibuffer-confirm-incomplete t)
+;(put 'downcase-region 'disabled nil)
+;(put 'upcase-region 'disabled nil)
+;(put 'narrow-to-region 'disabled nil)
 
 ;; If non-nil, `next-line' inserts newline to avoid `end of buffer' error
 (setq next-line-add-newlines nil)
@@ -105,7 +108,7 @@
 (pc-selection-mode) ;; Could be disabled if CUA mode is activated
 
 ;; Global cwarn mode on: highlight assignment within a if, if with no instruction...
-(global-cwarn-mode 1)
+(global-cwarn-mode 1) ;; -- 0.2s slowww!!!
 
 ;; Smaller delay before showing the tooltip.
 (setq tooltip-delay 0.3)
@@ -116,6 +119,12 @@
 
 ;; Don't bother checking for KnR style (to speed up the analyze)
 (setq c-recognize-knr-p nil)
+
+
+
+
+
+
 
 ;; Map C-x, C-c-, C-v as Cut/Copy/Paste without affecting the usual behavior of the keys
 ;; Map C-z to undo...
@@ -136,6 +145,8 @@
 
 ;; Automatic reload file:
 ;;(global-auto-revert-mode 1)
+
+
 
 ;;------------------------------------------------------------------------------
 ;;

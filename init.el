@@ -1,4 +1,6 @@
 ;; Add my elisp directory to the Emacs default load path
+(setq orig-time (current-time))
+
 (setq load-path
       (append
        (list 
@@ -14,11 +16,12 @@
 (defvar running-on-linux (not running-on-windows))
 (defvar running-on-x (eq window-system 'x))
 
+
 ;; Set the default font:
 (if (eq window-system 'x)
     (if (> emacs-major-version 21)
 	(progn 
-	  ;(set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1")
+	  ;;(set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1")
 	  (custom-set-faces
 	   '(default ((t (:stipple nil :background "#F0F0F0" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 102 :width normal :family "adobe-courier")))))
 	  )
@@ -34,19 +37,26 @@
 (when (eq window-system 'w32)
   ;;(create-fontset-from-fontset-spec "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1"))
   (set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1"))
-    
+
+(setq time1 (current-time))
+
 
 (load-library "custom-core")                       ; must be loaded before -- setup the core emacs
+
+(setq time2 (current-time))
+
 (load-library "custom-modules")                    ; load the external modules
-(load-library "custom-interactive-commands")       ; add extra interactive functions
-(load-library "custom-lisp-utilities")             ; add extra lisp functions
+(setq time3 (current-time))
+
 (load-library "custom-awk-scripts")                ; bind the awk script to some lisp functions
 (load-library "custom-keys")                       ; setup the emacs keys
 (load-library "custom-colors")                     ; color customization
 
+
 (load-library "my-cpp")
 (load-library "my-awk")
 
+(setq time4 (current-time))
 
 ;; Welcome message:
 (set-buffer "*scratch*")
@@ -58,6 +68,17 @@
 (insert ";;  . Tree of undo\n")
 (insert ";;  . Edit multiple text area at once (using ctrl+mouse to highlight those area for example)\n")
 (insert ";;  . Log viewer (`-, ...)\n")
+
+(setq time4 (time-subtract time4 time3))
+(setq time3 (time-subtract time3 time2))
+(setq time2 (time-subtract time2 time1))
+(setq time1 (time-subtract time1 orig-time))
+
+(insert (format "Font Setup     - %2is %06ius\n" (cadr time1) (caddr time1)))
+(insert (format "Core           - %2is %06ius\n" (cadr time2) (caddr time2)))
+(insert (format "Modules loaded - %2is %06ius\n" (cadr time3) (caddr time3)))
+(insert (format "Other modules  - %2is %06ius\n" (cadr time4) (caddr time4)))
+
 
 ;(custom-set-faces
 ; '(diff-added ((t (:inherit diff-changed :foreground "red")))))
