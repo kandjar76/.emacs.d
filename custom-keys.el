@@ -87,6 +87,10 @@
 (define-key dired-mode-map [?=] 'dired-ediff-marked-files)
 (define-key dired-mode-map [?n] 'dired-next-marked-file)
 (define-key dired-mode-map [?p] 'dired-prev-marked-file)
+;;(define-key dired-mode-map [?/] 'dired-isearch-forward)
+;;(define-key dired-mode-map [?n] 'dired-isearch-forward-regexp)
+;;(define-key dired-mode-map [?p] 'dired-isearch-backward-regexp)
+
 
 ;; Buffer-menu keys:
 (define-key Buffer-menu-mode-map [?R] 'Buffer-menu-mark-every-files-to-revert)
