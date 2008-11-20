@@ -460,9 +460,18 @@ POS is consider at the end of line iff:
 		 (end-of-line)
 		 (= cur (point)))))))
 
+(defun spu-alphanumericp(ch)
+  "Returns t if the argument is an alphanumeric character (or underscore)."
+  (if ch
+       (or (and (>= ch ?a) (<= ch ?z))
+	   (and (>= ch ?A) (<= ch ?Z))
+	   (and (>= ch ?0) (<= ch ?9))
+	   (eq ch ?_))
+       nil))
+
 (defun spu-end-of-opcode(pos)
   "Returns t if POS is at the end of an opcode"
-  (and (alphanumericp (char-before))
+  (and (spu-alphanumericp (char-before))
        (> (spu-cycle-count (current-word)) 0)))
 
 (defun spu-indent-args(opcode-column)
