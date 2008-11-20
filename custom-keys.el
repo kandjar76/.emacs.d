@@ -2,6 +2,10 @@
 ;;                     Keyboard Customization                       ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Note:
+;;  So far, f5 -> f9 are available to be map (f6->other window/never used)
+
+
 (define-key global-map [(control right)]         	'forward-word)
 (define-key global-map [(control left)]          	'backward-word)
 (define-key global-map [(control prior)]               	'beginning-of-buffer)
@@ -81,6 +85,13 @@
 (define-key dired-mode-map [backspace] 'dired-up-directory)
 (define-key dired-mode-map [(control ?=)] 'diredp-ediff)
 (define-key dired-mode-map [?=] 'dired-ediff-marked-files)
+(define-key dired-mode-map [?n] 'dired-next-marked-file)
+(define-key dired-mode-map [?p] 'dired-prev-marked-file)
+
+;; Buffer-menu keys:
+(define-key Buffer-menu-mode-map [?R] 'Buffer-menu-mark-every-files-to-revert)
+(define-key Buffer-menu-mode-map [?S] 'Buffer-menu-mark-every-files-to-save)
+(define-key Buffer-menu-mode-map [?r] 'Buffer-menu-mark-file-to-revert)
 
 ;; Spu keys:
 (define-key spu-mode-map [(control c) ?h] 'spu-highlight-registers-mode)
@@ -97,6 +108,9 @@
 ;; Scroll other window:
 (define-key global-map [(meta down)] '(lambda(arg) (interactive "p") (scroll-other-window arg)))
 (define-key global-map [(meta up)]   '(lambda(arg) (interactive "p") (scroll-other-window-down arg)))
+
+;; Show trailing spaces: (keep or not...???)
+(define-key global-map [(control ?x) (?t)] '(lambda(arg) (interactive "p") (setq show-trailing-whitespace (not show-trailing-whitespace))))
 
 
 ;; In emacs 23, c^spc will activate the transient mode... :(

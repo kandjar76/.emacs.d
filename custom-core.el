@@ -180,7 +180,7 @@ Returns \"black\" if no valid color is found."
 (setq default-truncate-lines t)
 
 ;; Enable shift+key to select a region:
-(pc-selection-mode)
+(pc-selection-mode) ;; Could be disabled if CUA mode is activated
 
 ;; Global cwarn mode on: highlight assignment within a if, if with no instruction...
 (global-cwarn-mode 1)
@@ -194,6 +194,26 @@ Returns \"black\" if no valid color is found."
 
 ;; Don't bother checking for KnR style (to speed up the analyze)
 (setq c-recognize-knr-p nil)
+
+;; Map C-x, C-c-, C-v as Cut/Copy/Paste without affecting the usual behavior of the keys
+;; Map C-z to undo...
+;(cua-mode)
+
+;; Under linux: ido-mode doesn't seems bad at all -- similar to iswitchb for "find file"
+;; Terrible to switch drive under windows... 
+;(if (eq window-system 'x) 
+;    (ido-mode))
+
+;; Show end of buffer...
+(setq indicate-empty-lines t)
+
+;; Should make the cursor fix (not blinking anymore):
+;;(when (blink-cursor-mode)
+;; (blink-cursor-mode))
+
+
+;; Automatic reload file:
+;;(global-auto-revert-mode 1)
 
 ;;------------------------------------------------------------------------------
 ;;
