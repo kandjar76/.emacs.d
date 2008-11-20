@@ -55,7 +55,7 @@
 (load-library "custom-colors")                     ; color customization
 
 
-(load-library "my-cpp")
+(load-library "my-cpp") ;; slow in text mode
 (load-library "my-awk")
 
 (setq time4 (current-time))
@@ -76,22 +76,22 @@
 (insert ";;  . View the full branch diff within emacs (diff mode)\n")
 (insert ";;  . Git rebase in emacs\n")
 (insert ";;  . #if 0 recognize!!!\n")
+(insert ";;  . Online manual in C mode ( www.rt.com/man/<func>.3.html )!!!\n")
+(insert ";;  . Check tempo-mode / tempo-snippet / yasnippet\n")
+(insert ";;  . Check flymake\n")
 
 
 
-(insert ";;  . Log viewer (`-, ...)\n")
+(when (> emacs-major-version 21)
+  (setq time4 (time-subtract time4 time3))
+  (setq time3 (time-subtract time3 time2))
+  (setq time2 (time-subtract time2 time1))
+  (setq time1 (time-subtract time1 orig-time))
 
-
-
-(setq time4 (time-subtract time4 time3))
-(setq time3 (time-subtract time3 time2))
-(setq time2 (time-subtract time2 time1))
-(setq time1 (time-subtract time1 orig-time))
-
-(insert (format "Font Setup     - %2is %06ius\n" (cadr time1) (caddr time1)))
-(insert (format "Core           - %2is %06ius\n" (cadr time2) (caddr time2)))
-(insert (format "Modules loaded - %2is %06ius\n" (cadr time3) (caddr time3)))
-(insert (format "Other modules  - %2is %06ius\n" (cadr time4) (caddr time4)))
+  (insert (format "Font Setup     - %2is %06ius\n" (cadr time1) (caddr time1)))
+  (insert (format "Core           - %2is %06ius\n" (cadr time2) (caddr time2)))
+  (insert (format "Modules loaded - %2is %06ius\n" (cadr time3) (caddr time3)))
+  (insert (format "Other modules  - %2is %06ius\n" (cadr time4) (caddr time4))))
 
 
 ;(custom-set-faces
