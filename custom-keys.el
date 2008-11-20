@@ -133,3 +133,7 @@
      (define-key diff-mode-shared-map [?s] 'diff-split-hunk)
      (define-key diff-mode-shared-map [?t] 'diff-test-hunk)))
 
+(eval-after-load "git"
+  '(progn
+     (define-key git-status-mode-map [?=] 'git-diff-current-file)
+     (define-key git-status-mode-map [(control ?=)] 'git-diff-file)))

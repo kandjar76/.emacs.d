@@ -17,6 +17,7 @@
 (when window-system
   (require 'git)
   (require 'git-log-mode)
+  (require 'git+)
   (require 'gitsum))
 
 ;; Module: redo
@@ -87,17 +88,17 @@
 (when window-system
   (require 'quick-search)
   (require 'highlight-current-word))
-;(require 'find-dired++) ;; -- doesn't work with emacs 23... 
+
+(when (< emacs-major-version 23)
+  (require 'find-dired++)) ;; -- doesn't work with emacs 23... 
 
 
 ;; Module: iswitchb
 (require 'iswitchb)
 (iswitchb-default-keybindings)
+(setq iswitchb-prompt-newbuffer nil)
 (add-hook 'iswitchb-define-mode-map-hook
 	  '(lambda ()
-	     (define-key iswitchb-mode-map " " 'iswitchb-next-match)
-	     (define-key iswitchb-mode-map [del] 'iswitchb-prev-match)
-	     (define-key iswitchb-mode-map [bs] 'iswitchb-prev-match)
 	     (define-key iswitchb-mode-map [right] 'iswitchb-next-match)
 	     (define-key iswitchb-mode-map [left] 'iswitchb-prev-match)))
 (icomplete-mode 1)
@@ -112,6 +113,9 @@
   (yas/load-directory "~/.emacs.d/snippets/default")
   (define-key yas/keymap (kbd "<S-kp-tab>") 'yas/prev-field-group))
 
+
+(when running-at-work
+  (require 'c-tooltip))
 
 ;;================================================================================
 

@@ -184,6 +184,15 @@ Returns \"black\" if no valid color is found."
      (set-face-background 'spu-highlight-latency-line-font (first-valid-color "#FFE0E0" "orange red" "red"))))
 
 ;; Eshell:
-;(eval-after-load "eshell"
-;  '(progn 
-;     (make-face-unbold 'eshell-prompt)))
+;(when (not window-system)
+;  (eval-after-load "eshell"
+;    '(progn 
+;       (make-face-unbold 'eshell-prompt)
+;       (set-face-foreground 'eshell-ls-directory "blue"))))
+
+(when (not window-system)
+  (eval-after-load "eshell"
+    '(custom-set-faces
+      '(eshell-prompt ((t (:foreground "cyan" :weight normal))))
+      '(eshell-ls-directory ((t (:foreground "blue"))))
+)))

@@ -59,7 +59,7 @@
 (setq isearch-wrapped t)
 
 ;; Try to flash the frame instead of beep at error/message;
-(setq visible-bell nil)
+;(setq visible-bell nil)
 
 ;; Display line/column numbers in the modeline
 (line-number-mode t)
@@ -145,7 +145,6 @@
 ;;(when (blink-cursor-mode)
 ;; (blink-cursor-mode))
 
-
 ;; Automatic reload file:
 ;;(global-auto-revert-mode 1)
 
@@ -166,19 +165,14 @@
 
 ;; Add additional extensions and their appropriate modes
 (setq auto-mode-alist
-      (append '(("\\.C$"       . c++-mode)
-		("\\.cc$"      . c++-mode)
-		("\\.cpp$"     . c++-mode)
-		("\\.hh$"      . c++-mode)
-		("\\.hpp$"     . c++-mode)
-		("\\.c$"       . c++-mode)
-		("\\.h$"       . c++-mode)
-		("\\.inl$"     . c++-mode)
-		("\\.[fv]p$"   . c++-mode)
-		("\\.spu$"     . spu-mode)
-		("\\.spu.s$"   . spu-mode)
-		("\\.S$"       . spu-mode)
-		("\\.ddf$"     . ddf-mode)
-		("\\.xml$"     . xml-mode)
-		("\\.idf$"     . idf-mode))
+      (append '(("\\.inl$"      . c++-mode)
+		("\\.h$"        . c++-mode) ; Sadly, .h file with classes in it are still using the c-mode... :(
+		("\\.[fv]p$"    . c++-mode)
+		("\\.spu$"      . spu-mode)
+		("\\.spu.s$"    . spu-mode)
+		("\\.S$"        . spu-mode)
+		("\\.ddf$"      . ddf-mode)
+		("\\.xml$"      . xml-mode)
+		("\\.idf$"      . idf-mode)
+		)
 	      auto-mode-alist))
