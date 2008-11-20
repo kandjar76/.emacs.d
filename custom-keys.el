@@ -37,7 +37,7 @@
 (define-key global-map [(mouse-2)]               	nil)
 (define-key global-map [(drag-mouse-1)]                 nil)
 
-;; Electric split window:
+;; Electric split window / buffer window:
 (define-key global-map [(control ?x)(?2)]               'electric-split-window-vertically)
 (define-key global-map [(control ?x)(?3)]               'electric-split-window-horizontally)
 
@@ -101,11 +101,13 @@
 (define-key Buffer-menu-mode-map [?=] 'Buffer-menu-diff-buffer-with-file)
 
 ;; Spu keys:
-(define-key spu-mode-map [(control c) ?h] 'spu-highlight-registers-mode)
-(define-key spu-mode-map [(control c) ?j] 'spu-highlight-latency-mode)
-(define-key spu-mode-map [(control c) ?s] 'spu-stall-check)
-(define-key spu-mode-map [(control c) ?n] 'spu-nopify)
-(define-key spu-mode-map [(control c) ?l] 'spu-highlight-loop-mode)
+(eval-after-load "spu-mode"
+    '(progn
+       (define-key spu-mode-map [(control c) ?h] 'spu-highlight-registers-mode)
+       (define-key spu-mode-map [(control c) ?j] 'spu-highlight-latency-mode)
+       (define-key spu-mode-map [(control c) ?s] 'spu-stall-check)
+       (define-key spu-mode-map [(control c) ?n] 'spu-nopify)
+       (define-key spu-mode-map [(control c) ?l] 'spu-highlight-loop-mode)))
 
 ;; Rectangle keys:
 (define-key global-map [(control ?x) (?r) (?i)]	'increase-numbers-on-rectangle)

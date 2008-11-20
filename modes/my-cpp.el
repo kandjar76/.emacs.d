@@ -103,11 +103,11 @@ Side effect: copy the selected region inside the kill buffer"
 (defun my-c-setup ()
   (c-set-style "gnu")
 
-  (local-set-key [(tab)] 'my-c-smart-tab)
+  ;;(local-set-key [(tab)] 'my-c-smart-tab)
   (local-set-key [(control ?c) (?m)] 'manual-entry)
-  (local-set-key [(control ?x) (?a) (?a)] 'cpp-align-variable-assignment) 
-  (local-set-key [(control ?x) (?a) (?f)] 'cpp-align-function-bracket)
-  (local-set-key [(control ?x) (?a) (?c)] 'cpp-align-comment)
+  (local-set-key [(control ?c) (?a) (?a)] 'cpp-align-variable-assignment) 
+  (local-set-key [(control ?c) (?a) (?f)] 'cpp-align-function-bracket)
+  (local-set-key [(control ?c) (?a) (?c)] 'cpp-align-comment)
   (local-set-key [(control ?q)] 'cpp-comment-block)
 
   (local-set-key [(f4)] 'next-error)
