@@ -15,7 +15,7 @@
 		(if (= (point-at-eol)  (point-max))
 			(setq end (point-at-eol))
 		  (progn
-			(next-line 1)
+			(forward-line 1)
 			(setq end (point-at-bol)))))
 	(cons start end)))
 
@@ -45,14 +45,14 @@ For example:
   (if ( > start end )
       (let (tmp) (setq tmp end end start start tmp)))
   (save-excursion
-    (goto-char end)
-    (if (bolp) (forward-line -1))
-    (beginning-of-line)
-    (while (and (bolp)
-		(not (bobp))
-		(> (point) start))
-      (save-excursion (apply func (point-at-bol) (point-at-eol) rest))
-      (forward-line -1))
-    (apply func (point-at-bol) (point-at-eol) rest)))
+    (let ((endmark (copy-marker end)))
+      (goto-char start)
+      (beginning-of-line)
+      (while (and (bolp)
+		  (not (eobp))
+		  (< (point) endmark))
+	(save-excursion
+	  (apply func (point-at-bol) (point-at-eol) rest))
+	(forward-line)))))
 
 (provide 'apply-on-region)
