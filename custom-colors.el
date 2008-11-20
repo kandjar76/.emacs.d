@@ -11,8 +11,6 @@
 
 
 
-
-
 (setq default-background-color (first-valid-color "#F0F0F0" "white"))
 
 ;; Default color:
@@ -58,7 +56,7 @@
 (set-face-foreground 'diredp-compressed-file-suffix "red")
 
 ;; Font used in ediff mode:
-(if (string= emacs-version "22.1.1")
+(if (> emacs-major-version 21)
     (progn 
       (set-face-background 'ediff-current-diff-A     (first-valid-color "honeydew"))
       (set-face-foreground 'ediff-current-diff-A     (first-valid-color "black"))
@@ -78,7 +76,13 @@
       (set-face-foreground 'ediff-odd-diff-B     (first-valid-color "dark gray"))
       (set-face-background 'ediff-even-diff-B     (first-valid-color "lavender"))
       (set-face-foreground 'ediff-even-diff-B     (first-valid-color "dark gray"))
-      )
+
+      (make-face 'diff-added)
+      (make-face 'diff-removed)
+      (make-face 'diff-hunk-header)
+      (set-face-foreground 'diff-added       (first-valid-color "darkgreen"))
+      (set-face-foreground 'diff-removed     (first-valid-color "red"))
+      (set-face-foreground 'diff-hunk-header (first-valid-color "blue")))
     (progn 
       (set-face-background 'ediff-current-diff-face-A     (first-valid-color "honeydew"))
       (set-face-foreground 'ediff-current-diff-face-A     (first-valid-color "black"))

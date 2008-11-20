@@ -16,18 +16,24 @@
 
 ;; Set the default font:
 (if (eq window-system 'x)
-    (progn
-      (create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
-      (cond
-       ((x-list-fonts "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
-	(set-face-font 'default "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*"))
-       ((x-list-fonts "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*")
-	(set-face-font 'default "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*"))
-       )))
+    (if (> emacs-major-version 21)
+	(progn 
+	  ;(set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1")
+	  (custom-set-faces
+	   '(default ((t (:stipple nil :background "#F0F0F0" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 102 :width normal :family "adobe-courier")))))
+	  )
+	(progn
+	  (create-fontset-from-fontset-spec "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
+	  (cond
+	   ((x-list-fonts "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*")
+	    (set-face-font 'default "-*-lucida console-medium-r-*-*-12-*-*-*-*-*-*-*"))
+	   ((x-list-fonts "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*")
+	    (set-face-font 'default "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*"))
+	   ))))
 
-(if (eq window-system 'w32)
-    (progn  ;(create-fontset-from-fontset-spec "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1"))
-	    (set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1")))
+(when (eq window-system 'w32)
+  ;;(create-fontset-from-fontset-spec "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1"))
+  (set-face-font 'default "-outline-Lucida Console-normal-r-normal-normal-12-90-96-96-c-*-iso8859-1"))
     
 
 (load-library "custom-core")                       ; must be loaded before -- setup the core emacs
@@ -46,3 +52,12 @@
 (set-buffer "*scratch*")
 (insert (format ";; Welcome to GNU Emacs %s (%s).\n" emacs-version system-configuration))
 (insert ";; Startup files loaded succesfully.\n")
+(insert ";;\n")
+(insert ";; TODO:\n")
+(insert ";;  . Project view\n")
+(insert ";;  . Tree of undo\n")
+(insert ";;  . Edit multiple text area at once (using ctrl+mouse to highlight those area for example)\n")
+(insert ";;  . Log viewer (`-, ...)\n")
+
+;(custom-set-faces
+; '(diff-added ((t (:inherit diff-changed :foreground "red")))))
