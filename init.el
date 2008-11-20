@@ -73,11 +73,9 @@
 (insert ";;  . Gitk in emacs\n")
 (insert ";;  . See the git branches in emacs\n")
 (insert ";;  . Do git checkout in emacs\n")
-(insert ";;  . View the full branch diff within emacs (diff mode)\n")
 (insert ";;  . Git rebase in emacs\n")
 (insert ";;  . #if 0 recognize!!!\n")
 (insert ";;  . Online manual in C mode ( www.rt.com/man/<func>.3.html )!!!\n")
-(insert ";;  . Check tempo-mode / tempo-snippet / yasnippet\n")
 (insert ";;  . Check flymake\n")
 
 
