@@ -1,25 +1,7 @@
-;;
-;; This file is contains a set of  interactive functions
-;;
-
-
-;;
-;; Miscellaneous function:
-;;
 
 
 
-(defadvice yank-pop (around anytime (arg) activate)
-  "Modification of yank-pop: if last action isn't yank, do it."
-  (if (not (eq last-command 'yank))
-      (yank arg)
-      ad-do-it))
-
-
-
-
-;; To move to another lib:
-
+;;;###autoload
 (defsubst dired-one-or-two-files-p ()
   "Return 1 or 2 iff one or two files are marked to be treated by dired. Returns nil otherwise"
   (save-excursion
@@ -32,6 +14,7 @@
 	  (or (and second 2)
 	      (and first 1))))))
 
+;;;###autoload
 (defun dired-ediff-marked-files()
   "If two files are marked in the dired buffer, runa diff between both.
 If only one is marked, run the diff between the marked files and the one below the cursor."
@@ -52,6 +35,7 @@ If only one is marked, run the diff between the marked files and the one below t
 		       (setq second (dired-get-file-for-visit))))
 	    (ediff-files first second))))))
 
+;;;###autoload
 (defun dired-emerge-marked-files()
   "If two files are marked in the dired buffer, run a merge between both.
 If only one is marked, run the merge between the marked files and the one below the cursor."
@@ -72,8 +56,4 @@ If only one is marked, run the merge between the marked files and the one below 
 		       (setq second (dired-get-file-for-visit))))
 	    (emerge-files-internal first second))))))
 
-
-
-
-
-
+(provide 'dired++)

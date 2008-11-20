@@ -1,13 +1,7 @@
-;;
-;; File containing utility functions for lisp code
-;;
 
 
-;;------------------------------------------------------------------------------
-;;
-;;                      Utility Functions                           
-;;
-;;------------------------------------------------------------------------------
+
+
 
 (defun extend-region-to-full-lines ( start end )
   "Extend the region to encapsulate only whole lines"
@@ -24,14 +18,6 @@
 			(next-line 1)
 			(setq end (point-at-bol)))))
 	(cons start end)))
-
-(defun clear-spaces(string)
-  "Clear the spaces and tabs at the beginning and at the end of STRING."
-  (let ((begpos (string-match "[^ \t]" string))
-	(endpos (string-match "[ \t]*$" string)))
-    (or (and begpos
-	     (substring string begpos endpos))
-	"")))
 
 (defun apply-on-region-lines(start end func &rest rest)
   "Call the function FUNC for every line of the region defined by: START END.
@@ -68,3 +54,5 @@ For example:
       (save-excursion (apply func (point-at-bol) (point-at-eol) rest))
       (forward-line -1))
     (apply func (point-at-bol) (point-at-eol) rest)))
+
+(provide 'apply-on-region)
