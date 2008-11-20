@@ -97,6 +97,7 @@
 ;; Buffer-menu keys:
 (define-key Buffer-menu-mode-map [?R] 'Buffer-menu-mark-every-files-to-revert)
 (define-key Buffer-menu-mode-map [?S] 'Buffer-menu-mark-every-files-to-save)
+(define-key Buffer-menu-mode-map [?D] 'Buffer-menu-mark-every-files-to-delete)
 (define-key Buffer-menu-mode-map [?r] 'Buffer-menu-mark-file-to-revert)
 (define-key Buffer-menu-mode-map [?=] 'Buffer-menu-diff-buffer-with-file)
 

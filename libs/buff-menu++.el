@@ -1,9 +1,44 @@
+;;; buff-menu++.el --- additional buff-menu functionality
+;; Copyright (C) 2008  Cedric Lallain
+
+;; Author: Cedric Lallain (cedric_lallain@naughtydog.com)
+;; Updated: 2008-07-11
+
+;; This file is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2 of
+;; the License, or (at your option) any later version.
+
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty
+;; of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+;; See the GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public
+;; License along with GNU Emacs; if not, write to the Free
+;; Software Foundation, 51 Franklin Street, Fifth Floor,
+;; Boston, MA 02110-1301, USA.
+
+;;; Commentary:
+
 ;;
+;; To use, please add the following to your .init file:
+;;
+;;   (require 'buff-menu++)
+;;   ;; Buffer-menu additional keys:
+;;   (define-key Buffer-menu-mode-map [(shift r)] 'Buffer-menu-mark-every-files-to-revert)
+;;   (define-key Buffer-menu-mode-map [(shift s)] 'Buffer-menu-mark-every-files-to-save)
+;;   (define-key Buffer-menu-mode-map [(shift d)] 'Buffer-menu-mark-every-files-to-delete)
+;;   (define-key Buffer-menu-mode-map [r] 'Buffer-menu-mark-file-to-revert)
+;;   (define-key Buffer-menu-mode-map [?=] 'Buffer-menu-diff-buffer-with-file)
 ;;
 ;; Extra for the buffer mode:
 ;;
 ;; Didn't really check what (Buffer-menu-no-header) was doing... 
 ;; The functions may required some 
+;;
+
+;;; Code:
 
 ;;;###autoload
 (defun Buffer-menu-mark-file-to-revert()
@@ -28,15 +63,34 @@
       (goto-char (point-min))
       (while (not (eobp))
 	(let* ((buf (Buffer-menu-buffer t))
-	       (vis (verify-visited-file-modtime buf)))
-	  (when (not vis)
+	       (vis (verify-visited-file-modtime buf))
+	       (wfi (save-excursion (set-buffer buf) buffer-file-name))
+	       (df  (and wfi (file-exists-p wfi))))
+	  (when (and (not vis) df)
 	    (delete-char 1)
 	    (insert ?R))
 	(forward-line 1))))))
 
 ;;;###autoload
+(defun Buffer-menu-mark-every-files-to-delete()
+  "Mark files to which are gone in the bufffer list"
+  (interactive)
+  (when (not (eq major-mode 'Buffer-menu-mode))
+      (error "Invalid Mode -- Expected: Buffer-menu-mode"))
+  (save-excursion
+    (let ((buffer-read-only nil))
+      (goto-char (point-min))
+      (while (not (eobp))
+	(let* ((buf (Buffer-menu-buffer t))
+	       (wfi (save-excursion (set-buffer buf) buffer-file-name)))
+	  (when (and wfi (not (file-exists-p wfi)))
+	    (delete-char 1)
+	    (insert ?D))
+	(forward-line 1))))))
+
+;;;###autoload
 (defun Buffer-menu-mark-every-files-to-save()
-  "Mark files to which can be reverted in the bufffer list"
+  "Mark files to which need to saved in the bufffer list"
   (interactive)
   (when (not (eq major-mode 'Buffer-menu-mode))
       (error "Invalid Mode -- Expected: Buffer-menu-mode"))
