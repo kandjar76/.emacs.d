@@ -54,6 +54,16 @@
 	    (insert ?S))
 	(forward-line 1))))))
 
+
+;;;###autoload
+(defun Buffer-menu-diff-buffer-with-file()
+  "View the difference between buffer describe by the current line and it's associated file
+This require the external program 'diff' to be in your 'exec-path'"
+  (interactive)
+  (when (Buffer-menu-no-header)
+    (let ((buf (Buffer-menu-buffer t)))
+      (diff-buffer-with-file buf))))
+
 ;;================================================================================
 
 ;;;###autoload
