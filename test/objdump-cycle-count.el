@@ -10,8 +10,8 @@
       (spu-mode)
       (erase-buffer))
     (call-process-shell-command 
-;       "spu-lv2-objdump -d ~/ship/edge/target/spu/src/edge/geom/edgegeom_occlusion.o" 
-       "spu-lv2-objdump -d ~/ship/edge/target/spu/src/edge/geom/edgegeom_transform.o" 
+       "spu-lv2-objdump -d ~/ship/edge/target/spu/src/edge/geom/edgegeom_occlusion.o" 
+;       "spu-lv2-objdump -d ~/ship/edge/target/spu/src/edge/geom/edgegeom_transform.o" 
        nil buffer t)
     (with-current-buffer buffer
       (goto-char (point-min))
@@ -19,7 +19,7 @@
       (save-excursion
 	(end-of-line)
 	(delete-region (point) (point-max)))
-      (search-backward "br")
+      (search-backward "\tbr")
       (search-forward-regexp "# ")
       (let ((addr (current-word)))
 	(search-backward-regexp (concat "^ *" addr ":"))
