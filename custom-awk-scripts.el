@@ -44,7 +44,7 @@
 (defun cpp-align-comment()
   "Align the eol comments within the selected region -- using a gawk script"
   (interactive "*") 
-  (if (is-region-active)
+  (if mark-active
 	  (save-excursion
 		(let ((reg (extend-region-to-full-lines (region-beginning) (region-end))))
 		  (call-process-region 
@@ -58,7 +58,7 @@
 (defun cpp-align-variable-assignment()
   "Align the variables and also the assignment symbol ('=')"
   (interactive "*") 
-  (if (is-region-active)
+  (if mark-active
 	  (save-excursion
 		(let ((reg (extend-region-to-full-lines (region-beginning) (region-end))))
 		  (call-process-region 
@@ -72,7 +72,7 @@
 (defun cpp-align-function-bracket()
   "Align the function name and also the open bracket symbols"
   (interactive "*") 
-  (if (is-region-active)
+  (if mark-active
 	  (save-excursion
 		(let ((reg (extend-region-to-full-lines (region-beginning) (region-end))))
 		  (call-process-region 
@@ -87,8 +87,8 @@
 (defun cpp-comment-block()
   "Comment/UnComment a block of code using the C++ type of comment '//'"
   (interactive "*") 
-  (let ((start (if (is-region-active) (region-beginning) (point-at-bol)))
-		(end   (if (is-region-active) (region-end) (point-at-eol))))
+  (let ((start (if mark-active (region-beginning) (point-at-bol)))
+		(end   (if mark-active (region-end) (point-at-eol))))
 	(save-excursion
 	  (let ((reg (extend-region-to-full-lines start end)))
 		(call-process-region 
@@ -108,7 +108,7 @@
 (defun awk-align-comment()
   "Align the eol comments within the selected region -- using a gawk script"
   (interactive "*") 
-  (if (is-region-active)
+  (if mark-active
 	  (save-excursion
 		(let ((reg (extend-region-to-full-lines (region-beginning) (region-end))))
 		  (call-process-region 
@@ -123,8 +123,8 @@
 (defun awk-comment-block()
   "Comment/UnComment a block of code using the C++ type of comment '//'"
   (interactive "*") 
-  (let ((start (if (is-region-active) (region-beginning) (point-at-bol)))
-		(end   (if (is-region-active) (region-end) (point-at-eol))))
+  (let ((start (if mark-active (region-beginning) (point-at-bol)))
+		(end   (if mark-active (region-end) (point-at-eol))))
 	(save-excursion
 	  (let ((reg (extend-region-to-full-lines start end)))
 		(call-process-region 
