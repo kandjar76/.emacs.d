@@ -1199,7 +1199,7 @@ Return the list of files that haven't been handled."
 	 (files-list (git-get-filenames files))
          (buffer (apply #'git-run-command-buffer "*git-log*" "rev-list" "--pretty" "HEAD" "--" files-list)))
     (with-current-buffer buffer
-      (git-log-mode) ; Cedric Lallain: added log mide  FIXME: implement log mode
+      (git-log-mode) ; Cedric Lallain: added log mode  FIXME: implement log mode
       (goto-char (point-min))
       (setq buffer-read-only t)
       (git-log-set-files-list files-list)) ; Cedric Lallain: set the list of files for the git-log-mode (currently generate a compilation warnings)
