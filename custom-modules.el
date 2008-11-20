@@ -16,6 +16,7 @@
 ;; Module: git
 (when window-system
   (require 'git)
+  (require 'git-log-mode)
   (require 'gitsum))
 
 ;; Module: redo

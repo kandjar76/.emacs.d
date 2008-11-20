@@ -1196,12 +1196,26 @@ Return the list of files that haven't been handled."
   (interactive)
   (let* ((files (git-marked-files))
          (coding-system-for-read git-commits-coding-system)
-         (buffer (apply #'git-run-command-buffer "*git-log*" "rev-list" "--pretty" "HEAD" "--" (git-get-filenames files))))
+	 (files-list (git-get-filenames files))
+         (buffer (apply #'git-run-command-buffer "*git-log*" "rev-list" "--pretty" "HEAD" "--" files-list)))
     (with-current-buffer buffer
-      ; (git-log-mode)  FIXME: implement log mode
+      (git-log-mode) ; Cedric Lallain: added log mide  FIXME: implement log mode
       (goto-char (point-min))
-      (setq buffer-read-only t))
+      (setq buffer-read-only t)
+      (git-log-set-files-list files-list)) ; Cedric Lallain: set the list of files for the git-log-mode (currently generate a compilation warnings)
     (display-buffer buffer)))
+
+(defun git-log-branch ()
+  "Display a log of changes of the current branch."
+  (interactive)
+  (let* ((coding-system-for-read git-commits-coding-system)
+         (buffer (apply #'git-run-command-buffer "*git-log*" "rev-list" "--pretty" "HEAD" nil)))
+    (with-current-buffer buffer
+      (git-log-mode) ; Cedric Lallain: added log mide  FIXME: implement log mode
+      (goto-char (point-min))
+      (setq buffer-read-only t)) ; Cedric Lallain: set the list of files for the git-log-mode (currently generate a compilation warnings)
+    (display-buffer buffer)))
+
 
 (defun git-log-edit-files ()
   "Return a list of marked files for use in the log-edit buffer."
@@ -1435,6 +1449,7 @@ amended version of it."
     (define-key map "g"   'git-refresh-status)
     (define-key map "i"   'git-ignore-file)
     (define-key map "l"   'git-log-file)
+    (define-key map "L"   'git-log-branch)
     (define-key map "m"   'git-mark-file)
     (define-key map "M"   'git-mark-all)
     (define-key map "n"   'git-next-file)
