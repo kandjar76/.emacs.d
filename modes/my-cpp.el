@@ -7,10 +7,11 @@
   ;; Special case: a region has been selected -- run the alignment on the selected region
   (if (is-region-active)
       (c-indent-line-or-region)
-      (if (looking-at "\\>")
-          (dabbrev-expand nil)
+      ;(if (looking-at "\\>")
+          ;(dabbrev-expand nil)
 	  (c-indent-command ARG) ;(indent-for-tab-command)
-	  )))
+	 ;)
+	  ))
 
 (defun surround-with-curly-brackets(&optional ARG)
   "Add curly brackets around the selected block
