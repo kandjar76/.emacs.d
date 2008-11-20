@@ -90,6 +90,9 @@
     (define-key mtpchat-mode-map [(control ?x) ?r] 'mtpchat-reply)
     (define-key mtpchat-mode-map [(control ?x) ?t] 'mtpchat-tell)
     (define-key mtpchat-mode-map [(control ?x) ?w] 'mtpchat-whoall)
+
+    ;(define-key hexl-mode-map [remap self-insert-command] 'hexl-self-insert-command)
+
     (define-key mtpchat-mode-map [?A] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "A")))
     (define-key mtpchat-mode-map [?B] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "B")))
     (define-key mtpchat-mode-map [?C] '(lambda () "Query to send a string to MtpChat." (interactive) (mtpchat-query "C")))
