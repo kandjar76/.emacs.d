@@ -132,6 +132,10 @@
      (define-key diff-mode-shared-map [?s] 'diff-split-hunk)
      (define-key diff-mode-shared-map [?t] 'diff-test-hunk)))
 
+;; Git mapping:
+(define-key global-map [(control ?x) (?g) (?=)] 'git-diff-current-buffer)
+(define-key global-map [(control ?x) (?g) (?l)] 'git-log-current-buffer)
+(define-key global-map [(control ?x) (?g) (?s)] 'git-status)
 (eval-after-load "git"
   '(progn
      (define-key git-status-mode-map [(control ?=)] 'git-diff-current-file)))

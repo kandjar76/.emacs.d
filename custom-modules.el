@@ -16,6 +16,8 @@
 ;;
 
 (autoload 'git-status "git" "Entry point into git-status mode." t nil)
+(autoload 'git-diff-current-buffer "git+" "Diff the current buffer against HEAD." t nil)
+(autoload 'git-log-current-buffer "git+" "Display a log of changes to current buffer." t nil)
 (eval-after-load "git"
   '(progn
      (require 'git-log-mode)
