@@ -231,7 +231,7 @@ if COUNT is nil, each number is increased by line number within the selection (s
 
 (when window-system
   (add-hook 'c++-mode-hook '(lambda() (require 'yasnippet)))
-  (add-hook 'c-mode-hook ''(lambda() (require 'yasnippet))))
+  (add-hook 'c-mode-hook '(lambda() (require 'yasnippet))))
 
 
 ;;
