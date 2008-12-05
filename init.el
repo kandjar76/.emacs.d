@@ -72,6 +72,8 @@
 (insert ";;  . Global .. c-~ -> highlight the current word globally (in every visible buffers)\n")
 (insert ";;  . Global .. Edit multiple text area at once (using ctrl+mouse to highlight those area for example)\n")
 (insert ";;  .        .. Another option: select the text and press ctrl+enter to put the overlay on it. ctrl+enter without any selection remove them all\n")
+(insert ";;  .        .. Idea: select a region, do a search within the region to select all occurence of that research.\n")
+(insert ";;  .        ..       then allow simultaneous modification of that section of code")
 (insert ";;  . Mode   .. Project view\n")
 (insert ";;  . Mode   .. TODO mode\n")
 (insert ";;  . Mode   .. Log viewer (`-, ...)\n")
