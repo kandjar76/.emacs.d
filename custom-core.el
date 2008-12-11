@@ -169,14 +169,14 @@
 
 ;; Add additional extensions and their appropriate modes
 (setq auto-mode-alist
-      (append '(("\\.inl$"      . c++-mode)
-		("\\.h$"        . c++-mode) ; Sadly, .h file with classes in it are still using the c-mode... :(
-		("\\.[fv]p$"    . c++-mode)
-		("\\.spu$"      . spu-mode)
-		("\\.spu.s$"    . spu-mode)
-		("\\.S$"        . spu-mode)
-		("\\.ddf$"      . ddf-mode)
-		("\\.xml$"      . xml-mode)
-		("\\.idf$"      . idf-mode)
+      (append '(("\\.inl\\'"      . c++-mode)
+		("\\.h\\'"        . c++-mode) ; Sadly, .h file with classes in it are still using the c-mode... :(
+		("\\.[fv]p\\'"    . c++-mode)
+		("\\.spu\\'"      . spu-mode)
+		("\\.spu.s\\'"    . spu-mode)
+		("\\.S\\'"        . spu-mode)
+		("\\.ddf\\'"      . ddf-mode)
+		("\\.xml\\'"      . xml-mode)
+		("\\.idf\\'"      . idf-mode)
 		)
 	      auto-mode-alist))
