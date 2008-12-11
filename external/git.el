@@ -111,6 +111,10 @@ if there is already one that displays the same directory."
   :group 'git
   :type 'boolean)
 
+(defcustom git-ignore-whitespace nil
+  "Whether to ignore whitespace changes during a diff."
+  :group 'git
+  :type 'boolean)
 
 (defface git-status-face
   '((((class color) (background light)) (:foreground "purple"))
@@ -805,7 +809,7 @@ Return the list of files that haven't been handled."
                 (git-get-commit-description "HEAD")))
         (merge-heads (git-get-merge-heads)))
     (ewoc-set-hf status
-                 (format "Directory:  %s\nBranch:     %s\nHead:       %s%s\n"
+                 (format "Directory:  %s\nBranch:     %s\nHead:       %s%s\nWhitespace: %s\n"
                          default-directory
                          (if branch
                              (if (string-match "^refs/heads/" branch)
@@ -816,7 +820,9 @@ Return the list of files that haven't been handled."
                          (if merge-heads
                              (concat "\nMerging:    "
                                      (mapconcat (lambda (str) (git-get-commit-description str)) merge-heads "\n            "))
-                           ""))
+                           "")
+			 (if git-ignore-whitespace
+			     "Ignored" "Considered"))
                  (if (ewoc-nth status 0) "" "    No changes."))))
 
 (defun git-get-filenames (files)
@@ -1141,8 +1147,11 @@ Return the list of files that haven't been handled."
   "Diff the marked file(s) against HEAD."
   (interactive)
   (let ((files (git-marked-files)))
-    (git-setup-diff-buffer
-     (apply #'git-run-command-buffer "*git-diff*" "diff-index" "-p" "-M" "HEAD" "--" (git-get-filenames files)))))
+    (if git-ignore-whitespace
+	(git-setup-diff-buffer
+	 (apply #'git-run-command-buffer "*git-diff*" "diff-index" "-b" "-p" "-M" "HEAD" "--" (git-get-filenames files)))
+	(git-setup-diff-buffer
+	 (apply #'git-run-command-buffer "*git-diff*" "diff-index" "-p" "-M" "HEAD" "--" (git-get-filenames files))))))
 
 (defun git-diff-file-merge-head (arg)
   "Diff the marked file(s) against the first merge head (or the nth one with a numeric prefix)."
@@ -1413,6 +1422,14 @@ amended version of it."
     (let ((node (and cur-name (git-find-status-file status cur-name))))
       (when node (ewoc-goto-node status node)))))
 
+(defun git-toggle-ignore-whitespace ()
+  "Toogle the option for ignoring whitespace during diff."
+  (interactive)
+  (setq git-ignore-whitespace (not git-ignore-whitespace))
+  (git-refresh-files)
+  (git-refresh-ewoc-hf git-status))
+
+
 (defun git-status-quit ()
   "Quit git-status mode."
   (interactive)
@@ -1465,6 +1482,7 @@ amended version of it."
     (define-key map "u"   'git-unmark-file)
     (define-key map "U"   'git-revert-file)
     (define-key map "v"   'git-view-file)
+    (define-key map "w"   'git-toggle-ignore-whitespace)
     (define-key map "x"   'git-remove-handled)
     (define-key map "\C-?" 'git-unmark-file-up)
     (define-key map "\M-\C-?" 'git-unmark-all)

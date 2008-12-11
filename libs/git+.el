@@ -40,8 +40,12 @@
   (let* ((pos (ewoc-locate git-status))
 	 (info (ewoc-data pos))
 	 (files (list info)))
-    (git-setup-diff-buffer
-     (apply #'git-run-command-buffer "*git-diff*" "diff-index" "-p" "-M" "HEAD" "--" (git-get-filenames files)))))
+    (if git-ignore-whitespace
+	(git-setup-diff-buffer
+	 (apply #'git-run-command-buffer "*git-diff*" "diff-index" "-b" "-p" "-M" "HEAD" "--" (git-get-filenames files)))
+	(git-setup-diff-buffer
+	 (apply #'git-run-command-buffer "*git-diff*" "diff-index" "-p" "-M" "HEAD" "--" (git-get-filenames files)))
+	)))
 
 (defun git-diff-current-buffer()
   "Diff the current buffer against HEAD."
