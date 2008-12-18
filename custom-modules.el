@@ -288,7 +288,18 @@ It serves as a menu to find any of the occurrences in this buffer.
     '(require 'moccur-edit))
 
 
+;;
+;; Module: org-mode
+;;
 
+(eval-after-load "org"
+  '(progn 
+     (setq org-todo-keywords
+	   '((sequence "TODO" "IN PROGRESS" "DEFERRED" "|" "DONE" "CANCELED")))
+     (setq org-todo-keyword-faces
+	   '(("TODO"      . org-warning)
+	     ("DEFERRED"  . shadow)
+	     ("CANCELED"  . (:foreground "blue" :weight bold))))))
 
 ;;================================================================================
 
