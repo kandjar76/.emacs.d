@@ -9,12 +9,15 @@
 ;; -- button --> finger on user // url!
 ;; -- autocompletion of nicks!
 ;; -- history of the prompt!
+;; -- highlight mode line with a different color if the user name has been said or beeped! (for the main buffer only)
 
 ;; BUG:
 ;; -- infinite loop if bad pwd
 ;; -- multiline in private tell window doesn't worked properly.. :)
+;; -- notification is never canceled!
 
 
+(require 'cl)
 (require 'tcp-client)
 
 ;;
@@ -61,6 +64,12 @@
 (defvar mtpchat--buffer-list nil
   "List of mtpchat's buffer")
 
+(defvar mtpchat--hidden-modified-buffer-list nil
+  "List of mtpchat's buffer which got modified while hidden to the user")
+
+(defvar mtpchat--notification-string nil
+  "String to display in the mode line")
+(put 'mtpchat--notification-string 'risky-local-variable t)
 
 ;;
 ;; Fonts:
@@ -141,6 +150,8 @@
 (defun mtpchat--connection-established(buffer server port)
   (setq mtpchat--incomplete-line-save nil) ;; new connection -- no incomplete lines... 
   (set-process-coding-system (get-buffer-process mtpchat--main-buffer-name) 'iso-latin-1)
+  ;; Add the notification string to the mtpchat list:
+  (mtpchat--setup-notification)
   (with-current-buffer buffer 
     (add-hook 'mtpchat--validate-message-hook 'mtpchat--auto-login))
   (let ((mtpchat-buffer (get-buffer mtpchat--main-buffer-name)))
@@ -376,6 +387,78 @@ This function may create new buffers."
   "Post insert hook functions: set the text property to be read-only"
   (add-text-properties (point-min) (point-max)
 		       '(read-only t front-sticky t rear-nonsticky t)))
+
+
+(defun mtpchat--buffer-name-to-notification-string(buffer)
+  "Convert a buffer name to a notification string including text properties"
+  (when (buffer-live-p buffer)
+    (let* ((map (make-sparse-keymap))
+	   (name (buffer-name buffer))
+	   (str  (or (and (string= name mtpchat--main-buffer-name) "Mtp") 
+		    (format "%c" (nth 5 (string-to-list (upcase name))))))) ;; (concat "*mtp-" (downcase nick) "*")
+      (define-key map (vector 'mode-line 'mouse-3)
+	`(lambda (e)
+	   (interactive "e")
+	   (save-selected-window
+	     (select-window
+	      (posn-window (event-start e)))
+	     (switch-to-buffer ,buffer))))
+      (put-text-property 0 (length str) 'local-map map str)
+      (put-text-property 0 (length str)
+			 'help-echo (concat "mouse-3: switch to buffer " name) str)
+      (put-text-property 0 (length str)
+			 'mouse-face 'mode-line-highlight str)
+      str)))
+
+
+(defun mtpchat--setup-notification()
+  "Initialize the mtpchat notification string in the mode-line"
+  (add-to-list 'mode-line-modes
+	       '(t mtpchat--notification-string))
+  (add-hook 'window-configuration-change-hook
+	    'mtpchat--update-notification))
+
+(defun mtpchat--kill-notification()
+  "Cancel the mtpchat notification in the main line"
+  (interactive)
+  (setq mode-line-modes
+	(remove '(t mtpchat--notification-string) mode-line-modes))
+  (remove-hook 'window-configuration-change-hook
+	       'mtpchat--update-notification))
+
+
+(defun mtpchat--update-notification()
+  "Update the notification text above the mode line"
+  (setq mtpchat--hidden-modified-buffer-list
+	(remove nil (mapcar '(lambda (buf)
+			       (and (buffer-live-p buf)
+				    (not (get-buffer-window buf 'visible))
+				    buf))
+			    mtpchat--hidden-modified-buffer-list)))
+  (let* ((str-list (mapcar '(lambda (buf) (mtpchat--buffer-name-to-notification-string buf))
+			   mtpchat--hidden-modified-buffer-list))
+	 (str (and str-list (reduce '(lambda (s1 s2)
+				       (cond ((not s2) s1)
+					     ((not s1) s2)
+					     ((string= s2 "Mtp") (concat s2 "-" s1))
+					     ((string= s1 "Mtp") (concat s1 "-" s2))
+					     (t (concat s1 s2))))
+				    str-list))))
+    (if (not str)
+	(setq mtpchat--notification-string "")
+	(if (and (= (length str) 4)
+		 (string= str "Mtp-"))
+	    (setq mtpchat--notification-string (concat "[" (substring str 0 3) "] "))
+	    (setq mtpchat--notification-string (concat "[" str "] "))
+    ))))
+
+
+(defun mtpchat--add-to-notify-list()
+  "Add the current buffer to the notification list if it has been modified. Also update the value of the variable"
+  (when (/= (point-min) (point-max))
+    (when (not (get-buffer-window (current-buffer) 'visible))
+      (add-to-list 'mtpchat--hidden-modified-buffer-list (current-buffer))
+      (mtpchat--update-notification))))
 
 
 (defun mtpchat--send ()
@@ -705,6 +788,7 @@ Function added to `window-scroll-functions' by mtpchat-mode"
   (add-hook 'mtpchat--modify-hook 'mtpchat--add-local-time t)
 
   (add-hook 'mtpchat--post-insert-hook 'mtpchat--make-read-only)
+  (add-hook 'mtpchat--post-insert-hook 'mtpchat--add-to-notify-list)
   ;; 
 
   (add-to-list 'mtpchat--buffer-list (buffer-name))
