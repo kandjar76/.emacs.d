@@ -1,0 +1,44 @@
+* List of Bugs
+** `alpha=\"ok\"` generates an error while trying to highlight the occurence of alpha (C-`)
+** Files containing defrecord statement don't compile!
+* List of Todos
+** Init [0/2]
+   - [ ] Find a solution to make yas/snippet faster to load -- at least under windows.
+   - [ ] Investigate CEDET.
+** Git [0/1]
+   - [ ] Having a option to switch the view mode (with/out diffs)within git-log-mode
+** Global [0/3]
+   - [ ] Tree of undo
+   - [ ] c-~ -> highlight the current word globally (in every visible buffers)
+   - [ ] Edit multiple text area at once (using ctrl+mouse to highlight those area for example)
+	 Another option: select the text and press ctrl+enter to put the overlay on it. ctrl+enter without any selection remove them all
+	 IDEA: 
+	 select a region, do a search within the region to select all occurence of that research.
+   	 then allow simultaneous modification of that section of code
+** Mode [0/4]
+   - [ ] Project view
+   - [ ] TODO mode
+   - [ ] Log viewer (`-, ...)
+   - [ ] Update git integration
+     + Gitk in emacs
+     + See the git branches in emacs
+     + Do git checkout in emacs
+     + Git rebase in emacs
+** C/C++ [0/7]
+   - [ ] #if 0 recognize!!!
+   - [ ] Check flymake
+   - [ ] Thread comment minor mode for C/C++ (to tag RW flags on variables)
+   - [ ] Split C/C++ mode into two distinct modes instead of one my-cpp
+   - [ ] Function to add //----- above and below the case statement
+   - [ ] Better alignment macros (assignment, function)
+     + Use of align / removing unused awk script!
+   - [ ] Fix indentation for the comment around the 'case' statement
+** Buffer [0/1]
+   - [ ] buffer-menu++ -> Make the reload asynchronous
+** Asm [0/5]
+   - [ ] Implement Intel LRB asm mode 
+   - [ ]  `- Require register highlighing 
+   - [ ]  `- Allow move up/down -- through minor mode
+   - [ ]      `- Display register usage
+   - [ ]      `- Use overlay to do latency
+	   
