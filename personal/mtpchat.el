@@ -5,16 +5,17 @@
 
 ;; TODO:
 ;; -- knowing who's connected
-;; -- notification in the main line
 ;; -- button --> finger on user // url!
 ;; -- autocompletion of nicks!
-;; -- history of the prompt!
+;; -- history of the prompt! (using ctrl+up/ctrl+down or ctrl+n/ctrl+p or research with ctrl+???)
 ;; -- highlight mode line with a different color if the user name has been said or beeped! (for the main buffer only)
 
+
 ;; BUG:
-;; -- infinite loop if bad pwd
+;; -- infinite loop if bad pwd / null nickname... (idea: split into 3 functions)
 ;; -- multiline in private tell window doesn't worked properly.. :)
 ;; -- notification is never canceled!
+;; -- the name of the mode is invalid in priv channel (it has ':no process' attached to it)
 
 
 (require 'cl)
@@ -590,6 +591,7 @@ This function may create new buffers."
 	  ((looking-at mtpchat-regexp--tell-away)
 	   (forward-char 6)
 	   (setq nick (current-word))
+	   (setq msg-eol (buffer-substring-no-properties (point-min) (point-max)))
 	  ))
     (when nick
       (setq buf-name (concat "*mtp-" (downcase nick) "*"))
@@ -602,7 +604,10 @@ This function may create new buffers."
 	  ;; Setup the mtpchat-mode
 	  (mtpchat-mode "PRIV> " (concat "tell " nick " "))))
       (delete-region (point-min) (point-max))
-      (mtpchat--insert-data buffer (concat "<" user "> " msg-eol))
+      (if user 
+	  (mtpchat--insert-data buffer (concat "<" user "> " msg-eol))
+	  ;; Currently no display support regarding the 'away' message...
+	  )
       )))
 
 
@@ -643,7 +648,7 @@ This function may create new buffers."
 	     mtpchat--passwd)
     (tcp-send (get-buffer-process mtpchat--main-buffer-name) (concat mtpchat--passwd "\n")))
   (when (string-match "^<Mtp> Welcome, " msg)
-    (tcp-send (get-buffer-process mtpchat--main-buffer-name) "set client zzz .o(v0.4)\n")
+    (tcp-send (get-buffer-process mtpchat--main-buffer-name) "set client zzz .o(v0.5)\n")
     (remove-hook 'mtpchat--validate-message-hook 'mtpchat--auto-login)))
 
 
@@ -818,8 +823,9 @@ Function added to `window-scroll-functions' by mtpchat-mode"
     (get-buffer-create mtpchat--main-buffer-name)
     ;; Clear the list of buffer... 
     (setq mtpchat--buffer-list nil)
+    (switch-to-buffer (get-buffer mtpchat--main-buffer-name))
     (save-excursion 
-      (set-buffer mtpchat--main-buffer-name)
+      ;(set-buffer mtpchat--main-buffer-name)
       ;; Setup the mtpchat-mode
       (mtpchat-mode)
       (tcp-connect mtpchat--main-buffer-name mtpchat--connection mtpchat-hooks))))
