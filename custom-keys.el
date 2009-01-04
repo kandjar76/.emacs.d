@@ -139,3 +139,6 @@
 (eval-after-load "git"
   '(progn
      (define-key git-status-mode-map [(control ?=)] 'git-diff-current-file)))
+
+;; Full screen mode:
+(define-key global-map [(meta return)] 'toggle-fullscreen)

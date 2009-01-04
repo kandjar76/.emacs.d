@@ -37,6 +37,7 @@
 ;; - setup-text-mode
 ;; - backward-delete-word
 ;; - kill-selected-region
+;; - toggle-full-screen
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -185,6 +186,17 @@ With prefix arg, use single quotes, not double quotes, as delimeters."
        (while (re-search-forward "[0-9]*\\.?[0-9]+" nil t)
 	 (setq sum (+ sum (string-to-number (match-string 0)))))
        (message "Sum: %f" sum))))
+
+
+;;;###autoload
+(defun toggle-fullscreen () 
+  "Toggle full screen mode"
+  (interactive) 
+  (set-frame-parameter nil 
+		       'fullscreen 
+		       (and (not (frame-parameter nil 'fullscreen))
+			   'fullboth)))
+
 
 (provide 'misc-tools)
 ;;--------------------------------------------------------------------------------
