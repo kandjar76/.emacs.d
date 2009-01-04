@@ -152,6 +152,9 @@
 ;; Set the frame name (seems to only worked when the window is reduced in the taskbar)
 ;; (setq frame-title-format "emacs - %b")
 
+;; Don't create a new frame for the ediff help window!
+(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+
 (when window-system
   (desktop-save-mode))
 
