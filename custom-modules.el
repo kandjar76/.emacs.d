@@ -35,17 +35,6 @@
 
 
 ;;
-;; Module: Bookmark
-;;
-
-;; This library will emulate the visual studio's bookmark
-(autoload 'bm-toggle     "bm" "Toggle bookmark at point." t nil)
-(autoload 'bm-next       "bm" "Goto next bookmark." t nil)
-(autoload 'bm-previous   "bm" "Goto previous bookmark." t nil)
-(autoload 'bm-remove-all "bm" "Delete all visible bookmarks in current buffer." t nil)
-
-
-;;
 ;; Module: ToolTip-Help
 ;;
 

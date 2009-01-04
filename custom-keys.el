@@ -46,12 +46,6 @@
 (define-key global-map [(shift insert)]                 'yank)
 (define-key global-map [(shift delete)]          	'yank-pop)
 
-;; Bookmark keys:
-(define-key global-map [(control f2)]                   'bm-toggle)
-(define-key global-map [(f2)]                           'bm-next)
-(define-key global-map [(shift f2)]                     'bm-previous)
-(define-key global-map [(control shift f2)]             'bm-remove-all)
-
 ;; Quick-Research keys:
 (define-key global-map [(control f3)]			'quick-search-forward)
 (define-key global-map [(f3)]				'repeat-quick-search-forward)

@@ -36,12 +36,6 @@ Returns \"black\" if no valid color is found."
 (set-face-foreground 'default default-foreground-color)
 (set-face-background 'default default-background-color)
 
-;; Bookmark color:
-(eval-after-load "bm"
-  '(progn
-     (set-face-background 'bm-face      (first-valid-color "lightcyan" "blue" :text "cyan"))
-     (set-face-foreground 'bm-face      (first-valid-color "black" "blue"))))
-
 ;; Highlight the current line:
 (eval-after-load "highlight-current-line"
   '(set-face-background 'highlight-current-line-face (first-valid-color "#C0E0FF" "lightblue" "grey" "cyan" :text "white")))
