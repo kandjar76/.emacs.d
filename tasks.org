@@ -4,7 +4,7 @@
 * List of Todos
 ** Init [0/2]
    - [ ] Find a solution to make yas/snippet faster to load -- at least under windows.
-   - [ ] Investigate CEDET.
+   - [ ] Investigate CEDET / semantic.
 ** Git [0/1]
    - [ ] Having a option to switch the view mode (with/out diffs)within git-log-mode
 ** Global [0/3]
@@ -15,9 +15,10 @@
 	 IDEA: 
 	 select a region, do a search within the region to select all occurence of that research.
    	 then allow simultaneous modification of that section of code
-** Mode [0/4]
+** Mode [1/4]
    - [ ] Project view
-   - [ ] TODO mode
+   - [ ] msvc-mode (loading a sln/vcproj files)
+   - [X] TODO mode (using with org-mode)
    - [ ] Log viewer (`-, ...)
    - [ ] Update git integration
      + Gitk in emacs
@@ -41,4 +42,8 @@
    - [ ]  `- Allow move up/down -- through minor mode
    - [ ]      `- Display register usage
    - [ ]      `- Use overlay to do latency
-	   
+** MSVC Mode [1/4]
+   - [X] Vision of how the information should get displayed
+   - [ ] Learning ewok
+   - [ ] Extracting project / deps / build mode from the sln file
+   - [ ] Extracting all project files from the vcprojs
