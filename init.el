@@ -1,6 +1,8 @@
 ;; Add my elisp directory to the Emacs default load path
 ;(modify-frame-parameters nil '((wait-for-wm . nil)))
 
+(setq emacs-startup-time (current-time))
+
 (setq load-path
       (append
        (list 
@@ -46,7 +48,10 @@
 ;; Welcome message:
 (set-buffer "*scratch*")
 (insert (format ";; Welcome to GNU Emacs %s (%s).\n" emacs-version system-configuration))
-(insert ";; Startup files loaded succesfully.\n")
+(let ((loading-time (time-subtract (current-time) emacs-startup-time)))
+  (insert (format ";; Startup files loaded succesfully [%i.%03is].\n"
+		  (car (cdr loading-time)) 
+		  (/ (car (cdr (cdr loading-time))) 1000))))
 (insert ";;\n")
 
 (set-buffer-modified-p nil)
