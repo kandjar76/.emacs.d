@@ -295,11 +295,11 @@ It serves as a menu to find any of the occurrences in this buffer.
 (eval-after-load "org"
   '(progn 
      (setq org-todo-keywords
-	   '((sequence "TODO" "IN PROGRESS" "DEFERRED" "|" "DONE" "CANCELED")))
+	   '((sequence "TODO" "BUG" "IN PROGRESS" "STALLED" "|" "DONE" "FIXED" "CANCELED")))
      (setq org-todo-keyword-faces
-	   '(("TODO"      . org-warning)
-	     ("DEFERRED"  . shadow)
-	     ("CANCELED"  . (:foreground "blue" :weight bold))))))
+	   '(("STALLED"   . org-warning)
+	     ("CANCELED"  . (:foreground "darkgray" :inherit bold))))))
+
 
 ;;================================================================================
 
