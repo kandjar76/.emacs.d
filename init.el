@@ -19,8 +19,8 @@
 (defvar running-on-linux   (not running-on-windows))
 (defvar running-on-x       (eq window-system 'x))
 (defvar running-at-work    (not (eq (or (and (boundp 'string-match-p)
-					     (string-match-p  "naughtydog" system-name))
-					(string-match "naughtydog" system-name)) nil)))
+					     (string-match-p  "naughtydog\\|magic-dog" system-name))
+					(string-match "naughtydog\\|magic-dog" system-name)) nil)))
 
 
 ;; Set the default font:
@@ -37,7 +37,9 @@
 	  (set-face-font 'default "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*"))
 	 ))))
  ((eq window-system 'w32)
-  (set-default-font "Courier")))
+  (if running-at-work
+      (set-default-font "016x13")
+      (set-default-font "Courier"))))
 
 
 (load-library "custom-core")                       ; must be loaded before -- setup the core emacs
@@ -53,5 +55,8 @@
 		  (car (cdr loading-time)) 
 		  (/ (car (cdr (cdr loading-time))) 1000))))
 (insert ";;\n")
+
+(when running-at-work
+  (setq org-agenda-files (list "~/org/work.org")))
 
 (set-buffer-modified-p nil)
