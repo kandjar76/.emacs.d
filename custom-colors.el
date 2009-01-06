@@ -59,6 +59,9 @@ Returns \"black\" if no valid color is found."
 (set-face-foreground 'font-lock-operator-face (first-valid-color "red" :text "white"))
 (set-face-foreground 'font-lock-end-statement (first-valid-color "red" :text "white"))
 
+;; Color-occur background:
+(set-face-background 'color-occur-face (first-valid-color "darkseagreen1" "palegreen" "grey" ))
+
 
 
 ;; Remove some background colors from diredp:

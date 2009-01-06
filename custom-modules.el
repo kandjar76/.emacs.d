@@ -301,5 +301,11 @@ It serves as a menu to find any of the occurrences in this buffer.
 	     ("CANCELED"  . (:foreground "darkgray" :inherit bold))))))
 
 
+;;
+;; Module: color-occur
+;;
+
+(require 'color-occur)
+
 ;;================================================================================
 
