@@ -155,7 +155,7 @@
 ;; Don't create a new frame for the ediff help window!
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
-(when window-system
+(when (and window-system running-on-linux)
   (desktop-save-mode))
 
 ;;------------------------------------------------------------------------------
