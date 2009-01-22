@@ -29,3 +29,20 @@ M-x list-load-path-shadows
 
 ;; Fun: 
 (animate-string "fun fun fun!!!" <line> <col>)
+
+
+;; Jump to visible is interesting but could be made buffer: 
+;; It allow the user to switch to a specified window.
+(defun jump-to-window (buffer-name)
+  (interactive "bEnter buffer to jump to: ")
+  (let ((visible-buffers (mapcar '(lambda (window) (buffer-name (window-buffer window))) (window-list)))
+	window-of-buffer)
+    (if (not (member buffer-name visible-buffers))
+	(error "'%s' does not have visible window" buffer-name)
+      (setq window-of-buffer
+	    (delq nil (mapcar '(lambda (window) 
+				  (if (equal buffer-name (buffer-name (window-buffer window)))
+				      window nil)) (window-list))))
+      (select-window (car window-of-buffer)))))
+
+;; Idea: a jump to window with number // assuming you have less than 9 window opened.. 
