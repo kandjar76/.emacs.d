@@ -42,8 +42,12 @@
    - [ ]  `- Allow move up/down -- through minor mode
    - [ ]      `- Display register usage
    - [ ]      `- Use overlay to do latency
-** MSVC Mode [1/4]
+** MSVC Mode [4/8]
    - [X] Vision of how the information should get displayed
-   - [ ] Learning ewok
+   - [X] Learning ewok
    - [ ] Extracting project / deps / build mode from the sln file
    - [ ] Extracting all project files from the vcprojs
+   - [X] Build a initial 'project buffer mode'
+   - [X] Allow fold / collapse for the project
+   - [ ] Introduction of the folders
+   - [ ] New items added must repect the user view (be hidden or not depending on the view)
