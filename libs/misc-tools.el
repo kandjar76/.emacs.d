@@ -197,6 +197,9 @@ With prefix arg, use single quotes, not double quotes, as delimeters."
 		       (and (not (frame-parameter nil 'fullscreen))
 			   'fullboth)))
 
+;; use: (w32-send-sys-command 61488) to toggle fullscreen under windows
+;; use: (w32-send-sys-command 61728) to restore the window
+
 
 (provide 'misc-tools)
 ;;--------------------------------------------------------------------------------
