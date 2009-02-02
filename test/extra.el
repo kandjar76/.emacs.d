@@ -9,6 +9,8 @@ cache-long-line-scans
 http://www.google.com
 
 
+(compare-strings "abcdef" nil nil "abc" nil nil)
+
 
 (setq button-url-regexp
       "\\([-a-zA-Z0-9_=!?#$@~`%&*+\\/:;,]+\\.\\)+[-a-zA-Z0-9_=!?#$@~`%&*+\\/:;,]*[-a-zA-Z0-9\\/]")
