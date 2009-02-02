@@ -105,6 +105,38 @@
 
 
 ;;
+;; Module: align-let
+;;
+
+(autoload 'align-let "align-let"
+  "Align the value expressions for the variables in a Lisp `let' form.
+Point should be within or immediately in front of the let form.  It
+changes for instance
+
+    (let ((x 1)
+          (foo   2)
+          (zz (blah)))
+      ...)
+
+to
+
+    (let ((x   1)
+          (foo 2)
+          (zz  (blah)))
+      ...)
+
+
+When point is somewhere in the middle of the form, possibly nested in an
+expression, the beginning is found by looking for a pattern \"(sym ((...\"
+or \"(and-let* (\".
+
+The symbols that might introduce the form (`let', `let*', etc) are not hard
+coded, this allows `align-let' to adapt to forms specific to various Lisp
+dialects.  `and-let*' from Scheme is explicitly recognised, since it can
+start with a bare variable rather than a binding form." t nil)
+
+
+;;
 ;; Module: highlight-current-line
 ;;
 

@@ -65,6 +65,11 @@
 (define-key global-map [(control shift f12)]            'cscope-find-global-definition)
 (define-key global-map [(control ?*)]                   'cscope-pop-mark)
 
+;; lisp-interaction-mode:
+(define-key lisp-interaction-mode-map [(control c) (control a)] 'align-let)
+(define-key emacs-lisp-mode-map       [(control c) (control a)] 'align-let)
+
+
 ;; Dired+ keys:
 (add-hook 'dired-mode-hook
 	  '(lambda ()
