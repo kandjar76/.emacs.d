@@ -185,16 +185,15 @@
     ;(display-buffer buffer)
     (with-current-buffer buffer
       (cd (file-name-directory sln-file))
-      (let ((directory-abbrev-alist (cons (cons (file-name-directory sln-file) ".") directory-abbrev-alist)))
-	(project-buffer-mode)
-	;;
-	(while sln-projects
-	  (let* ((current (pop sln-projects))
-		 (project (car current))
-		 (project-dir (file-name-directory (cdr current)))
-		 (project-data (and (file-exists-p (cdr current))
-				    (vcproj-extract-data (cdr current)))))
-	    (project-buffer-insert project-buffer-status (project-buffer-create-node project 'project (cdr current) project))
+      (project-buffer-mode)
+      ;;
+      (while sln-projects
+	(let* ((current (pop sln-projects))
+	       (project (car current))
+	       (project-dir (file-name-directory (cdr current)))
+	       (project-data (and (file-exists-p (cdr current))
+				  (vcproj-extract-data (cdr current)))))
+	  (project-buffer-insert project-buffer-status (project-buffer-create-node project 'project (cdr current) project))
 	    (when project-data
 	      ;; We'll keep the configuration and platform for now!
 	      (let ((files (vcproj-update-file-folders (caddr project-data) project-dir)))
@@ -202,4 +201,4 @@
 		  (let ((file (pop files)))
 		    (project-buffer-insert project-buffer-status 
 					   (project-buffer-create-node (car file) 'file (cdr file) project))))))
-	    ))))))
+	  )))))
