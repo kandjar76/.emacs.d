@@ -1,104 +1,164 @@
+;; Function to open a sln project in emacs:
+;;  
+
+
 (require 'project-buffer-mode)
-;; 
-;; Sample code / Notes...
-;; 
+(require 'cl)
 
 
-;(defun project-buffer-refresh-nodes(status)
-;  "Refresh displayed buffer"
-;  (ewoc-map (lambda (data) t)
-;	    status
-;	    ))
+;;
+;; Helper function:
+;;
+
+
+(defun vcproj-extract-platforms (current-block)
+  "Extract a list of platform from CURRENT-BLOCK"
+  (unless (eq (car current-block) 'Platforms) (error "Expected a list like '(Platforms ...)"))
+  (let ((data (cdddr current-block))
+	cur ret)
+    (while data
+      (setq cur (pop data))
+      (when (listp cur)
+	(unless (eq (car cur) 'Platform) (error "Unknown id: '%S' expected 'Platform" (car cur)))
+	(unless (eq (caaadr cur) 'Name)   (error "Unknown id: '%S' expected 'Name" (car cur)))
+	(setq ret (cons (cdaadr cur) ret))))
+    (reverse ret)))
+
+
+(defun vcproj-extract-configurations (current-block)
+  "Extract a list of configuration from CURRENT-BLOCK"
+  (unless (eq (car current-block) 'Configurations) (error "Expected a list like '(Configurations ...)"))
+  (let ((data (cdddr current-block))
+	cur ret)
+    (while data
+      (setq cur (pop data))
+      (when (listp cur)
+	(unless (eq (car cur) 'Configuration) (error "Unknown id: '%S' expected 'Configuration" (car cur)))
+	(let ((search-list (cadr cur))
+	      name)
+	  (while (and search-list (not name))
+	    (let ((item (pop search-list)))
+	      (setq name (and (eq (car item) 'Name) (cdr item)))))
+	  (unless name (error "Unknown configuration name!"))
+	  (setq ret (cons name ret)))))
+    (reverse ret)))
+
+
+(defun vcproj-extract-file(current-item)
+  "Extract the relative path of the current file contain in CURRENT-ITEM"
+  (unless (eq (car current-item) 'File) (error "Expected a list like '(File ...)"))
+  (let ((data (cadr current-item))
+	file)
+    (while (and data (not file))
+      (let ((cur (pop data)))
+	(setq file (and (eq (car cur) 'RelativePath) (cdr cur)))))
+    file))
+
+	      
+(defun vcproj-extract-filter-name(current-item)
+  "Extract the filter name of the CURRENT-ITEM"
+  (unless (eq (car current-item) 'Filter) (error "Expected a list like '(Filter ...)"))
+  (let ((data (cadr current-item))
+	filter)
+    (while (and data (not filter))
+      (let ((cur (pop data)))
+	(setq filter (and (eq (car cur) 'Name) (cdr cur)))))
+    filter))
+
+
+(defun vcproj-extract-filter-list(current-item)
+  "Extract the files/filter list attach to the current filter in CURRENT-ITEM"
+    (unless (eq (car current-item) 'Filter) (error "Expected a list like '(Filter ...)"))
+  (cddr current-item))
+
+
+(defun vcproj-convert-file-list(file-list)
+  "Convert FILE-LIST from a list '((\"virt-subfolder\" \"virt-subfolder\"...) \"full-path\") to a list '(\"virtual-folder\" \"full-path\")" 
+  (let (ret)
+    (while file-list
+      (let* ((node (pop file-list))
+	     (vnode (car node))
+	     (fullpath (replace-regexp-in-string "\\\\" "/" (cdr node)))
+	     (file (file-name-nondirectory fullpath))
+	     (virt-folder (if vnode "/" "")))
+	(while vnode
+	  (let ((item (pop vnode)))
+	    (setq virt-folder (concat item virt-folder))))
+	(push (cons (concat virt-folder file) fullpath) ret)))
+    ret))
+
+
+(defun vcproj-extract-files(current-block)
+  "Extract a list of files from CURRENT-BLOCK"
+  (unless (eq (car current-block) 'Files) (error "Expected a list like '(Files ...)"))
+  (let ((data (cdddr current-block))
+	cur ret stack folder)
+    (push data stack)
+    (while stack
+      (let ((node (pop stack)))
+        (pop folder)
+	(while node
+	  (let ((item (pop node)))
+	    (when (listp item)
+	      (cond ((eq (car item) 'Filter)
+		     (push node stack)
+		     (push (vcproj-extract-filter-name item) folder)
+		     (setq node (vcproj-extract-filter-list item)))
+		    ((eq (car item) 'File)
+		     (push (cons folder (vcproj-extract-file item)) ret))
+		    (t (error "Unknown data - id: %S" (car item)))))))))
+    (vcproj-convert-file-list ret)))
+ 
   
-;;(ewoc-data (ewoc-locate project-buffer-status))
-;;(ewoc-invalidate project-buffer-status pos)
-;;(ewoc-goto-prev project-buffer-status 1)
-;;(ewoc-goto-next project-buffer-status 1)
+
+(defun vcproj-extract-data(vcproj-file)
+  "Extract files and directory from the vcproj file"
+  (save-excursion
+    (let* ((xml-tags (with-temp-buffer
+		       (insert-file vcproj-file)
+		       (xml-parse-region (point-min) (point-max))))
+	   (vs-data (car xml-tags))
+	   (vs-tags  (and (eq (car vs-data) 'VisualStudioProject)
+			  (cdddr vs-data)))
+	   ;;
+	   vc-platforms
+	   vc-configurations
+	   vc-files
+	   )
+      ;; 
+      (while vs-tags
+	(let ((cur-block (pop vs-tags)))
+	  (when (listp cur-block)
+	    (let ((block-tag (car cur-block)))
+	      (cond ((eq block-tag 'Platforms)
+		     (setq vc-platforms (append (vcproj-extract-platforms cur-block) vc-platforms)))
+		    ((eq block-tag 'ToolFiles))     ; Currently ignored
+		    ((eq block-tag 'Configurations)
+		     (setq vc-configurations (append (vcproj-extract-configurations cur-block) vc-configurations)))
+		    ((eq block-tag 'References))    ; Currently ignored
+		    ((eq block-tag 'Files)
+		     (setq vc-files (append (vcproj-extract-files cur-block) vc-files)))
+		    ((eq block-tag 'Globals))       ; Currently ignored
+		    (t (error (format "Unknown block tag: %S" block-tag)))) 
+	    ))))
+      (list vc-platforms vc-configurations vc-files))))
 
 
+(defun vcproj-update-file-folders(vc-files folder)
+  "Update the folder of each files in VC-FILES adding FOLDER in front of them"
+  (mapcar '(lambda (item)
+	     (cons (car item) 
+		   (if (file-name-absolute-p (cdr item))
+		       (cdr item)
+		       (let ((rela-path (file-relative-name (expand-file-name (concat folder (cdr item)))))
+			     (full-path (abbreviate-file-name (expand-file-name (concat folder (cdr item))))))
+			 (if (> (length rela-path) (length full-path))
+			     full-path
+			     rela-path)))))
+	  vc-files))
 
 
-;;(split-string "/test/blah/" "/")
-
-;      (when proj-found
-;	(let ((folder-data (project-buffer-extract-folder (project-buffer-node->name node-data) (project-buffer-node->type node-data))))
-;	  (split-string
-;	  ))
-
-;;(compare-strings "abcdef" nil nil "abc" nil nil)
-
-
-;;
-;; Test commands:
-;;
-
-
-(defun test-projbuff()
-  (interactive)
-  (let ((buffer (generate-new-buffer "test-project-buffer")))
-    (display-buffer buffer)
-    (with-current-buffer buffer
-      (cd "~/temp")
-      (project-buffer-mode)
-
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "test1" 'project "test1.sln" "test1"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "src/gfr.cpp" 'file  "~/temp/gfr.cpp" "test1"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "src/abc.cpp" 'file  "~/temp/abc.cpp" "test1"))
-
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "test2" 'project "test2.sln" "test2"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "header/zzz.h" 'file  "~/temp/zzz.h" "test2"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "src/roo.c" 'file  "~/temp/roo.c" "test2"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "script.awk" 'file "~/temp/script.awk" "test2"))
-
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "header/xtra.h" 'file "~/temp/xtra.h" "test1"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "blah.h" 'file "~/temp/blah.h" "test1"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "src/zzz.cpp" 'file  "~/temp/zzz.cpp" "test1"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "aha.h" 'file "~/temp/aha.h" "test1"))
-
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "other" 'project  "other.sln" "other"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "test.h" 'file "~/temp/test.h" "other"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "src/apl.c" 'file  "~/temp/apl.c" "test2"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "src/foo.cpp" 'file  "~/temp/foo.c" "other"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "test2.h" 'file "~/temp/test2.h" "other"))
-
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "fold" 'project  "fold.sln" "fold"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "abc/dee/test.c" 'file  "~/test.c" "fold"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "abc/dee/grr.c" 'file  "~/grr.c" "fold"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "abc/testw.c" 'file  "~/testw.c" "fold")) 
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "abc/rrr/rdf.c" 'file  "~/rdf.c" "fold"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "abc/def/gla.c" 'file  "~/gla.c" "fold"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "blue/green/red.c" 'file  "~/red.c" "fold"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "abc/rrr/gth.c" 'file  "~/gth.c" "fold"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "abc/rrr/zgth.c" 'file  "~/zgth.c" "fold"))
-)))
-
-(defun test-projbuff-old()
-  (interactive)
-  (let ((buffer (generate-new-buffer "test-project-buffer")))
-    (display-buffer buffer)
-    (with-current-buffer buffer
-      (project-buffer-mode)
-
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "test1" 'project "test1.sln" "test1"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "gfr.cpp" 'file  "~/temp/gfr.cpp" "test1"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "abc.cpp" 'file  "~/temp/abc.cpp" "test1"))
-
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "test2" 'project "test2.sln" "test2"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "zzz.h" 'file  "~/temp/zzz.h" "test2"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "roo.c" 'file  "~/temp/roo.c" "test2"))
-
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "xtra.h" 'file "~/temp/xtra.h" "test1"))
-
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "other" 'project  "other.sln" "other"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "apl.c" 'file  "~/temp/apl.c" "test2"))
-      (project-buffer-insert project-buffer-status (project-buffer-create-node "foo.cpp" 'file  "~/temp/foo.c" "other"))
-)))
-
-
-
-
-
-(defun sln-extract-project(sln-file)
+(defun sln-extract-projects(sln-file)
   "Extract projects from the SLN file"
   (save-excursion
     (with-temp-buffer
@@ -107,17 +167,39 @@
       (let ((result nil))
 	(while (re-search-forward "Project(\"{[-A-Z0-9]+}\")[ 	]+=[ 	]+\"\\([A-Za-z0-9_]+\\)\"[ 	]*,[ 	]+\"\\([\\A-Za-z0-9_.]+\\)\""
 				  (point-max)  t) 
-	  (add-to-list 'result (cons (match-string-no-properties 1) (match-string-no-properties 2))))
+	  (add-to-list 'result (cons (match-string-no-properties 1) (replace-regexp-in-string "\\\\" "/" (match-string-no-properties 2)))))
 	result))))
 
-(defun create-project-buffer(sln-file)
-  "Create a project buffer"
-  (let ((buffer (create-file-buffer sln-file))
+
+;;
+;; Interactive command:
+;;
+
+(defun create-sln-project-buffer(sln-file)
+  "Open a project buffer"
+  (interactive "fSLN file: ")
+  (let ((buffer (generate-new-buffer (file-name-nondirectory sln-file)))
 	(sln-projects (sln-extract-projects sln-file))
-	current) ;; list of proj-nane / project file
-    (while sln-projects
-      (setq current (pop sln-projects))
-      (vcproj-extract 
-    ;;(switch-to-buffer buffer)
-    ;;(project-buffer-mode)
-    buffer))))
+	) ;; list of proj-nane / project file
+    (switch-to-buffer buffer)
+    ;(display-buffer buffer)
+    (with-current-buffer buffer
+      (cd (file-name-directory sln-file))
+      (let ((directory-abbrev-alist (cons (cons (file-name-directory sln-file) ".") directory-abbrev-alist)))
+	(project-buffer-mode)
+	;;
+	(while sln-projects
+	  (let* ((current (pop sln-projects))
+		 (project (car current))
+		 (project-dir (file-name-directory (cdr current)))
+		 (project-data (and (file-exists-p (cdr current))
+				    (vcproj-extract-data (cdr current)))))
+	    (project-buffer-insert project-buffer-status (project-buffer-create-node project 'project (cdr current) project))
+	    (when project-data
+	      ;; We'll keep the configuration and platform for now!
+	      (let ((files (vcproj-update-file-folders (caddr project-data) project-dir)))
+		(while files		
+		  (let ((file (pop files)))
+		    (project-buffer-insert project-buffer-status 
+					   (project-buffer-create-node (car file) 'file (cdr file) project))))))
+	    ))))))
