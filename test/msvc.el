@@ -178,7 +178,7 @@
 (defun create-sln-project-buffer(sln-file)
   "Open a project buffer"
   (interactive "fSLN file: ")
-  (let ((buffer (generate-new-buffer (file-name-nondirectory sln-file)))
+  (let ((buffer (generate-new-buffer (concat "ms:" (file-name-nondirectory sln-file))))
 	(sln-projects (sln-extract-projects sln-file))
 	) ;; list of proj-nane / project file
     (switch-to-buffer buffer)
