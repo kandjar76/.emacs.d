@@ -2,12 +2,13 @@
 ** `alpha=\"ok\"` generates an error while trying to highlight the occurence of alpha (C-`)
 ** Files containing defrecord statement don't compile!
 * List of Todos
-** Init [0/2]
+** Init [0/3]
    - [ ] Find a solution to make yas/snippet faster to load -- at least under windows.
    - [ ] Investigate CEDET / semantic.
+   - [ ] Investigate Remember
 ** Git [0/1]
    - [ ] Having a option to switch the view mode (with/out diffs)within git-log-mode
-** Global [0/3]
+** Global [0/4]
    - [ ] Tree of undo
    - [ ] c-~ -> highlight the current word globally (in every visible buffers)
    - [ ] Edit multiple text area at once (using ctrl+mouse to highlight those area for example)
@@ -15,9 +16,10 @@
 	 IDEA: 
 	 select a region, do a search within the region to select all occurence of that research.
    	 then allow simultaneous modification of that section of code
-** Mode [3/5]
+** Mode [3/7]
    - [X] Project view
    - [X] msvc-mode (loading a sln/vcproj files)
+   - [ ] Window selector (with display in the top left corner of each winwdow
    - [X] TODO mode (using with org-mode)
    - [ ] Log viewer (`-, ...)
    - [ ] Update git integration
@@ -25,6 +27,7 @@
      + See the git branches in emacs
      + Do git checkout in emacs
      + Git rebase in emacs
+   - [ ] Submit the modification made to the git mode to the mailing list
 ** C/C++ [0/7]
    - [ ] #if 0 recognize!!!
    - [ ] Check flymake
@@ -43,7 +46,7 @@
    - [ ]  `- Allow move up/down -- through minor mode
    - [ ]      `- Display register usage
    - [ ]      `- Use overlay to do latency
-** MSVC Mode [8/8]
+** MSVC Mode [8/10]
    - [X] Vision of how the information should get displayed
    - [X] Learning ewok
    - [X] Extracting project / deps / build mode from the sln file
@@ -52,7 +55,8 @@
    - [X] Allow fold / collapse for the project
    - [X] Introduction of the folders
    - [X] New items added must repect the user view (be hidden or not depending on the view)
-
+   - [ ] Integration of the configuration and platform
+   - [ ] Allow project builds 
 ** Project buffer mode [8/17]
    - [X] C-x C-d on any file should bring the proper directory -- useful??? (waived)
    - [X] 'm' on project should mark every file in this project
@@ -74,3 +78,5 @@
 	 `- OR see if it's possible to add a post desktop loaded hook -- to reinit the project after loading the desktop data.
    - [ ] Hook up the semantic or any other auto completion tools
    - [ ] Occur in all files in the projects
+
+#+STARTUP: hidestars
