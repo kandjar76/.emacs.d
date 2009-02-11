@@ -331,9 +331,10 @@ It serves as a menu to find any of the occurrences in this buffer.
 	   '((sequence "TODO" "BUG" "IN PROGRESS" "STALLED" "|" "DONE" "FIXED" "CANCELED")))
      (setq org-todo-keyword-faces
 	   '(("STALLED"   . org-warning)
-	     ("CANCELED"  . (:foreground "darkgray" :inherit bold))))))
-
-
+	     ("CANCELED"  . (:foreground "darkgray" :inherit bold))))
+     (setq org-hide-leading-stars t) ; Show only the last '*' of the header lines
+     (setq org-log-done t)           ; Log time stamp when the job is marked DONE!
+))
 ;;
 ;; Module: color-occur
 ;;
