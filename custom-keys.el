@@ -139,5 +139,11 @@
   '(progn
      (define-key git-status-mode-map [(control ?=)] 'git-diff-current-file)))
 
+;; Org mode:
+(eval-after-load "org"
+  '(progn
+     (define-key org-mode-map [(control ?f)] 'org-occur)
+     ))
+
 ;; Full screen mode:
 (define-key global-map [(meta return)] 'toggle-fullscreen)
