@@ -16,6 +16,7 @@
 ;;
 ;;
 
+(require 'cl)
 
 (defun idf-string-list-to-regexp (inst-list)
   "Produce from a list of strings a single regular expression which

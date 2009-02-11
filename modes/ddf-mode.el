@@ -8,6 +8,8 @@
 ;;
 ;;
 
+(require 'cl)
+
 ;; List of all even opcodes
 (setq ddf-keywords '("set" "first_offset" "next_offset" "map" "align" "size" "cond"))
 
