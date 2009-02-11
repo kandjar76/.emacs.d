@@ -143,7 +143,8 @@ start with a bare variable rather than a binding form." t nil)
 ;; Module which add a feature: the current line will now be highlighted.
 (when window-system
   (require 'highlight-current-line)
-  (highlight-current-line-on t))
+  (highlight-current-line-on t)
+  (setq highlight-current-line-ignore-regexp (concat highlight-current-line-ignore-regexp "\\|\\*terminal\\*")))
 
 
 ;;
