@@ -140,6 +140,7 @@
      (define-key git-status-mode-map [(control ?=)] 'git-diff-current-file)))
 
 ;; Org mode:
+(define-key global-map [(control ?c) (?a)] 'org-agenda)
 (eval-after-load "org"
   '(progn
      (define-key org-mode-map [(control ?f)] 'org-occur)
