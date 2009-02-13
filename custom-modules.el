@@ -322,8 +322,14 @@ It serves as a menu to find any of the occurrences in this buffer.
 
 
 ;;
-;; Module: org-mode
+;; Module: org-mode / remember / agenda
 ;;
+
+(when running-at-work
+  (setq org-agenda-files (list "~/org/work.org"
+			       "~/org/tasks.org"
+			       "~/org/notes.org")))
+
 
 (eval-after-load "org"
   '(progn 
@@ -334,7 +340,37 @@ It serves as a menu to find any of the occurrences in this buffer.
 	     ("CANCELED"  . (:foreground "darkgray" :inherit bold))))
      (setq org-hide-leading-stars t) ; Show only the last '*' of the header lines
      (setq org-log-done t)           ; Log time stamp when the job is marked DONE!
+     
+     ;; Some settup for remember:
+     (setq org-directory          "~/org")
+     (setq org-default-notes-file "~/.notes")
 ))
+
+(eval-after-load "remember"
+  '(progn
+     (setq remember-annotation-functions '(org-remember-annotation))
+     (setq remember-handler-functions    '(org-remember-handler))
+     (add-hook 'remember-mode-hook 'org-remember-apply-template)
+     (setq org-remember-templates
+	   '(("Todo" 
+	      ?t 
+	      "* TODO %^{Brief Description} %^g\t\n  DEADLINE: %^t\n\n  %?\n\n  [Added: %U]" 
+	      "~/org/tasks.org" 
+	      "Tasks")
+
+	     ("Bug"  
+	      ?b 
+	      "* BUG %^{Head Line} %U %^g\n  %?"
+	      "~/org/tasks.org"
+	      "Bugs")
+
+	     ("Note"
+	      ?n
+	      "* %^{Head Line} %^g\n  %?\n\n  [Added: %U]"
+	      "~/org/notes.org" "Notes")
+	   ))
+     ))
+
 ;;
 ;; Module: color-occur
 ;;

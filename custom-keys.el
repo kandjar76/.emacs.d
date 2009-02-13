@@ -20,7 +20,7 @@
 (define-key global-map [(meta left)]                    'backward-sexp)
 (define-key global-map [(meta right)]                   'forward-sexp)
 
-(define-key global-map [(control ?c) (?r)]		'revert-buffer-now)
+(define-key global-map [(control ?c) (control ?r)]	'revert-buffer-now)
 (define-key global-map [(control ?x) (?k)]		'kill-buffer-now)
 (define-key global-map [(control ?x) (control ?d)]	'dired)
 
@@ -141,6 +141,7 @@
 
 ;; Org mode:
 (define-key global-map [(control ?c) (?a)] 'org-agenda)
+(define-key global-map [(control ?c) (?r)] 'org-remember)
 (eval-after-load "org"
   '(progn
      (define-key org-mode-map [(control ?f)] 'org-occur)

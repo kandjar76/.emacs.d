@@ -56,7 +56,4 @@
 		  (/ (car (cdr (cdr loading-time))) 1000))))
 (insert ";;\n")
 
-(when running-at-work
-  (setq org-agenda-files (list "~/org/work.org")))
-
 (set-buffer-modified-p nil)
