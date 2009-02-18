@@ -207,9 +207,9 @@ This function just inhibate the extra indentation if that's the case."
     (local-set-key "\t" 'c-indent-line-or-region-and-comment))
 
   (local-set-key [(control ?c) (?m)] 'manual-entry)
-  (local-set-key [(control ?c) (?a) (?a)] 'cpp-align-variable-assignment) 
-  (local-set-key [(control ?c) (?a) (?f)] 'cpp-align-function-bracket)
-  (local-set-key [(control ?c) (?a) (?c)] 'cpp-align-comment)
+  (local-set-key [(control ?c) (control ?a) (?a)] 'cpp-align-variable-assignment) 
+  (local-set-key [(control ?c) (control ?a) (?f)] 'cpp-align-function-bracket)
+  (local-set-key [(control ?c) (control ?a) (?c)] 'cpp-align-comment)
   (local-set-key [(control ?q)] 'cpp-comment-block)
 
   (local-set-key [(f4)] 'next-error)
