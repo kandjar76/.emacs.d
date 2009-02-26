@@ -84,8 +84,8 @@
 
 
 ;; Set the column for spu even opcode (need 8 spaces for the comment about the cycle count of the opcode)
-(setq spu-even-column        16)
-(setq spu-odd-column         88)
+(setq spu-even-column        8)
+(setq spu-odd-column         72)
 (setq spu-comment-size        8)
 (setq spu-reg-comment-column 24)
 
