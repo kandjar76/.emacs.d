@@ -223,21 +223,38 @@ if COUNT is nil, each number is increased by line number within the selection (s
 
 
 ;;
-;; Module: iswitchb
+;; Module: ido
 ;;
 
-(require 'iswitchb)
-(iswitchb-default-keybindings)
-(setq iswitchb-prompt-newbuffer nil)
-(add-hook 'iswitchb-define-mode-map-hook
-	  '(lambda ()
-	     (define-key iswitchb-mode-map [right] 'iswitchb-next-match)
-	     (define-key iswitchb-mode-map [left] 'iswitchb-prev-match)))
-(icomplete-mode 1)
-(defadvice iswitchb-visit-buffer (after iswitchb-visit-buffer(buffer))
-  (message buffer-file-name))
-(ad-activate 'iswitchb-visit-buffer)
+(require 'ido)
+(ido-mode t)
+(setq ido-auto-merge-work-directories-length -1)
 
+; (setq ido-execute-command-cache nil)
+(defun ido-execute-command ()
+  "Provide M-x with command completion using ido"
+  (interactive)
+  (let (ido-execute-command-cache)
+    (call-interactively
+     (intern
+      (ido-completing-read
+       "M-x "
+       (progn
+	 (unless ido-execute-command-cache
+	   (mapatoms (lambda (s)
+		       (when (commandp s)
+			 (setq ido-execute-command-cache
+			       (cons (format "%S" s) ido-execute-command-cache))))))
+	 ido-execute-command-cache))))))
+
+(global-set-key "\M-x" 'ido-execute-command)
+
+
+;;
+;; Uniquify
+;;
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'forward)
 
 ;;
 ;; Module: yas/snippet
@@ -326,8 +343,7 @@ It serves as a menu to find any of the occurrences in this buffer.
 ;;
 
 (when running-at-work
-  (setq org-agenda-files (list "~/org/work.org"
-			       "~/org/tasks.org"
+  (setq org-agenda-files (list "~/org/tasks.org"
 			       "~/org/notes.org")))
 
 
@@ -344,6 +360,14 @@ It serves as a menu to find any of the occurrences in this buffer.
      ;; Some settup for remember:
      (setq org-directory          "~/org")
      (setq org-default-notes-file "~/.notes")
+
+     (defun org-insert-update-tag(arg)
+       (interactive "P")
+       (insert "[Update: ]")
+       (backward-char 1)
+       (org-time-stamp arg)
+       (forward-char 1))
+     (define-key org-mode-map [(control c) ?u] 'org-insert-update-tag)
 ))
 
 (eval-after-load "remember"
