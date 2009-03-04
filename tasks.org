@@ -8,7 +8,8 @@
    - [ ] Investigate Remember
 ** Git [0/1]
    - [ ] Having a option to switch the view mode (with/out diffs)within git-log-mode
-** Global [0/4]
+** Global [0/6]
+   - [ ] Removing this list of todo's from the emacs folder
    - [ ] Tree of undo
    - [ ] c-~ -> highlight the current word globally (in every visible buffers)
    - [ ] Edit multiple text area at once (using ctrl+mouse to highlight those area for example)
@@ -16,6 +17,8 @@
 	 IDEA: 
 	 select a region, do a search within the region to select all occurence of that research.
    	 then allow simultaneous modification of that section of code
+   - [ ] Publishing my emacs script
+   - [ ] Asking for permission to publish the spu scripts
 ** Mode [3/7]
    - [X] Project view
    - [X] msvc-mode (loading a sln/vcproj files)
