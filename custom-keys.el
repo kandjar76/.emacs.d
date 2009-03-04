@@ -68,6 +68,8 @@
 (define-key global-map [(control ?*)]                   'cscope-pop-mark)
 
 ;; lisp-interaction-mode:
+(define-key lisp-interaction-mode-map [(control c) ?(] 'elisp-surround-with-paren)
+(define-key emacs-lisp-mode-map       [(control c) ?(] 'elisp-surround-with-paren)
 (define-key lisp-interaction-mode-map [(control c) (control a)] 'align-let)
 (define-key emacs-lisp-mode-map       [(control c) (control a)] 'align-let)
 

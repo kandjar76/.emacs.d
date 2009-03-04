@@ -246,6 +246,21 @@ With prefix arg, use single quotes, not double quotes, as delimeters."
 	(setq current-line (1+ current-line)))
 )))
 
+;;;###autoload
+(defun elisp-surround-with-paren(&optional arg)
+  "Add parenthesis around the selected block
+Side effect: copy the selected region inside the kill buffer"
+  (interactive "p") 
+  (if mark-active
+      (let ((start (region-beginning))
+	    (end   (region-end)))
+	(kill-region start end)
+	(insert "(")
+	(yank)
+	(insert ")")
+	(indent-region start (point)))
+      (self-insert-command arg)))
+
 
 ;; use: (w32-send-sys-command 61488) to toggle fullscreen under windows
 ;; use: (w32-send-sys-command 61728) to restore the window
