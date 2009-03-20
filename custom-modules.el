@@ -144,7 +144,7 @@ start with a bare variable rather than a binding form." t nil)
 (when window-system
   (require 'highlight-current-line)
   (highlight-current-line-on t)
-  (setq highlight-current-line-ignore-regexp (concat highlight-current-line-ignore-regexp "\\|\\*terminal\\*")))
+  (setq highlight-current-line-ignore-regexp (concat highlight-current-line-ignore-regexp "\\|\\*terminal\\*\\|\\*ansi-term\\*")))
 
 
 ;;
