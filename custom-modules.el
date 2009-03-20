@@ -345,6 +345,8 @@ It serves as a menu to find any of the occurrences in this buffer.
 ;;
 
 (when running-at-work
+  (autoload 'org-agenda "org-agenda")
+  (autoload 'org-remember "org-remember")
   (setq org-agenda-files (list "~/org/tasks.org"
 			       "~/org/notes.org")))
 
@@ -352,9 +354,10 @@ It serves as a menu to find any of the occurrences in this buffer.
 (eval-after-load "org"
   '(progn 
      (setq org-todo-keywords
-	   '((sequence "TODO" "BUG" "IN PROGRESS" "STALLED" "|" "DONE" "FIXED" "CANCELED")))
+	   '((sequence "TODO" "BUG" "IN PROGRESS" "STALLED" "PENDING" "|" "DONE" "FIXED" "CANCELED")))
      (setq org-todo-keyword-faces
 	   '(("STALLED"   . org-warning)
+	     ("PENDING"   . org-warning)
 	     ("CANCELED"  . (:foreground "darkgray" :inherit bold))))
      (setq org-hide-leading-stars t) ; Show only the last '*' of the header lines
      (setq org-log-done t)           ; Log time stamp when the job is marked DONE!
@@ -362,6 +365,8 @@ It serves as a menu to find any of the occurrences in this buffer.
      ;; Some settup for remember:
      (setq org-directory          "~/org")
      (setq org-default-notes-file "~/.notes")
+     (setq org-agenda-tags-column -150)
+     (setq org-tags-column -120)
 
      (defun org-insert-update-tag(arg)
        (interactive "P")
