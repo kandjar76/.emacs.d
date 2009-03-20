@@ -11,6 +11,8 @@
          "~/.emacs.d/libs"
          "~/.emacs.d/modes"
          "~/.emacs.d/personal"
+
+	 "~/.emacs.x/org-mode/lisp"
         )
        load-path))
 
