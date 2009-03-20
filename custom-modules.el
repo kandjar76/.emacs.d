@@ -228,7 +228,9 @@ if COUNT is nil, each number is increased by line number within the selection (s
 
 (require 'ido)
 (ido-mode t)
-(setq ido-auto-merge-work-directories-length -1)
+(setq ido-auto-merge-work-directories-length -1)   ; 
+(setq ido-create-new-buffer 'always)               ; No more confirmation prompt when I explicitly request a new buffer
+(setq ido-enable-flex-matching t)                  ; Enable flex matching (sequence conserved)
 
 ; (setq ido-execute-command-cache nil)
 (defun ido-execute-command ()
