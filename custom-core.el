@@ -156,7 +156,17 @@
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
 (when (and window-system running-on-linux)
-  (desktop-save-mode))
+  (desktop-save-mode)
+  (setq desktop-globals-to-save
+	(append '((compile-history          . 30)
+		  (minibuffer-history       . 50)
+		  (query-replace-history    . 60)
+		  (read-expression-history  . 60)
+		  (regexp-history           . 60)
+		  (search-ring              . 20)
+		  (shell-command-history    . 20)
+		  register-alist)))
+)
 
 ;;------------------------------------------------------------------------------
 ;;
