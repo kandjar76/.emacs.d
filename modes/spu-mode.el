@@ -443,7 +443,8 @@ Assumes that the char before POINT is a whitespace or a tab"
 	      (or (= (char-before) 32)
 		  (= (char-before) ?\t)))
     (delete-backward-char 1))
-   (insert " "))
+  (when (> (current-column) 0)
+    (insert " ")))
 
 (defun spu-end-of-line(pos)
   "Returns t if POS is at the 'end of line'.
