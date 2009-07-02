@@ -155,6 +155,7 @@ BISL      w, r          4
 BISLED    w, r		4  
 BIHNZ     r, r          1  
 BIHZ      r, r          1  
+BIHZE     r, r          1  
 BINZ      r, r          1  
 BIZ       r, r          1  
 BRA       b		1  

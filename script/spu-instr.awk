@@ -1533,6 +1533,16 @@ BEGIN {
 	spu_cmd_minc["BIHZ"] = 2
 	spu_cmd_maxc["BIHZ"] = 2
 
+	# Command: BIHZE
+	spu_cmd_list[spu_cmd_count++] = "BIHZE"
+	spu_cmd_latency["BIHZE"] = 1
+	spu_cmd_pipe["BIHZE"] = "odd"
+	spu_cmd_argv["BIHZE", 0] = "ro"
+	spu_cmd_argv["BIHZE", 1] = "ro"
+	spu_cmd_argc["BIHZE"] = 2
+	spu_cmd_minc["BIHZE"] = 2
+	spu_cmd_maxc["BIHZE"] = 2
+
 	# Command: BINZ
 	spu_cmd_list[spu_cmd_count++] = "BINZ"
 	spu_cmd_latency["BINZ"] = 1
