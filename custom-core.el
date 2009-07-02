@@ -116,6 +116,8 @@
 
 ;; Smaller delay before showing the tooltip.
 (setq tooltip-delay 0.3)
+;; Disable the tooltip popups:
+(tooltip-mode 0)
 
 ;; Increase the size of the undo buffer:
 (setq undo-limit         800000)
@@ -155,7 +157,9 @@
 ;; Don't create a new frame for the ediff help window!
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
-(when (and window-system running-on-linux)
+(when (and window-system 
+	   running-on-linux
+	   (not running-from-homedir))
   (desktop-save-mode)
   (setq desktop-globals-to-save
 	(append '((compile-history          . 30)
