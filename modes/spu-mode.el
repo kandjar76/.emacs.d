@@ -198,7 +198,7 @@ matches any of the individual opcodes."
 			"mpyhha" "mpyhhau" "fi" "cuflt" "csflt" "cfltu" "cflts" "fesd" "frds"))
 
 (setq spu-br-opcodes  '("br" "brsl" "brhnz" "brhz" "brnz" "brz" "hbrr" "bi" "bisl" "bisled"
-			"bihnz" "bihz" "binz" "biz" "hbr" "hbrp" "bra" "brasl" "hbra" "bie" "bid"))
+			"bihnz" "bihz" "bihze" "binz" "biz" "hbr" "hbrp" "bra" "brasl" "hbra" "bie" "bid"))
 
 (setq spu-st-opcodes  '("stqa" "stqd" "stqr" "stqx"))
 (setq spu-ls-opcodes  '("lqa" "lqd" "lqr" "lqx" "rdchcnt" "rdch" "wrch"))
@@ -219,7 +219,7 @@ matches any of the individual opcodes."
 (setq spu-even-opcode-regexp
       (concat "\\(\\({\\s-*nop\\s-*}\\)\\|" "{~<[^~]+~}\\|" (spu-string-list-to-regexp spu-even-opcodes) "\\)"))
 
-(setq spu-no-opcodes-lines-regexp  "^[ \t]*\\([;.]\\|\\w+:\\)")
+(setq spu-no-opcodes-lines-regexp  "^[ \t]*\\([;.]\\|\\w+:[ \t]*$\\)")
 
 
 ;;
