@@ -23,6 +23,8 @@
 (defvar running-at-work    (not (eq (or (and (boundp 'string-match-p)
 					     (string-match-p  "naughtydog\\|magic-dog" system-name))
 					(string-match "naughtydog\\|magic-dog" system-name)) nil)))
+(defvar running-from-homedir (string= "~/" (symbol-value 'command-line-default-directory)))
+
 
 
 ;; Set the default font:
