@@ -21,6 +21,7 @@ BEGIN {
    # Clean each line: 
    sub(/\r$/,"")                                        # Dos 2 Unix
    gsub(/#.*$/,"")                                      # Strip comments
+#  gsub(/^[ \t]*\..*$/, "", $0)                         # for now, let get rid of the prepro..
    $0 = gensub(/[abcdef0-9]+ <([^+>]+)\+(0x[abcdef0-9]+)>/, "\\1_\\2", "g", $0); # Strip ascii code
    $0 = gensub(/[abcdef0-9]+ <([^>]+)>/, "\\1", "g", $0); # Strip ascii code
    $0 = gensub(/<([^>]+)>/, "\\1", "g", $0); # Strip ascii code
@@ -32,8 +33,7 @@ BEGIN {
    #   gsub(/nop[ \t]+\$[0-9]+$/, "nop")
 
    gsub(/\([^\$][^\)]*\)/, "", $0)      # treat (..) as comment
-   gsub(/\..*$/, "", $0)          # for now, let get rid of the prepro..
-   gsub(/^[ \t]+|[ \t]+$/,"", $0) # Trim white spaces
+   gsub(/^[ \t]+|[ \t]+$/,"", $0)       # Trim white spaces
    gsub(/,/, " ", $0)
 
    # Either one or two instructions per lines...
