@@ -1482,7 +1482,6 @@ If the register already exist, edit the comment instead."
   (let ((spu-mode-map (make-keymap)))
     (define-key spu-mode-map [(control c) (control f)]    'spu-reformat-region)
     (define-key spu-mode-map [(control c) (control d)]    'spu-rollup-dependency-report-region)
-    (define-key spu-mode-map [(control c) (control r)]    'spu-rollup-fusion-region)
     ;(define-key spu-mode-map [(tab)]                      'spu-indent)
     (define-key spu-mode-map [(control >)]                'spu-next-opcode)
     (define-key spu-mode-map [(control <)]                'spu-previous-opcode)
