@@ -339,7 +339,7 @@ spaces / tabs present at the beginning of the line."
       (setq line (buffer-substring start end))
       (and (string-match spu-no-opcodes-lines-regexp line) (string-match "[^ \t]" line)))))
 
-(defun spu-detect-opcodes-line()
+(defun spu-detect-opcodes-line(&optional require-both)
   "Return t if an opcode has been found at that line."
   (save-excursion
     (let (start end line fwd)
@@ -348,8 +348,11 @@ spaces / tabs present at the beginning of the line."
       (beginning-of-line)
       (setq start (point))
       (setq line (spu-clean-c-comments (spu-clean-line-comment (buffer-substring start end))))
-      (or (string-match spu-even-opcode-regexp line)
-	  (string-match spu-odd-opcode-regexp line)))))
+      (or (and (string-match spu-even-opcode-regexp line)
+	       (string-match spu-odd-opcode-regexp line))
+	  (and (not require-both)
+	       (or (string-match spu-even-opcode-regexp line)
+		   (string-match spu-odd-opcode-regexp line)))))))
 
 (defun spu-detect-nop-line(swap-odd &optional pure-nop)
   "Return t if an nop (if SWAP-ODD is nil) or a lnop (if SWAP-ODD is t)  has been found at that line."
