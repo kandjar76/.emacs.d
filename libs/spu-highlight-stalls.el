@@ -268,8 +268,11 @@ Returns a list of opcode / stalling time"
 (defun spu-nopify(start end &optional initial-reglist)
   "Insert {nop} / {lnop} lines in the selected region to compensate stalls"
   (interactive "r")
-  (let ((reglist initial-reglist)
-	(stalls-count 0))
+  (let* ((ind-cols (spu-compute-indent)) ;; we may want do deactivate the region before calling this function... :)
+	 (spu-even-column (or (car ind-cols) spu-even-column))
+	 (spu-odd-column  (or (cdr ind-cols) spu-odd-column))
+	 (reglist initial-reglist)
+	 (stalls-count 0))
     (save-excursion
       (goto-char start)
       (beginning-of-line)
