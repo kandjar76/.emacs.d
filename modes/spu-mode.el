@@ -89,6 +89,8 @@
 (setq spu-comment-size        8)
 (setq spu-reg-comment-column 24)
 
+;; Lookup: up and down for opcode, in order to generate the proper indentation
+(setq spu-indent-lookup 32)
 
 ;;
 ;;
@@ -856,7 +858,110 @@ even if it's used in the commented section of the line."
 		     (insert "nop ")
 		     (indent-to-column delimcol))))))
     (move-to-column curcol)))
-		 
+	
+
+
+(defun spu-compute-indent()
+  "Return (even . odd), the indent columns which should be used to indent the code.
+This function is going to look up or down to find an opcode line within + and - SPU-INDENT-LOOKUP lines.
+The function will first search up, if no appropriate opcode line is found, the function will search go down.
+The search will not go over basic block (separates by labels) unless no other appropriate opcode line are found."
+
+  (let ((top-point (point))
+	(bottom-point (point))
+	(label-regexp "^[ \t]*[A-Za-z0-9_\-]+:")) ;; Need to consider potential active-region
+
+    ;; Readjust the top and bottom point in case a region is active
+    (when mark-active
+      (let ((start (region-beginning))
+	    (end   (region-end)))
+	(if ( > start end )
+	    (setq top-point end
+		  bottom-point start)
+	    (setq top-point start
+		  bottom-point end))))
+
+    (save-restriction
+      (save-excursion
+	;; First, let's restrict the research region
+	(let (start-region
+	      end-region)
+	  (goto-char (point-at-bol))
+	  (forward-line (- 0 spu-indent-lookup))
+	  (setq start-region (point))
+	  (forward-line (* 2 spu-indent-lookup))
+	  (goto-char (point-at-eol))
+	  (setq end-region (point))
+	  (narrow-to-region start-region end-region))
+      
+	;; Search for the odd and even column
+	(let (even-column
+	      odd-column
+	      cross-label
+	      (goon-loop t))
+
+	  ;; Move up to the previous possible instruction
+	  (goto-char top-point)
+	  (goto-char (point-at-bol))
+
+	  ;; Start by searching upward:
+	  (while (and (not even-column)
+		      (not odd-column)
+		      goon-loop)
+
+	    (if (not (bobp))
+		(forward-line -1)
+		(setq goon-loop nil))
+
+	    (while (and (or (spu-detect-no-opcodes-line)
+			    (not (spu-detect-opcodes-line t)))
+			goon-loop)
+	      (setq cross-label (or cross-label
+				    (looking-at label-regexp)))
+	      (if (not (bobp))
+		  (forward-line -1)
+		  (setq goon-loop nil)))
+	    (when goon-loop
+	      (setq even-column (spu-find-even-opcode)
+		    odd-column  (spu-find-odd-opcode))))
+
+	  ;; Let search downward if:
+	  ;;  - no odd and even opcode line were found.
+	  ;;  - we found them but cross a label on the way so we check downward to see if the indentation is different
+
+	  (when (not goon-loop)
+	    (setq cross-label nil))
+	  
+	  (when (or (not goon-loop)
+		    cross-label)
+	    (setq goon-loop t)
+
+	    (goto-char bottom-point)
+	    (goto-char (point-at-bol))
+
+	    (while goon-loop
+	      (if (not (eobp))
+		  (forward-line 1)
+		  (setq goon-loop nil))
+	      (while (and (or (spu-detect-no-opcodes-line)
+			      (not (spu-detect-opcodes-line t)))
+			  goon-loop)
+		(when (and cross-label 
+			   (looking-at label-regexp))
+		  (setq goon-loop nil))
+		(if (not (eobp))
+		    (forward-line 1)
+		    (setq goon-loop nil)))
+	      (when goon-loop
+		(setq even-column (spu-find-even-opcode)
+		      odd-column  (spu-find-odd-opcode))
+		(setq goon-loop (not (and even-column odd-column))))))
+
+	  (cons even-column odd-column)
+	))
+)))
+  
+	 
 ;;
 ;;
 ;;    SPU Interactive command:
