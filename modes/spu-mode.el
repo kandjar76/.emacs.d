@@ -677,6 +677,7 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
   (let (swap-odd
 	odd-column-1    odd-column-2
 	comment-1       comment-2
+	comment-even-1  comment-even-2
 	end-of-even-1   end-of-even-2
 	instr-1         instr-2
 	even-column-1   even-column-2
@@ -688,13 +689,18 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 	(setq tmp bol1 bol1 bol2 bol2 tmp))
     
     (goto-char bol1)
-    (setq odd-column-1  (spu-find-odd-opcode))
-    (setq comment-1     (and odd-column-1 (spu-find-comment-before-opcode odd-column-1)))
-    (setq end-of-even-1 (or (and comment-1 (car comment-1)) (and odd-column-1 (spu-column-to-pos odd-column-1)) (point-at-eol)))
+    (setq even-column-1  (spu-find-even-opcode))
+    (setq comment-even-1 (and even-column-1 (spu-find-comment-before-opcode even-column-1)))
+    (setq odd-column-1   (spu-find-odd-opcode))
+    (setq comment-1      (and odd-column-1 (spu-find-comment-before-opcode odd-column-1)))
+    (setq end-of-even-1  (or (and comment-1 (car comment-1)) (and odd-column-1 (spu-column-to-pos odd-column-1)) (point-at-eol)))
+
     (goto-char bol2)
-    (setq odd-column-2  (spu-find-odd-opcode))
-    (setq comment-2     (and odd-column-2 (spu-find-comment-before-opcode odd-column-2)))
-    (setq end-of-even-2 (or (and comment-2 (car comment-2)) (and odd-column-2 (spu-column-to-pos odd-column-2)) (point-at-eol)))
+    (setq even-column-2  (spu-find-even-opcode))
+    (setq comment-even-2 (and even-column-2 (spu-find-comment-before-opcode even-column-2)))
+    (setq odd-column-2   (spu-find-odd-opcode))
+    (setq comment-2      (and odd-column-2 (spu-find-comment-before-opcode odd-column-2)))
+    (setq end-of-even-2  (or (and comment-2 (car comment-2)) (and odd-column-2 (spu-column-to-pos odd-column-2)) (point-at-eol)))
     (if swap-odd
 	(progn (goto-char bol1)
 	       (setq instr-1 (buffer-substring end-of-even-1 (point-at-eol)))
@@ -704,8 +710,8 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 	       (delete-region end-of-even-2 (point-at-eol))
 	       (spu-clear-whitespaces-before end-of-even-2)
 	       (if comment-1 
-		   (indent-to-column (- spu-odd-column spu-comment-size))
-		   (indent-to-column spu-odd-column))
+		   (indent-to-column (- odd-column-2 spu-comment-size))
+		   (indent-to-column odd-column-2))
 	       (insert instr-1)
 
 	       (goto-char bol2)
@@ -718,8 +724,8 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 		 (delete-region end-of-even-1 (point-at-eol))
 		 (spu-clear-whitespaces-before end-of-even-1)
 		 (if comment-2 
-		     (indent-to-column (- spu-odd-column spu-comment-size))
-		     (indent-to-column spu-odd-column))
+		     (indent-to-column (- odd-column-1 spu-comment-size))
+		     (indent-to-column odd-column-1))
 		 (insert instr-2))
 
 	       (if tmp
@@ -733,10 +739,20 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 	       (delete-region bol2 end-of-even-2)
 	       (insert instr-1)
 	       (spu-clear-whitespaces-before (point))
+	       (save-excursion
+		 (goto-char (point-at-bol))
+		 (while (and (char-after)
+			     (or (= (char-after) 32)
+				 (= (char-after) ?\t)))
+		   (delete-char 1))
+		 (if comment-even-1
+		     (indent-to-column (- even-column-2 spu-comment-size))
+		     (indent-to-column even-column-2)))
+		 
 	       (if odd-column-2
 		   (if comment-2
-		       (indent-to-column (- spu-odd-column spu-comment-size))
-		       (indent-to-column spu-odd-column)))
+		       (indent-to-column (- odd-column-2 spu-comment-size))
+		       (indent-to-column odd-column-2)))
 
 	       (goto-char bol2)
 	       (setq even-column-2 (spu-find-even-opcode))
@@ -748,10 +764,21 @@ CURRENT-COLUMN is the column value to decide which instruction to swap, the even
 		 (delete-region bol1 end-of-even-1)
 		 (insert instr-2)
 		 (spu-clear-whitespaces-before (point))
+
+		 (save-excursion
+		   (goto-char (point-at-bol))
+		   (while (and (char-after)
+			       (or (= (char-after) 32)
+				   (= (char-after) ?\t)))
+		     (delete-char 1))
+		   (if comment-even-2
+		       (indent-to-column (- even-column-1 spu-comment-size))
+		       (indent-to-column even-column-1)))
+
 		 (if odd-column-1
 		     (if comment-1
-			 (indent-to-column (- spu-odd-column spu-comment-size))
-			 (indent-to-column spu-odd-column))))
+			 (indent-to-column (- odd-column-1 spu-comment-size))
+			 (indent-to-column odd-column-1))))
 	       
 	       (if tmp
 		   (progn (goto-char bol1)
