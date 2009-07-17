@@ -1,6 +1,19 @@
 ;; Function to open a sln project in emacs:
 ;;  
 
+;;   vcproj search patterns:
+;;    <files>
+;;      <File RelarivePath="...">
+;;        <FileConfiguration Name="config|platform"
+;;      </File>
+;;      <filter Name="Folder Name In VC"
+;;         ...
+;;         <File RelativePath="real\path\to\file.ext"
+;;         
+;; <FileConfiguration
+;;   Name="DebugFast|Win32"
+;;   ExcludedFromBuild="true"
+;; >
 
 (require 'project-buffer-mode)
 (require 'cl)
@@ -40,7 +53,7 @@
 	    (let ((item (pop search-list)))
 	      (setq name (and (eq (car item) 'Name) (cdr item)))))
 	  (unless name (error "Unknown configuration name!"))
-	  (setq ret (cons name ret)))))
+	  (setq ret (cons (car (split-string name "|")) ret)))))
     (reverse ret)))
 
 
@@ -192,13 +205,17 @@
 	       (project (car current))
 	       (project-dir (file-name-directory (cdr current)))
 	       (project-data (and (file-exists-p (cdr current))
-				  (vcproj-extract-data (cdr current)))))
+				  (vcproj-extract-data (cdr current))))
+	       (platforms (car project-data))
+	       (configurations (cadr project-data)))
 	  (project-buffer-insert project-buffer-status (project-buffer-create-node project 'project (cdr current) project))
-	    (when project-data
-	      ;; We'll keep the configuration and platform for now!
-	      (let ((files (vcproj-update-file-folders (caddr project-data) project-dir)))
-		(while files		
-		  (let ((file (pop files)))
-		    (project-buffer-insert project-buffer-status 
-					   (project-buffer-create-node (car file) 'file (cdr file) project))))))
+	  (project-buffer-set-project-platforms project-buffer-status project platforms)
+	  (project-buffer-set-project-build-configurations project-buffer-status project configurations)
+	  (when project-data
+	    ;; We'll keep the configuration and platform for now!
+	    (let ((files (vcproj-update-file-folders (caddr project-data) project-dir)))
+	      (while files		
+		(let ((file (pop files)))
+		  (project-buffer-insert project-buffer-status 
+					 (project-buffer-create-node (car file) 'file (cdr file) project))))))
 	  )))))
