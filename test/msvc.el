@@ -183,12 +183,17 @@
 	  (add-to-list 'result (cons (match-string-no-properties 1) (replace-regexp-in-string "\\\\" "/" (match-string-no-properties 2)))))
 	result))))
 
+(defun is-sln-file (filename)
+  (or 
+   (null (file-name-extension filename))
+   (string= (file-name-extension filename) "sln")))
+
 
 ;;
 ;; Interactive command:
 ;;
 
-(defun create-sln-project-buffer(sln-file)
+(defun open-sln-project-buffer(sln-file)
   "Open a project buffer"
   (interactive "fSLN file: ")
   (let ((buffer (generate-new-buffer (concat "ms:" (file-name-nondirectory sln-file))))
@@ -219,3 +224,10 @@
 		  (project-buffer-insert project-buffer-status 
 					 (project-buffer-create-node (car file) 'file (cdr file) project))))))
 	  )))))
+
+(defun create-sln-project-buffer()
+  (interactive)
+  (let ((solution-name (read-file-name "SLN file: " nil nil t nil 'is-sln-file)))
+    (when (and solution-name 
+	       (> (length solution-name) 0))
+      (open-sln-project-buffer solution-name))))
