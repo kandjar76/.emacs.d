@@ -23,6 +23,9 @@
 ;; Helper function:
 ;;
 
+(defvar solution-name nil
+  "Local variable to store the solution name")
+
 
 (defun vcproj-extract-platforms (current-block)
   "Extract a list of platform from CURRENT-BLOCK"
@@ -188,6 +191,27 @@
    (null (file-name-extension filename))
    (string= (file-name-extension filename) "sln")))
 
+(defun sln-action-handler-2005(action project-name project-path platform configuration)
+  "Project-Buffer action handler."
+  (let ((sln-cmd (cond ((eq action 'build) "Build")
+		       ((eq action 'clean) "Clean")
+		       ((eq action 'run)   "RunExit")
+		       ((eq action 'debug) "Debug"))))
+    (compile 
+     (concat "Devenv \"" solution-name "\" /" sln-cmd " \""  (concat configuration "|" platform) "\" /project \"" project-path "\""))))
+
+(defun sln-action-handler-2008(action project-name project-path platform configuration)
+  "Project-Buffer action handler."
+  (let* ((prj-str (concat "/Project \"" project-path "\" "))
+	 (cfg-str (concat "\"" configuration "|" platform "\" "))
+	 (sln-cmd (cond ((eq action 'build) (concat "/Build " cfg-str))
+			((eq action 'clean) (concat "/Clean " cfg-str))
+			((eq action 'run)   (concat "/ProjectConfig " cfg-str "/RunExit "))
+			((eq action 'debug) (concat "/ProjectConfig " cfg-str "/Run ")))))
+    (compile 
+     (concat "Devenv \"" solution-name "\" " 
+	     prj-str sln-cmd))))
+
 
 ;;
 ;; Interactive command:
@@ -204,6 +228,9 @@
     (with-current-buffer buffer
       (cd (file-name-directory sln-file))
       (project-buffer-mode)
+      (make-local-variable 'solution-name)
+      (setq solution-name (file-name-nondirectory sln-file))
+      (add-hook 'project-buffer-action-hook 'sln-action-handler-2008 nil t)
       ;;
       (while sln-projects
 	(let* ((current (pop sln-projects))
