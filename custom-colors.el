@@ -79,7 +79,7 @@ Returns \"black\" if no valid color is found."
 ;; Font used in ediff mode:
 (if (> emacs-major-version 21)
     (progn 
-      (eval-after-load "dired+"
+      (eval-after-load "ediff"
 	'(progn
 	   (set-face-background 'ediff-current-diff-A     (first-valid-color "honeydew"))
 	   (set-face-foreground 'ediff-current-diff-A     (first-valid-color "black"))
@@ -108,7 +108,7 @@ Returns \"black\" if no valid color is found."
 	   (set-face-foreground 'diff-function    (first-valid-color "blue"))))
       )
     (progn 
-      (eval-after-load "dired+"
+      (eval-after-load "ediff"
 	'(progn
 	   (set-face-background 'ediff-current-diff-face-A     (first-valid-color "honeydew"))
 	   (set-face-foreground 'ediff-current-diff-face-A     (first-valid-color "black"))
