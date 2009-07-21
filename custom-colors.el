@@ -42,7 +42,7 @@ Returns \"black\" if no valid color is found."
 
 ;; I-Search:
 (set-face-foreground 'isearch (first-valid-color "red"))
-(set-face-background 'isearch (first-valid-color "lightgray" "grey" "white"))
+(set-face-background 'isearch (first-valid-color "lightgray" "grey" "white" :text "white"))
 
 ;; Color of the text selection:
 (set-face-background 'region (first-valid-color "#FFE0C0" "brightcyan" :text "cyan"))
@@ -52,8 +52,8 @@ Returns \"black\" if no valid color is found."
 (set-face-foreground 'secondary-selection      (first-valid-color "red"))
 
 ;; Show-matching parent / Highlight current-word:
-(set-face-background 'show-paren-match-face    (first-valid-color "#E0C0FF" :text "green"))
-(set-face-foreground 'show-paren-match-face    (first-valid-color "red"))
+(set-face-background 'show-paren-match-face    (first-valid-color "#E0C0FF" :text "white"))
+(set-face-foreground 'show-paren-match-face    (first-valid-color "red" :text "green"))
 
 ;; Highlight C++ operators.... 
 (set-face-foreground 'font-lock-operator-face (first-valid-color "red" :text "white"))
@@ -150,7 +150,7 @@ Returns \"black\" if no valid color is found."
 (make-face-unbold 'font-lock-builtin-face)
 
 ;; C/C++ Strings:
-(set-face-foreground 'font-lock-string-face	(first-valid-color "royal blue" "#1515C3" "midnightblue" "darkblue" "darkcyan"))
+(set-face-foreground 'font-lock-string-face	(first-valid-color "royal blue" "#1515C3" "midnightblue" "darkblue" "darkcyan" :text "cyan"))
 
 ;; elisp: function name
 (set-face-foreground 'font-lock-function-name-face (first-valid-color "red" "purple3"))
