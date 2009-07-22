@@ -1,19 +1,13 @@
+;;
 ;; Function to open a sln project in emacs:
 ;;  
 
-;;   vcproj search patterns:
-;;    <files>
-;;      <File RelarivePath="...">
-;;        <FileConfiguration Name="config|platform"
-;;      </File>
-;;      <filter Name="Folder Name In VC"
-;;         ...
-;;         <File RelativePath="real\path\to\file.ext"
-;;         
-;; <FileConfiguration
-;;   Name="DebugFast|Win32"
-;;   ExcludedFromBuild="true"
-;; >
+;; TODO:
+;;  - Auto reload if file modified on disk?
+;;  - Add refresh command.
+;;
+;; Need to update the keys:
+;;    g    -> reload/reparse project files (mmm should probably be done in the upper file or handler should be provided)
 
 (require 'project-buffer-mode)
 (require 'cl)
