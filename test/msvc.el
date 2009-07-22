@@ -243,15 +243,15 @@
 	       (platforms (car project-data))
 	       (configurations (cadr project-data)))
 	  ;; Create a project node / update its platform and build configuration...
-	  (project-buffer-insert project-buffer-status (project-buffer-create-node project 'project (cdr current) project))
-	  (project-buffer-set-project-platforms project-buffer-status project platforms)
-	  (project-buffer-set-project-build-configurations project-buffer-status project configurations)
+	  (project-buffer-insert project 'project (cdr current) project)
+	  (project-buffer-set-project-platforms project platforms)
+	  (project-buffer-set-project-build-configurations project configurations)
 	  (when project-data
 	    (let ((files (vcproj-update-file-folders (caddr project-data) project-dir)))
 	      (while files		
 		(let ((file (pop files)))
 		  ;; then insert each project file into the buffer
-		  (project-buffer-insert (project-buffer-create-node (car file) 'file (cdr file) project))))))
+		  (project-buffer-insert (car file) 'file (cdr file) project)))))
 	  )))))
 
 (defun create-sln-project-buffer()
