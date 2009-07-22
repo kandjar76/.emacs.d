@@ -221,18 +221,20 @@
   "Open a project buffer"
   (interactive "fSLN file: ")
   (let ((buffer (generate-new-buffer (concat "ms:" (file-name-nondirectory sln-file))))
-	(sln-projects (sln-extract-projects sln-file))
-	) ;; list of proj-nane / project file
+	(sln-projects (sln-extract-projects sln-file)) ; list of proj-nane / project file
+	)
     (switch-to-buffer buffer)
-    ;(display-buffer buffer)
     (with-current-buffer buffer
+      ;; Make sure the buffer path match the project's path
       (cd (file-name-directory sln-file))
+      ;; Turn on the project-buffer-mode
       (project-buffer-mode)
       (make-local-variable 'solution-name)
       (setq solution-name (file-name-nondirectory sln-file))
       (add-hook 'project-buffer-action-hook 'sln-action-handler-2008 nil t)
       ;;
       (while sln-projects
+	;; For every project reference in the SLN file,
 	(let* ((current (pop sln-projects))
 	       (project (car current))
 	       (project-dir (file-name-directory (cdr current)))
@@ -240,16 +242,16 @@
 				  (vcproj-extract-data (cdr current))))
 	       (platforms (car project-data))
 	       (configurations (cadr project-data)))
+	  ;; Create a project node / update its platform and build configuration...
 	  (project-buffer-insert project-buffer-status (project-buffer-create-node project 'project (cdr current) project))
 	  (project-buffer-set-project-platforms project-buffer-status project platforms)
 	  (project-buffer-set-project-build-configurations project-buffer-status project configurations)
 	  (when project-data
-	    ;; We'll keep the configuration and platform for now!
 	    (let ((files (vcproj-update-file-folders (caddr project-data) project-dir)))
 	      (while files		
 		(let ((file (pop files)))
-		  (project-buffer-insert project-buffer-status 
-					 (project-buffer-create-node (car file) 'file (cdr file) project))))))
+		  ;; then insert each project file into the buffer
+		  (project-buffer-insert (project-buffer-create-node (car file) 'file (cdr file) project))))))
 	  )))))
 
 (defun create-sln-project-buffer()
