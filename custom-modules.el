@@ -312,6 +312,13 @@ Those dependency must be filled up during the previous loop!" t nil)
 
 
 ;;
+;; Module: msvc
+;;
+
+(autoload 'find-sln "msvc"
+  "Open an sln file and create a project buffer using the data in it." t nil)
+
+;;
 ;; Module: my-cpp/my-awk
 ;;
 
@@ -328,16 +335,16 @@ Those dependency must be filled up during the previous loop!" t nil)
 ;; Module: moccur
 ;;
 
-(autoload 'moccur "color-moccur"
-  "Show all lines of all buffers containing a match for REGEXP.
-The lines are shown in a buffer named *Moccur*.
-It serves as a menu to find any of the occurrences in this buffer.
-\\[describe-mode] in that buffer will explain how." t nil)
-(autoload 'moccur-grep "color-moccur"
-  "moccur-grep <regexp> shows all occurrences of <regexp> in files of current directory" t nil)
-
-(eval-after-load "color-moccur"
-    '(require 'moccur-edit))
+;;(autoload 'moccur "color-moccur"
+;;  "Show all lines of all buffers containing a match for REGEXP.
+;;The lines are shown in a buffer named *Moccur*.
+;;It serves as a menu to find any of the occurrences in this buffer.
+;;\\[describe-mode] in that buffer will explain how." t nil)
+;;(autoload 'moccur-grep "color-moccur"
+;;  "moccur-grep <regexp> shows all occurrences of <regexp> in files of current directory" t nil)
+;;
+;;(eval-after-load "color-moccur"
+;;    '(require 'moccur-edit))
 
 
 ;;
