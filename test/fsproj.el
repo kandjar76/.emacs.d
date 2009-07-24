@@ -2,6 +2,7 @@
 ;; fsproj - File System Project
 ;;
 
+(require 'cl)
 (require 'project-buffer-menu)
 (require 'record)
 
@@ -31,6 +32,9 @@
   :remap-patterns 'listp     ;; list of remapping pattern (e.q: '( (".*/include" . "include") ("source/\(.*\)$" "\1")) -- could be nil
 )
 
+;; File-Filter regexp list applied to basename only
+;; Proj-Regexp regexp applied to the full path
+;; Ignore-Folder string list
 
 
 ;;
@@ -38,19 +42,22 @@
 ;;
 
 
-(defun fsproj-collect-files(root file-filter &optional ignore-folders)
+(defun fsproj-collect-files(root project-regexp file-filter &optional ignore-folders)
   "Parse the ROOT folder and all of it's sub-folder, and create a file list.
 FILE-FILTER is a list of regexp which are used to filter the file list.
-If IGNORE-FOLDERS is non nil, it should specify a list of folder name to ignore."
+PROJECT-REGEXP should represent a regular expression which will help finding the project folders
+If IGNORE-FOLDERS is non nil, it should specify a list of folder name to ignore.
+
+The return is a list of two lists: ((project...) (files...))"
   (let ((dir-list (directory-files-and-attributes root t))
 	(ign-reg  (regexp-opt ignore-folders))
-	file-list)
+	file-list proj-list)
     (while dir-list
       (let* ((cur-node (pop dir-list))
-	     (filename (car cur-node))
+	     (fullpath (car cur-node))
 	     (is-dir   (eq (car (cdr cur-node)) t))
 	     (is-file  (not (car (cdr cur-node))))
-	     (basename (file-name-nondirectory filename)))
+	     (basename (file-name-nondirectory fullpath)))
 	(cond 
 	 ;; if the current node is a directory different from "." or "..", all it's file gets added to the list
 	 ((and is-dir
@@ -58,13 +65,17 @@ If IGNORE-FOLDERS is non nil, it should specify a list of folder name to ignore.
 	       (not (string-equal basename ".."))
 	       (or (not ignore-folders)
 		   (not (string-match ign-reg basename))))
-	       (setq dir-list (append dir-list (directory-files-and-attributes filename t))))
-	 ;; if the current node is a file: check with the filter, if it pass the check, it 
-	 ((and is-file
-	       (some '(lambda (item) 
-			;(message "checking: %s and %s" basename item)
-			(string-match item basename)) file-filter))
-	  (setq file-list (append file-list (list filename)))))))
-    file-list
-    ))
+	       (setq dir-list (append dir-list (directory-files-and-attributes fullpath t))))
+	 ;; if the current node is a file
+	 (is-file
+	  ;; check against the file filter, if it succeed: add the file to the file-list
+	  (when (some '(lambda (item) (string-match item basename)) file-filter)
+	    (setq file-list (append file-list (list fullpath))))
+	  ;; check also against the project-regexp: if succeed, we had the base directory of the project of the project list
+	  ;; (including the final '/')
+	  (let ((pos (string-match project-regexp fullpath)))
+	    (when pos
+	      (setq proj-list (append proj-list (list (file-name-directory (substring fullpath 0 pos))))))
+	  )))))
+    (list proj-list file-list)))
 
