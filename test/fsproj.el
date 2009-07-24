@@ -48,7 +48,8 @@ FILE-FILTER is a list of regexp which are used to filter the file list.
 PROJECT-REGEXP should represent a regular expression which will help finding the project folders
 If IGNORE-FOLDERS is non nil, it should specify a list of folder name to ignore.
 
-The return is a list of two lists: ((project...) (files...))"
+The return is a list of two lists: ((project...) (files...))
+Note: the project list is sorted in descending alphabetic order."
   (let ((dir-list (directory-files-and-attributes root t))
 	(ign-reg  (regexp-opt ignore-folders))
 	file-list proj-list)
@@ -77,5 +78,5 @@ The return is a list of two lists: ((project...) (files...))"
 	    (when pos
 	      (setq proj-list (append proj-list (list (file-name-directory (substring fullpath 0 pos))))))
 	  )))))
-    (list proj-list file-list)))
+    (list (reverse (sort proj-list 'string-lessp)) file-list)))
 
