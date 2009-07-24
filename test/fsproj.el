@@ -71,12 +71,28 @@ Note: the project list is sorted in descending alphabetic order."
 	 (is-file
 	  ;; check against the file filter, if it succeed: add the file to the file-list
 	  (when (some '(lambda (item) (string-match item basename)) file-filter)
-	    (setq file-list (append file-list (list fullpath))))
+	    (setq file-list (cons fullpath file-list)))
 	  ;; check also against the project-regexp: if succeed, we had the base directory of the project of the project list
 	  ;; (including the final '/')
 	  (let ((pos (string-match project-regexp fullpath)))
 	    (when pos
-	      (setq proj-list (append proj-list (list (file-name-directory (substring fullpath 0 pos))))))
+	      (setq proj-list (cons (file-name-directory (substring fullpath 0 pos)) proj-list)))
 	  )))))
     (list (reverse (sort proj-list 'string-lessp)) file-list)))
+
+
+(defun fsproj-extract-project-file-list(current-project file-list)
+  "Extract the file which belongs to CURRENT-PROJECT from FILE-LIST.
+Return a list of two lists: ((current project file list..) (remaining files...)."
+  (let (project-file-list
+	remaining-files
+	(lgt (length current-project)))
+    (while file-list
+      (let ((current-file (pop file-list)))
+	(if (string-equal (substring current-file 0 lgt) current-project)
+	    (setq project-file-list (cons current-file project-file-list))
+	    (setq remaining-files (cons current-file remaining-files)))))
+    (list project-file-list remaining-files)))
+
+
 
