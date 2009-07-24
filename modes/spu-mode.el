@@ -163,9 +163,10 @@
 (defun spu-string-list-to-regexp (inst-list)
   "Produce from a list of strings a single regular expression which
 matches any of the individual opcodes."
-  (reduce (lambda (x y) (concat x "\\|" y))
-	  (mapcar (lambda (x) (concat "\\<" x "\\>"))
-		  inst-list)))
+  (regexp-opt inst-list))
+;  (reduce (lambda (x y) (concat x "\\|" y))
+;	  (mapcar (lambda (x) (concat "\\<" x "\\>"))
+;		  inst-list)))
 
 ;;
 ;;
