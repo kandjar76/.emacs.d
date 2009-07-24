@@ -5,6 +5,18 @@
 (require 'project-buffer-menu)
 (require 'record)
 
+;; TODO
+;;
+;; - [x] Extract the whole file list
+;; - [ ] Detect the projects
+;; - [ ] Create a list of files associated to their project 
+;; - [ ] Keep the relative path based on the project 'root' folder
+;; - [ ] Remap the files
+;; - [ ] Create the project buffer window
+;; - [ ] Add the files to it
+;; - [ ] Create the reload project function, map it to 'g
+
+
 ;;
 ;; Structure definition:
 ;;
@@ -18,6 +30,7 @@
   :command-hook   'functionp ;; function which will be called to build the project.
   :remap-patterns 'listp     ;; list of remapping pattern (e.q: '( (".*/include" . "include") ("source/\(.*\)$" "\1")) -- could be nil
 )
+
 
 
 ;;
