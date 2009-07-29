@@ -11,8 +11,8 @@
 ;; - [x] Extract the whole file list
 ;; - [X] Detect the projects
 ;; - [X] Create a list of files associated to their project 
-;; - [ ] Keep the relative path based on the project 'root' folder
-;; - [ ] Remap the files
+;; - [X] Keep the relative path based on the project 'root' folder
+;; - [X] Remap the files
 ;; - [ ] Create the project buffer window
 ;; - [ ] Add the files to it
 ;; - [ ] Create the reload project function, map it to 'g
@@ -78,7 +78,7 @@ Note: the project list is sorted in descending alphabetic order."
 	    (when pos
 	      (setq proj-list (cons (file-name-directory (substring fullpath 0 pos)) proj-list)))
 	  )))))
-    (list (sort proj-list 'string-lessp) file-list)))
+    (cons (sort proj-list 'string-lessp) file-list)))
 
 
 (defun fsproj-extract-project-file-list(current-project file-list)
@@ -92,7 +92,7 @@ Return a list of two lists: ((current project file list..) (remaining files...).
 	(if (string-equal (substring current-file 0 lgt) current-project)
 	    (setq project-file-list (cons current-file project-file-list))
 	    (setq remaining-files (cons current-file remaining-files)))))
-    (list project-file-list remaining-files)))
+    (cons project-file-list remaining-files)))
 
 
 (defun fsproj-parent-of-p(child parent)
@@ -108,22 +108,6 @@ CHILD and PARENT are two string representing directories."
 	(setq cont (string-equal cname pname))))
     (and cont (null plist))))
   
-
-;; (defun fsproj-resolve-conflict(conflict-list)
-;;   "Solve the CONFLICT-LIST and return the list of final names."
-;;   (let* ((path-list (mapcar (lambda (node) (reverse (split-string (car node) "/"))) conflict-list))
-;; 	 (subp-list (mapcar (lambda (node) (cdr node)) conflict-list))
-;; 	 (cleared-list (apply 'mapcar*
-;; 			      (lambda (&rest lst)  (or (reduce (lambda (v1 v2) (and (string-equal v1 v2) v1)) lst) lst))
-;; 			      splitted-list))
-;; 	 (number-of-conflict (length conflict-list))
-;; 	 (;; let's for a list of items: ("current-name" "subproj), then we'll go through each node of cleared-list to test.
-;; 	  ;; once' a conflict is solved, the list becomes a string! number of conflict decreased. once = 0 -> we leave ;-)
-;; 	 ))
-;;     ;; cleared-list is a list of node; each node are either a string, or a list of string.
-;;     ;; '(("a" "b" "c") ("1" "2" "c") ("A" "B" "c")) -> '(("a" "1" "A") ("b" "2" "B") "c")
-;;     ;; note: each subproj can be nil or "sub1/sub2/..." or just "sub"
-;; ))
 
 (defun fsproj-resolve-conflict(conflict-list)
   "Solve the CONFLICT-LIST and return the list of final names.
@@ -217,5 +201,46 @@ Making sure each name is uniq. This function will also detect subproject and add
 ))
 
 
+(defun fsproj-extract-file-names(current-project file-list modifier)
+  "Return the CURRENT-PROJECT's converted FILE-LIST."
+  (let ((prj-lgt (length current-project)))
+    (mapcar (lambda (name)
+	      (let ((sub-name (substring name prj-lgt (length name))))
+		(if modifier
+		    (reduce (lambda (str node) (replace-regexp-in-string (car node) (cdr node) str t))
+			    modifier
+			    :initial-value sub-name)
+		    sub-name)))
+	    file-list )))
+;;
 
 
+(defun fsproj-create-project-nodes-list(root project-regexp file-filter &optional ignore-folders pattern-modifier)
+  "Parse the ROOT folder and sub-folders, and create a node list to add them into a project-buffer.
+FILE-FILTER is a list of regexp which are used to filter the file list.
+PROJECT-REGEXP should represent a regular expression which will help finding the project folders
+If IGNORE-FOLDERS is non nil, it should specify a list of folder name to ignore.
+If PATTERN-MODIFIER is non nil, it should specify a list of couple string (regexp . replace) which are going to get apply 
+to the final project file name.
+
+The return value is a list of nodes, each node will also be a list as described:
+  '(proj-name proj-base-path (file-list) (file-full-path-list)"
+  (let* ((collected-list (fsproj-collect-files root project-regexp file-filter ignore-folders))
+	 (project-name-list (fsproj-generate-project-names (car collected-list)))
+	 (file-list (cdr collected-list))
+	 (project-list (car collected-list))
+	 project-node-list)
+    (while project-list
+      (let* ((current-project      (pop project-list))
+	     (current-project-name (pop project-name-list))
+	     (extracted-data       (fsproj-extract-project-file-list current-project file-list))
+	     node)
+	(setq file-list (cdr extracted-data))
+	(setq node (list current-project-name
+			 current-project
+			 (fsproj-extract-file-names current-project (car extracted-data) pattern-modifier)
+			 (car extracted-data)))
+	(setq project-node-list (cons node project-node-list))))
+    (reverse project-node-list)))
+
+			 
