@@ -89,7 +89,8 @@ Return a list of two lists: ((current project file list..) (remaining files...).
 	(lgt (length current-project)))
     (while file-list
       (let ((current-file (pop file-list)))
-	(if (string-equal (substring current-file 0 lgt) current-project)
+	(if (and (> (length current-file) lgt)
+		 (string-equal (substring current-file 0 lgt) current-project))
 	    (setq project-file-list (cons current-file project-file-list))
 	    (setq remaining-files (cons current-file remaining-files)))))
     (cons project-file-list remaining-files)))
@@ -213,6 +214,8 @@ PROJECT-LIST should be a list of couple: (project-path . project-file-name)"
 			    :initial-value sub-name)
 		    sub-name)))
 	    file-list )))
+
+
 ;;
 
 
@@ -225,11 +228,11 @@ If PATTERN-MODIFIER is non nil, it should specify a list of couple string (regex
 to the final project file name.
 
 The return value is a list of nodes, each node will also be a list as described:
-  '(proj-name proj-base-path (file-list) (file-full-path-list)"
+  '(proj-name proj-file-path (file-list) (file-full-path-list)"
   (let* ((collected-list (fsproj-collect-files root project-regexp file-filter ignore-folders))
-	 (project-name-list (fsproj-generate-project-names (car collected-list)))
 	 (file-list (cdr collected-list))
-	 (project-list (car collected-list))
+	 (project-name-list (reverse (fsproj-generate-project-names (car collected-list))))
+	 (project-list (reverse (car collected-list)))
 	 project-node-list)
     (while project-list
       (let* ((current-project      (pop project-list))
@@ -242,6 +245,5 @@ The return value is a list of nodes, each node will also be a list as described:
 			 (fsproj-extract-file-names (car current-project) (car extracted-data) pattern-modifier)
 			 (car extracted-data)))
 	(setq project-node-list (cons node project-node-list))))
-    (reverse project-node-list)))
+    project-node-list))
 
-			 
