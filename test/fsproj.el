@@ -13,8 +13,9 @@
 ;; - [X] Create a list of files associated to their project 
 ;; - [X] Keep the relative path based on the project 'root' folder
 ;; - [X] Remap the files
-;; - [ ] Create the project buffer window
-;; - [ ] Add the files to it
+;; - [X] Create the project buffer window
+;; - [X] Add the files to it
+;; - [ ] Create a interactive user-friendly function!
 ;; - [ ] Create the reload project function, map it to 'g
 
 
@@ -24,12 +25,14 @@
 
 (defrecord fsproj-def
   "Structure to create a fsproj"
-  :root-folder    'stringp   ;; where the recursive file search start (e.g: "~/work")
-  :file-filter    'listp     ;; which files to include in the project (e.g: '("\.h$" "\.cpp$"))
-  :proj-filename  'stringp   ;; name of the file which will determine where the project start (e.g: "[Mm]akefile" or "prj/Makefile")
-  :ignore-folder  'stringp   ;; which folder to ignore (eg: '("temp" "build")
-  :command-hook   'functionp ;; function which will be called to build the project.
-  :remap-patterns 'listp     ;; list of remapping pattern (e.q: '( (".*/include" . "include") ("source/\(.*\)$" "\1")) -- could be nil
+  :root-folder           'stringp   ;; where the recursive file search start (e.g: "~/work")
+  :file-filter           'listp     ;; which files to include in the project (e.g: '("\.h$" "\.cpp$"))
+  :proj-filename         'stringp   ;; name of the file which will determine where the project start (e.g: "[Mm]akefile" or "prj/Makefile")
+  :ignore-folder         'stringp   ;; which folder to ignore (eg: '("temp" "build")
+  :command-hook          'functionp ;; function which will be called to build the project.
+  :remap-patterns        'listp     ;; list of remapping pattern (e.q: '( (".*/include" . "include") ("source/\(.*\)$" "\1")) -- can be nil
+  :project-configuration 'listp     ;; list of string representing the different build configurations (e.g: '("debug" "release")) -- can be nil
+  :project-platform      'listp     ;; list of string representing the different platforms (e.g: '("win32")) -- can be nil
 )
 
 ;; File-Filter regexp list applied to basename only
