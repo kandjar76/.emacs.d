@@ -76,9 +76,9 @@ Note: the project list is sorted in descending alphabetic order."
 	  ;; (including the final '/')
 	  (let ((pos (string-match project-regexp fullpath)))
 	    (when pos
-	      (setq proj-list (cons (file-name-directory (substring fullpath 0 pos)) proj-list)))
+	      (setq proj-list (cons (cons (file-name-directory (substring fullpath 0 pos)) fullpath) proj-list)))
 	  )))))
-    (cons (sort proj-list 'string-lessp) file-list)))
+    (cons (sort proj-list '(lambda (a b) (string-lessp (car a) (car b)))) file-list)))
 
 
 (defun fsproj-extract-project-file-list(current-project file-list)
@@ -133,9 +133,10 @@ The code assume that no folders will be named with a '(n)' suffix."
 					  
 (defun fsproj-generate-project-names(project-list)
   "Return a list of project names based on the project paths contained in PROJECT-LIST.
-Making sure each name is uniq. This function will also detect subproject and add the master project name as prefix."
-  (let ((project-base-list (mapcar (lambda (path) (substring path 0 -1)) project-list))
-	(project-name-list (mapcar (lambda (path) (file-name-nondirectory (substring path 0 -1))) project-list))
+Making sure each name is uniq. This function will also detect subproject and add the master project name as prefix.
+PROJECT-LIST should be a list of couple: (project-path . project-file-name)"
+  (let ((project-base-list (mapcar (lambda (path) (substring (car path) 0 -1)) project-list))
+	(project-name-list (mapcar (lambda (path) (file-name-nondirectory (substring (car path) 0 -1))) project-list))
 	(project-ht (make-hash-table :test 'equal))
 	subproject-list)
 
@@ -233,12 +234,12 @@ The return value is a list of nodes, each node will also be a list as described:
     (while project-list
       (let* ((current-project      (pop project-list))
 	     (current-project-name (pop project-name-list))
-	     (extracted-data       (fsproj-extract-project-file-list current-project file-list))
+	     (extracted-data       (fsproj-extract-project-file-list (car current-project) file-list))
 	     node)
 	(setq file-list (cdr extracted-data))
 	(setq node (list current-project-name
-			 current-project
-			 (fsproj-extract-file-names current-project (car extracted-data) pattern-modifier)
+			 (cdr current-project)
+			 (fsproj-extract-file-names (car current-project) (car extracted-data) pattern-modifier)
 			 (car extracted-data)))
 	(setq project-node-list (cons node project-node-list))))
     (reverse project-node-list)))
