@@ -109,25 +109,44 @@ CHILD and PARENT are two string representing directories."
     (and cont (null plist))))
   
 
+;; (defun fsproj-resolve-conflict(conflict-list)
+;;   "Solve the CONFLICT-LIST and return the list of final names."
+;;   (let* ((path-list (mapcar (lambda (node) (reverse (split-string (car node) "/"))) conflict-list))
+;; 	 (subp-list (mapcar (lambda (node) (cdr node)) conflict-list))
+;; 	 (cleared-list (apply 'mapcar*
+;; 			      (lambda (&rest lst)  (or (reduce (lambda (v1 v2) (and (string-equal v1 v2) v1)) lst) lst))
+;; 			      splitted-list))
+;; 	 (number-of-conflict (length conflict-list))
+;; 	 (;; let's for a list of items: ("current-name" "subproj), then we'll go through each node of cleared-list to test.
+;; 	  ;; once' a conflict is solved, the list becomes a string! number of conflict decreased. once = 0 -> we leave ;-)
+;; 	 ))
+;;     ;; cleared-list is a list of node; each node are either a string, or a list of string.
+;;     ;; '(("a" "b" "c") ("1" "2" "c") ("A" "B" "c")) -> '(("a" "1" "A") ("b" "2" "B") "c")
+;;     ;; note: each subproj can be nil or "sub1/sub2/..." or just "sub"
+;; ))
+
 (defun fsproj-resolve-conflict(conflict-list)
-  "Solve the CONFLICT-LIST and return the list of final names."
-  (let* ((path-list (mapcar (lambda (node) (reverse (split-string (car node) "/"))) conflict-list))
-	 (subp-list (mapcar (lambda (node) (cdr node)) conflict-list))
-	 (cleared-list (apply 'mapcar*
-			      (lambda (&rest lst)  (or (reduce (lambda (v1 v2) (and (string-equal v1 v2) v1)) lst) lst))
-			      splitted-list))
-	 (number-of-conflict (length conflict-list))
-	 (;; let's for a list of items: ("current-name" "subproj), then we'll go through each node of cleared-list to test.
-	  ;; once' a conflict is solved, the list becomes a string! number of conflict decreased. once = 0 -> we leave ;-)
-	 ))
-    ;; cleared-list is a list of node; each node are either a string, or a list of string.
-    ;; '(("a" "b" "c") ("1" "2" "c") ("A" "B" "c")) -> '(("a" "1" "A") ("b" "2" "B") "c")
-    ;; note: each subproj can be nil or "sub1/sub2/..." or just "sub"
-))
-
-
-
-
+  "Solve the CONFLICT-LIST and return the list of final names.
+The code assume that no folders will be named with a '(n)' suffix."
+  (let* ((name-check (make-hash-table :test 'equal))
+	 (name-list  (mapcar (lambda (node) (let* ((prj  (file-name-nondirectory (car node)))
+						   (sub  (cdr node))
+						   (name (if sub (concat sub "/" prj) prj))
+						   (cnt  (gethash name name-check)))
+					      (if cnt 
+						  (setq cnt (1+ cnt)) 
+						  (setq cnt 1))
+					      (puthash name cnt name-check)
+					      (format "%s (%i)" name cnt)))
+			     conflict-list)))
+    (mapcar (lambda (name) (if (string-match " (1)$" name)
+			       (let ((subname (substring name 0 (- (length name) 4))))
+				 (if (= (gethash subname name-check) 1)
+				     subname
+				     name))
+			       name))
+	    name-list)))
+					  
 (defun fsproj-generate-project-names(project-list)
   "Return a list of project names based on the project paths contained in PROJECT-LIST.
 Making sure each name is uniq. This function will also detect subproject and add the master project name as prefix."
@@ -171,7 +190,7 @@ Making sure each name is uniq. This function will also detect subproject and add
 	      (cur-base (pop base-list))
 	      (cur-subp (pop sub-list)))
 	  (puthash cur-name 
-		   (cons (list cur-base cur-subp)
+		   (cons (cons cur-base cur-subp)
 			 (gethash cur-name project-ht)) 
 		   project-ht))))
 
