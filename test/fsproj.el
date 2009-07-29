@@ -247,3 +247,30 @@ The return value is a list of nodes, each node will also be a list as described:
 	(setq project-node-list (cons node project-node-list))))
     project-node-list))
 
+
+
+(defun fsproj-populate-project-buffer(buffer node-list &optional project-configuration project-platforms)
+  "Add each file / node to the project-buffer.
+BUFFER is the buffer of the project
+NODE-LIST is a list of (proj-name proj-file-path (file-list) (file-full-path-list))
+If PROJECT-CONFIGURATION isn't nil, it should be a list of string representing the different build configuration
+If PROJECT-PLATFORMS isn't nil, it should also be a list of string representing the different platforms available."
+  (with-current-buffer buffer
+    (save-excursion
+      (while node-list
+	(let* ((current-node  (pop node-list))
+	       (project-name  (car current-node))
+	       (project-file  (car (cdr current-node)))
+	       (file-list     (car (cdr (cdr current-node))))
+	       (fullpath-list (car (cdr (cdr (cdr current-node))))))
+	  ;; Add the project node:
+	  (project-buffer-insert project-name 'project project-file project-name)
+	  (when project-configuration (project-buffer-set-project-build-configurations project-name project-configuration))
+	  (when project-platforms     (project-buffer-set-project-platforms            project-name project-platforms))
+		
+	  ;; Add each individual files to the project:
+	  (mapcar* (lambda (&rest args) (project-buffer-insert (car args) 'file (car (cdr args)) project-name))
+		   file-list
+		   fullpath-list))))))
+
+
