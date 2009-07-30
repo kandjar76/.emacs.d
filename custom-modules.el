@@ -415,7 +415,7 @@ Those dependency must be filled up during the previous loop!" t nil)
 
 ;; Test code:
 
-(autoload 'fsproj-create-project "fsproj-mode")
+(autoload 'fsproj-create-project "fsproj")
 (defun fsproj-ice(root-folder)
   (interactive "sRoot folder: ")
   (let ((regexp-project-name  "[Mm]akefile")
