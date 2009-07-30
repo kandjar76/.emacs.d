@@ -280,7 +280,7 @@ If PROJECT-PLATFORMS isn't nil, it should also be a list of string representing 
 ;;
 
 ;; Note: the build command has yet to be set and used!
-(defun fsproj-create-project(root-folder regexp-project-name regexp-file-filter &optional ignore-folders pattern-modifier build-configurations platforms)
+(defun fsproj-create-project (root-folder regexp-project-name regexp-file-filter &optional ignore-folders pattern-modifier build-configurations platforms)
   "User function to create a project-buffer parsing the file-system to get projects and files.
 
 ROOT-FOLDER is a string representing a folder as a starting point
@@ -321,3 +321,7 @@ e.g:
       (fsproj-populate-project-buffer buffer node-list build-configurations platforms))))
 
 
+;;
+(provide 'fsproj-mode)
+
+;;; fsproj-mode.el ends here
