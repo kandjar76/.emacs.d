@@ -410,6 +410,33 @@ Those dependency must be filled up during the previous loop!" t nil)
      ))
 
 ;;
+;; Module: Project-Buffer
+;;
+
+;; Test code:
+
+(autoload 'fsproj-create-project "fsproj-mode")
+(defun fsproj-ice(root-folder)
+  (interactive "sRoot folder: ")
+  (let ((regexp-project-name  "[Mm]akefile")
+	(regexp-file-filter   '("\\.cpp$" "\\.h$" "\\.ddf$" "\\.inl$" "\\.spu$" "\\.spu.s$" "\\.mak$" "Makefile"))
+	(ignore-folders       '("build" "docs" "jobelf" "lib" "bin"))
+;	(pattern-modifier     '(("^\\(?:.*/\\)?\\([a-zA-Z0-9_]*\\.cpp\\)$" . "source/\\1")
+;			       ("^\\(?:.*/\\)?\\([a-zA-Z0-9_]*\\.\\(?:h\\|inl\\)\\)$" . "include/\\1")
+;			       ("^\\(?:.*/\\)?\\([a-zA-Z0-9_]*\\.\\(?:spu\\|spu.s\\|inc.spu\\|h.spu\\)\\)$" . "spu/\\1")))
+	pattern-modifier
+	(build-configurations '("debug" "release"))
+	(platforms            '("ps3")))
+    (fsproj-create-project root-folder
+			   regexp-project-name
+			   regexp-file-filter
+			   ignore-folders
+			   pattern-modifier
+			   build-configurations
+			   platforms)))
+
+
+;;
 ;; Module: color-occur
 ;;
 
