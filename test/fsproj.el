@@ -3,8 +3,7 @@
 ;;
 
 (require 'cl)
-(require 'project-buffer-menu)
-(require 'record)
+(require 'project-buffer-mode)
 
 ;; TODO
 ;;
@@ -202,8 +201,7 @@ PROJECT-LIST should be a list of couple: (project-path . project-file-name)"
 	       (cur-node (gethash cur-name project-ht)))
 	  (setq reversed-list (cons (pop cur-node) reversed-list))
 	  (puthash cur-name cur-node project-ht)))
-      (reverse reversed-list))
-))
+      (reverse reversed-list))))
 
 
 (defun fsproj-extract-file-names(current-project file-list modifier)
@@ -275,5 +273,51 @@ If PROJECT-PLATFORMS isn't nil, it should also be a list of string representing 
 	  (mapcar* (lambda (&rest args) (project-buffer-insert (car args) 'file (car (cdr args)) project-name))
 		   file-list
 		   fullpath-list))))))
+
+
+;;
+;;  User function:
+;;
+
+;; Note: the build command has yet to be set and used!
+(defun fsproj-create-project(root-folder regexp-project-name regexp-file-filter &optional ignore-folders pattern-modifier build-configurations platforms)
+  "User function to create a project-buffer parsing the file-system to get projects and files.
+
+ROOT-FOLDER is a string representing a folder as a starting point
+for the research, the last subfolder will also be used to name
+the project-buffer.
+REGEXP-PROJECT-NAME is a regular expression used to search the
+different project's root folder; it may contains '/' in it and
+can also match just a part of the name.
+REGEXP-FILE-FILTER is a list of regular expressions used to
+filter the list of file contained in the projects.
+IGNORE-FOLDERS is a list of folder name to ignore during the
+creation of the file list.
+PATTERN-MODIFIER is a list of cons (\"regexp\" . \"repl-str\"),
+each couple regexp/repl-str will be applied successively to
+project's path of each project's file
+BUILD-CONFIGURATIONS is a list of string representing the
+different build configuration available for the projects
+PLATFORMS is a list of string representing each available
+platform
+
+e.g:
+
+ (fsproj-create-project  \"~/work\"
+			 \"[Mm]akefile$\"
+			 '(\"\\.cpp$\" \"\\.[hc]$\" \"[Mm]akefile$\")
+			 '(\"build\")
+			 '((\"^\\(?:.*/\\)?\\([a-zA-Z0-9_]*\\.cpp\\)$\" . \"source/\\1\")
+			   (\"^\\(?:.*/\\)?\\([a-zA-Z0-9_]*\\.\\(?:h\\|inl\\)\\)$\" . \"include/\\1\"))
+			 '(\"Debug\" \"Release\")
+			 '(\"Win32\"))"
+  (let ((buffer    (generate-new-buffer (concat "fs:" (file-name-nondirectory root-folder))))
+	(node-list (fsproj-create-project-nodes-list root-folder regexp-project-name regexp-file-filter ignore-folders pattern-modifier)))
+    (switch-to-buffer buffer)
+    (with-current-buffer buffer
+      ;; Make sure the buffer path match the project's path
+      (cd (file-name-directory root-folder))
+      (project-buffer-mode)
+      (fsproj-populate-project-buffer buffer node-list build-configurations platforms))))
 
 
