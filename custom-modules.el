@@ -416,6 +416,17 @@ Those dependency must be filled up during the previous loop!" t nil)
 ;; Test code:
 
 (autoload 'fsproj-create-project "fsproj")
+
+
+(defun fsproj-ice-action-handler(action project-name project-path platform configuration)
+  "fsproj-ice action handler."
+  (let ((make-cmd (cond ((eq action 'build) "")
+			((eq action 'clean) "clean")
+			((eq action 'run)   "run")
+			((eq action 'debug) "debug"))))
+    (compile 
+     (concat "make -j16 -C " (file-name-directory project-path) " -f " (file-name-nondirectory project-path) " " make-cmd))))
+
 (defun fsproj-ice(root-folder)
   (interactive "sRoot folder: ")
   (let ((regexp-project-name  "[Mm]akefile")
@@ -430,6 +441,7 @@ Those dependency must be filled up during the previous loop!" t nil)
     (fsproj-create-project root-folder
 			   regexp-project-name
 			   regexp-file-filter
+			   'fsproj-ice-action-handler
 			   ignore-folders
 			   pattern-modifier
 			   build-configurations
