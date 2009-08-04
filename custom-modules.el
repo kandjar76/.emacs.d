@@ -413,24 +413,21 @@ Those dependency must be filled up during the previous loop!" t nil)
 ;; Module: Project-Buffer
 ;;
 
-;; Test code:
-
 (autoload 'fsproj-create-project "fsproj")
-
 
 (defun fsproj-ice-action-handler(action project-name project-path platform configuration)
   "fsproj-ice action handler."
   (let ((make-cmd (cond ((eq action 'build) "")
-			((eq action 'clean) "clean")
-			((eq action 'run)   "run")
-			((eq action 'debug) "debug"))))
-    (compile 
-     (concat "make -j16 -C " (file-name-directory project-path) " -f " (file-name-nondirectory project-path) " " make-cmd))))
+			((eq action 'clean) "clean"))))
+    (if (or (eq action 'run) (eq action 'debug))
+	(message "Run and Debug aren't supported.")
+	(compile 
+	 (concat "make -j16 -C " (file-name-directory project-path) " -f " (file-name-nondirectory project-path) " " make-cmd)))))
 
 (defun fsproj-ice(root-folder)
   (interactive "sRoot folder: ")
   (let ((regexp-project-name  "[Mm]akefile")
-	(regexp-file-filter   '("\\.cpp$" "\\.h$" "\\.ddf$" "\\.inl$" "\\.spu$" "\\.spu.s$" "\\.mak$" "Makefile"))
+	(regexp-file-filter   '("\\.cpp$" "\\.c$" "\\.h$" "\\.ddf$" "\\.inl$" "\\.spu$" "\\.spu.s$" "\\.mak$" "Makefile"))
 	(ignore-folders       '("build" "docs" "jobelf" "lib" "bin"))
 ;	(pattern-modifier     '(("^\\(?:.*/\\)?\\([a-zA-Z0-9_]*\\.cpp\\)$" . "source/\\1")
 ;			       ("^\\(?:.*/\\)?\\([a-zA-Z0-9_]*\\.\\(?:h\\|inl\\)\\)$" . "include/\\1")
