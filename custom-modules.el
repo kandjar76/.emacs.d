@@ -449,7 +449,7 @@ Those dependency must be filled up during the previous loop!" t nil)
 ;; Module: color-occur
 ;;
 
-(require 'color-occur)
+;;(require 'color-occur)
 
 ;;================================================================================
 
