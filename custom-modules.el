@@ -315,7 +315,7 @@ Those dependency must be filled up during the previous loop!" t nil)
 ;; Module: msvc
 ;;
 
-(autoload 'find-sln "msvc"
+(autoload 'find-sln "sln-mode"
   "Open an sln file and create a project buffer using the data in it." t nil)
 
 ;;
@@ -413,10 +413,10 @@ Those dependency must be filled up during the previous loop!" t nil)
 ;; Module: Project-Buffer
 ;;
 
-(autoload 'fsproj-create-project "fsproj")
+(autoload 'fsproject-create-project "fsproject")
 
-(defun fsproj-ice-action-handler(action project-name project-path platform configuration)
-  "fsproj-ice action handler."
+(defun fsproject-ice-action-handler(action project-name project-path platform configuration)
+  "fsproject-ice action handler."
   (let ((make-cmd (cond ((eq action 'build) "")
 			((eq action 'clean) "clean"))))
     (if (or (eq action 'run) (eq action 'debug))
@@ -424,7 +424,7 @@ Those dependency must be filled up during the previous loop!" t nil)
 	(compile 
 	 (concat "make -j16 -C " (file-name-directory project-path) " -f " (file-name-nondirectory project-path) " " make-cmd)))))
 
-(defun fsproj-ice(root-folder)
+(defun fsproject-ice(root-folder)
   (interactive "sRoot folder: ")
   (let ((regexp-project-name  "[Mm]akefile")
 	(regexp-file-filter   '("\\.cpp$" "\\.c$" "\\.h$" "\\.ddf$" "\\.inl$" "\\.spu$" "\\.spu.s$" "\\.mak$" "Makefile"))
@@ -435,10 +435,10 @@ Those dependency must be filled up during the previous loop!" t nil)
 	pattern-modifier
 	(build-configurations '("debug" "release"))
 	(platforms            '("ps3")))
-    (fsproj-create-project root-folder
+    (fsproject-create-project root-folder
 			   regexp-project-name
 			   regexp-file-filter
-			   'fsproj-ice-action-handler
+			   'fsproject-ice-action-handler
 			   ignore-folders
 			   pattern-modifier
 			   build-configurations
