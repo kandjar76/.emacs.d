@@ -34,20 +34,44 @@
    - [ ] Better alignment macros (assignment, function)
      + Use of align / removing unused awk script!
    - [ ] Fix indentation for the comment around the 'case' statement
-** Buffer [0/1]
-   - [ ] buffer-menu++ -> Make the reload asynchronous
+** Buffer [1/1]
+   - [X] buffer-menu++ -> Make the reload asynchronous 
+	 Waived! Emacs doesn't work in multi-threads!
 ** Asm [0/5]
    - [ ] Implement IL asm mode 
    - [ ]  `- Require register highlighing 
    - [ ]  `- Allow move up/down -- through minor mode
    - [ ]      `- Display register usage
    - [ ]      `- Use overlay to do latency
-** MSVC Mode [4/8]
+** MSVC Mode [8/8]
    - [X] Vision of how the information should get displayed
    - [X] Learning ewok
-   - [ ] Extracting project / deps / build mode from the sln file
-   - [ ] Extracting all project files from the vcprojs
+   - [X] Extracting project / deps / build mode from the sln file
+   - [X] Extracting all project files from the vcprojs
    - [X] Build a initial 'project buffer mode'
    - [X] Allow fold / collapse for the project
-   - [ ] Introduction of the folders
-   - [ ] New items added must repect the user view (be hidden or not depending on the view)
+   - [X] Introduction of the folders
+   - [X] New items added must repect the user view (be hidden or not depending on the view)
+
+** Project buffer mode [2/17]
+   - [ ] C-x C-d on any file should bring the proper directory
+   - [X] 'm' on project should mark every file in this project
+   - [X] 'm' on a folder should mark every file under that folder
+   - [ ] Added collapse all / expand all for everything and per project!
+   - [ ] Add center on project command (C-l?)
+   - [ ] show project dependencies
+	 e.g: [+] ProjName1           <deps: ProjName3, ProjName2>
+   - [ ] add collapsed all / expand all commands
+   - [ ] grayed out exclude from build files??
+   - [ ] different color for files referenced in the proj but don't exist?
+   - [ ] provide a touch marked files command
+   - [ ] provide a compile/build marked files command
+   - [ ] add a command to easily find the corresponding header/source for the current file (or specified file)
+   - [ ] add 'g' to refresh the display
+   - [ ] add command to touch marked files (need a variable to make sure touch is always available)
+   - [ ] allow 'find corresponding header/source' (need regexps to match one and the other such as: source/header = ( "\.c\(pp\)?" . "\.h\(pp\)?" ) )
+   - [ ] show/hide project dependencies
+   - [ ] compile/buils marked files
+
+** FsProject+ Mode [0/1]
+   - [ ] Describe the project.
