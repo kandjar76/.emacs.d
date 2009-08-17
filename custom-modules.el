@@ -39,10 +39,9 @@
 ;;
 
 ;; This library will enable tooltip using F1 key
-(when window-system
-  (define-key global-map [(f1)] 'th-show-help)
-  (autoload 'th-show-help "tooltip-help" t nil))
-
+;;(when window-system
+;;  (define-key global-map [(f1)] 'th-show-help)
+;;  (autoload 'th-show-help "tooltip-help" t nil))
 
 ;;
 ;; Module: dabbrev-highlight
