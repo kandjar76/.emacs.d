@@ -11,6 +11,7 @@
          "~/.emacs.d/libs"
          "~/.emacs.d/modes"
          "~/.emacs.d/personal"
+         "~/.emacs.d/to-try"
 
 	 "~/.emacs.x/org-mode/lisp"
         )
