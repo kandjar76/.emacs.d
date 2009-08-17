@@ -413,6 +413,8 @@ Those dependency must be filled up during the previous loop!" t nil)
 ;;
 
 (autoload 'fsproject-create-project "fsproject")
+(autoload 'project-buffer-find-file "project-buffer-mode" 
+  "Create a project-buffer-mode buffer based on the content of FILENAME." t nil)
 
 (defun fsproject-ice-action-handler(action project-name project-path platform configuration)
   "fsproject-ice action handler."
