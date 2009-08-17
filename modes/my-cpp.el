@@ -156,21 +156,21 @@ and raises an error or returns nil if NOERROR is non-nil.")
 
 
 ;; Add symbol highlighting:
-(font-lock-add-keywords 'c++-mode 
+(defun c++-update-fontification()
+  "Add new c++ keywords.
+Sadly, the new keywords had to be added for each c++ buffer; doing '(font-lock-add-keywords c++ ...' didn't work properly."
+  (font-lock-add-keywords nil
 			'(;; Currently support for []|&!.+=-/%*,()<>{}
 			  ("\\(\\[\\|\\]\\|[|!?:\\.\\+\\=\\&]\\|->?\\|\\/\\|\\%\\|\\*\\|,\\|(\\|)\\|>\\ |<\\|{\\|}\\)" 1 font-lock-operator-face )
 			  ;; End of c++ statement 
-			  ("\\(;\\)" 1 font-lock-end-statement) 
+			  ("\\(;\\)" 1 font-lock-end-statement)
 			  ;; Asm keyword
-			  ("\\<__asm\\>" 1 font-lock-keyword-face))) ;; doesn't work!
+			  ("__asm" 0 font-lock-keyword-face t)
+			  ;; stdint keyword: (regexp-opt '("uint8_t" "int8_t" "uint16_t" "int16_t" "uint32_t" "int32_t" "uint64_t" "int64_t" "thread_t" "size_t"))
+			  ("\\(?:int\\(?:16\\|32\\|64\\|8\\)\\|size\\|thread\\|uint\\(?:16\\|32\\|64\\|8\\)\\)_t" 0 font-lock-type-face t)
+			  )
+			'end))
 
-(setq-default c++-font-lock-extra-types
-	      (append c++-font-lock-extra-types
-		      '("uint8_t" "int8_t"
-			"uint16_t" "int16_t"
-			"uint32_t" "int32_t"
-			"uint64_t" "int64_t"
-			"thread_t" "size_t")))
 
 (defun c-lineup-inline-asm(langelem)
   "Inline ASM doesn't require a ';' to terminate the statement.
@@ -241,6 +241,7 @@ This function just inhibate the extra indentation if that's the case."
 	      (cons 'end-block (cons 'space 1))     ;  Looking for: } // 
 	      (cons 'other (cons 'align (cons 'column nil)))))
   
+  (c++-update-fontification)
 )
 
 ;;(font-lock-add-keywords
