@@ -53,7 +53,7 @@
    - [X] Introduction of the folders
    - [X] New items added must repect the user view (be hidden or not depending on the view)
 
-** Project buffer mode [2/17]
+** Project buffer mode [2/18]
    - [ ] C-x C-d on any file should bring the proper directory
    - [X] 'm' on project should mark every file in this project
    - [X] 'm' on a folder should mark every file under that folder
@@ -72,6 +72,8 @@
    - [ ] allow 'find corresponding header/source' (need regexps to match one and the other such as: source/header = ( "\.c\(pp\)?" . "\.h\(pp\)?" ) )
    - [ ] show/hide project dependencies
    - [ ] compile/buils marked files
+   - [ ] having a current-pbm to allow build (F7) and run (F5) from anywhere!
+	 set-default-pbm; kick-default-pbm-build...
 
 ** FsProject+ Mode [0/1]
    - [ ] Describe the project.
