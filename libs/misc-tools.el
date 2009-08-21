@@ -213,6 +213,39 @@ With prefix arg, use single quotes, not double quotes, as delimeters."
 		       (and (not (frame-parameter nil 'fullscreen))
 			   'fullboth)))
 
+;;;###autoload
+(defun unroll-c-code(start end)
+  "Unroll C code in the selected region."
+  (interactive "r")
+  (save-excursion
+    (let ((start-line (line-number-at-pos start))
+	  (end-line (line-number-at-pos end))
+	  current-line)
+      (setq current-line start-line)
+      (goto-char start)
+      (goto-char (point-at-bol))
+      (setq start (point))
+      (save-excursion
+	(goto-char end)
+	(goto-char (point-at-bol))
+	(unless (= end (point))
+	  (setq end-line (1+ end-line))))
+      (while (< current-line end-line)
+	(goto-char (point-at-bol))
+	(insert (format "%04x%04x" (current-indentation) current-line))
+	(forward-line 1)
+	(setq current-line (1+ current-line)))
+      (sort-lines nil start (point))
+      (goto-char start)
+      (setq current-line start-line)
+      (while (< current-line end-line)
+	(goto-char (point-at-bol))
+	(delete-char 8)
+	(forward-line 1)
+	(setq current-line (1+ current-line)))
+)))
+
+
 ;; use: (w32-send-sys-command 61488) to toggle fullscreen under windows
 ;; use: (w32-send-sys-command 61728) to restore the window
 
