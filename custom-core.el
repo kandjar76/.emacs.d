@@ -126,10 +126,8 @@
 ;; Don't bother checking for KnR style (to speed up the analyze)
 (setq c-recognize-knr-p nil)
 
-
-
-
-
+;; Allow entering C-q number in decimal instead of octal
+(setq read-quoted-char-radix 10)
 
 
 ;; Map C-x, C-c-, C-v as Cut/Copy/Paste without affecting the usual behavior of the keys
