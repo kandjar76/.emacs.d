@@ -7,12 +7,12 @@
 ;; Copyright (C) 1999-2009, Drew Adams, all rights reserved.
 ;; Created: Fri Mar 19 15:58:58 1999
 ;; Version: 21.2
-;; Last-Updated: Sat Dec 27 11:15:27 2008 (-0800)
+;; Last-Updated: Sat Aug  1 15:15:32 2009 (-0700)
 ;;           By: dradams
-;;     Update #: 2050
+;;     Update #: 2069
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/dired+.el
 ;; Keywords: unix, mouse, directories, diredp, dired
-;; Compatibility: GNU Emacs 20.x, GNU Emacs 21.x, GNU Emacs 22.x
+;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x
 ;;
 ;; Features that might be required by this library:
 ;;
@@ -176,6 +176,14 @@
 ;;
 ;;; Change log:
 ;;
+;; 2009/07/09 dadams
+;;     dired-goto-file: Make sure we have a string before calling directory-file-name.
+;; 2009/05/08 dadams
+;;     dired-find-file (Emacs 20): Raise error if dired-get-filename returns nil.
+;; 2009/04/26 dadams
+;;     dired-insert-set-properties, diredp-(un)mark-region-files,
+;;       diredp-flag-region-files-for-deletion, diredp-mouse-3-menu, diredp-mouse-mark/unmark:
+;;         Bind inhibit-field-text-motion to t, to ensure real eol.
 ;; 2008/12/17 dadams
 ;;     diredp-font-lock-keywords-1: Don't do diredp-deletion, diredp-flag-mark for empty lines.
 ;; 2008/09/22 dadams
@@ -2042,17 +2050,18 @@ the variable `window-min-height'."
 ;;;###autoload
 (defun dired-insert-set-properties (beg end)
   "Highlight entire dired line upon mouseover."
-  (save-excursion
-    (goto-char beg)
-    (while (< (point) end)
-      (condition-case nil
-          (when (dired-move-to-filename)
-            (add-text-properties
-             (save-excursion (beginning-of-line) (point))
-             (save-excursion (end-of-line) (point))
-             '(mouse-face highlight help-echo "mouse-2: visit this file in other window")))
-        (error nil))
-      (forward-line 1))))
+  (let ((inhibit-field-text-motion  t)) ; Just in case.
+    (save-excursion
+      (goto-char beg)
+      (while (< (point) end)
+        (condition-case nil
+            (when (dired-move-to-filename)
+              (add-text-properties
+               (save-excursion (beginning-of-line) (point))
+               (save-excursion (end-of-line) (point))
+               '(mouse-face highlight help-echo "mouse-2: visit this file in other window")))
+          (error nil))
+        (forward-line 1)))))
 
 
 ;;; REPLACE ORIGINAL in `dired.el'.
@@ -2097,7 +2106,8 @@ the variable `window-min-height'."
               ;; Remove / from filename, then compare with BASE.
               ;; Match could have BASE just as initial substring or
               ;; or in permission bits or date or not be a proper filename at all.
-              (if (equal base (directory-file-name (dired-get-filename 'no-dir t)))
+              (if (and (dired-get-filename 'no-dir t)
+                       (equal base (directory-file-name (dired-get-filename 'no-dir t))))
                   ;; Must move to filename since an (actually
                   ;; correct) match could have been elsewhere on the
                   ;; ;; line (e.g. "-" would match somewhere in the
@@ -2410,8 +2420,9 @@ Examples:
   "Mark all of the files in the current region (if it is active).
 With non-nil prefix arg UNMARK-P, unmark them instead."
   (interactive "P")
-  (let ((beg (min (point) (mark)))
-        (end (max (point) (mark))))
+  (let ((beg                        (min (point) (mark)))
+        (end                        (max (point) (mark)))
+        (inhibit-field-text-motion  t)) ; Just in case.
     (setq beg (save-excursion (goto-char beg) (beginning-of-line) (point)))
     (setq end (save-excursion (goto-char end) (end-of-line) (point)))
     (let ((dired-marker-char (if unmark-p ?\040 dired-marker-char)))
@@ -2422,8 +2433,9 @@ With non-nil prefix arg UNMARK-P, unmark them instead."
   "Unmark all of the files in the current region (if it is active).
 With non-nil prefix arg UNMARK-P, mark them instead."
   (interactive "P")
-  (let ((beg (min (point) (mark)))
-        (end (max (point) (mark))))
+  (let ((beg                        (min (point) (mark)))
+        (end                        (max (point) (mark)))
+        (inhibit-field-text-motion  t)) ; Just in case.
     (setq beg (save-excursion (goto-char beg) (beginning-of-line) (point)))
     (setq end (save-excursion (goto-char end) (end-of-line) (point)))
     (let ((dired-marker-char (if mark-p dired-marker-char ?\040)))
@@ -2433,8 +2445,9 @@ With non-nil prefix arg UNMARK-P, mark them instead."
 (defun diredp-flag-region-files-for-deletion ()
   "Flag all of the files in the current region (if it is active) for deletion."
   (interactive)
-  (let ((beg (min (point) (mark)))
-        (end (max (point) (mark))))
+  (let ((beg                        (min (point) (mark)))
+        (end                        (max (point) (mark)))
+        (inhibit-field-text-motion  t)) ; Just in case.
     (setq beg (save-excursion (goto-char beg) (beginning-of-line) (point)))
     (setq end (save-excursion (goto-char end) (end-of-line) (point)))
     (let ((dired-marker-char dired-del-marker))
@@ -2465,7 +2478,8 @@ With non-nil prefix arg UNMARK-P, mark them instead."
                  '("Unmark" . diredp-unmark-region-files)
                  '("Flag for Deletion" .
                    diredp-flag-region-files-for-deletion)))))
-      (let* ((mouse-pos (event-start event))
+      (let* ((mouse-pos                  (event-start event))
+             (inhibit-field-text-motion  t) ; Just in case.
              bol eol
              (file/dir-name
               (save-excursion
@@ -2549,7 +2563,8 @@ With non-nil prefix arg UNMARK-P, mark them instead."
   (defun dired-find-file ()
     "In dired, visit the file or directory named on this line."
     (interactive)
-    (let ((file-name (file-name-sans-versions (dired-get-filename nil t) t)))
+    (let* ((dgf-result  (or (dired-get-filename nil t) (error "No file on this line")))
+           (file-name  (file-name-sans-versions dgf-result t)))
       (if (file-exists-p file-name)
           (find-file file-name)
         (if (file-symlink-p file-name)
@@ -2724,7 +2739,8 @@ If looking at a subdir, unmark all its files except `.' and `..'."
 (defun diredp-mouse-mark/unmark (event)
   "Mark/unmark file or directory at mouse EVENT."
   (interactive "e")
-  (let* ((mouse-pos (event-start event))
+  (let* ((mouse-pos                  (event-start event))
+         (inhibit-field-text-motion  t) ; Just in case.
          bol eol
          (file/dir-name
           (save-excursion
