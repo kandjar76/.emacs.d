@@ -1,7 +1,7 @@
 ;;; color-moccur.el ---  multi-buffer occur (grep) mode
 ;; -*- Mode: Emacs-Lisp -*-
 
-;; $Id: color-moccur.el,v 2.58 2008/08/12 23:51:03 akihisa Exp $
+;; $Id: color-moccur.el,v 2.63 2009/03/07 15:03:32 akihisa Exp $
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -95,6 +95,27 @@
 ;; moccur-grep <regexp> shows all occurrences of <regexp> in files of current directory
 ;; moccur-grep-find <regexp> shows all occurrences of <regexp>
 ;;                  in files of current directory recursively.
+;;
+;;;; Variables of M-x moccur-grep(-find)
+;; dmoccur-exclusion-mask : if filename matches the regular
+;; expression, dmoccur/moccur-grep *doesn't* open the file.
+;;
+;; dmoccur-maximum-size: Maximum size (kB) of a buffer for dmoccur and
+;; moccur-grep(-find).
+;;
+;; moccur-grep-following-mode-toggle :
+;; If this value is t, cursor motion in the moccur-grep buffer causes
+;; automatic display of the corresponding source code location.
+;;
+;; moccur-grep-default-word-near-point :
+;; If this value is t, moccur-grep(-find) command get a word near the
+;; point as default regexp string
+;;
+;; moccur-grep-default-mask :
+;; example in .emacs: (setq-default moccur-grep-default-mask ".el")
+;; File-mask string used for default in moccur-grep and moccur-grep-find
+;; Run moccur-grep, and chose directory, in minibuffer, following text is displayed
+;; Input Regexp and FileMask:  .el
 
 ;;; usage:isearch-moccur
 ;; isearch and M-o
@@ -129,7 +150,7 @@
 ;; dmoccur-mask : if filename matches the regular expression, dmoccur
 ;; opens the file.
 ;; dmoccur-exclusion-mask : if filename matches the regular
-;; expression, dmoccur *doesn't* open the file.
+;; expression, dmoccur/moccur-grep *doesn't* open the file.
 ;; dmoccur-maximum-size : Only buffers less than this can be opend.
 
 ;;;; C-u M-x dmoccur
@@ -144,7 +165,7 @@
 ;; Maximum size (kB) of a searched buffer by dmoccur.
 
 ;;;; variable:dmoccur-exclusion-mask
-;; dmoccur-exclusion-mask is masks for *not* searched file.
+;; dmoccur-exclusion-mask is masks for *not* searched file by dmoccur and moccur-grep(-find).
 
 ;;;; Variables of C-u M-x dmoccur
 ;; dmoccur-list : Your favorite directory list. This valiable is used
@@ -565,7 +586,7 @@ Per default, this var contains only a \".*\" catchall-regexp."
   )
 
 (defcustom moccur-use-ee nil
-  "Non-nil means to use ee."
+  "Non-nil means to use ee. However, this feature doesn't work now"
   :group 'color-moccur
   :type 'boolean
   )
@@ -1906,7 +1927,12 @@ It serves as a menu to find any of the occurrences in this buffer.
         (while files
           (setq num (+ num 1))
           (with-temp-buffer
-            (when (moccur-search-file-p (car files))
+            (when
+                (or
+                 (string= moccur-last-command 'moccur-grep)
+                 (and
+                  (not (string= moccur-last-command 'moccur-grep))
+                  (moccur-search-file-p (car files))))
               (message "Searching %d/%d (%d matches) : %s ..."
                        num total moccur-matches
                        (file-relative-name (car files) default-directory))
@@ -2129,18 +2155,20 @@ It serves as a menu to find any of the occurrences in this buffer.
 
 (defun moccur-grep-find-subdir (dir mask)
   (let ((files (cdr (cdr (directory-files dir t)))) (list))
-    (dolist (elt files)
-      (message "Listing %s ..." (file-name-directory elt))
-      (cond
-       ((and
-         (not (string-match "^[.]+$" (file-name-nondirectory elt)))
-         (file-directory-p elt))
-        (setq list (append (moccur-grep-find-subdir elt mask) list)))
-       ((string-match "^[.]+$" (file-name-nondirectory elt))
-        ())
-       ((string-match mask (file-name-nondirectory elt))
-        (push elt list))
-       (t ())))
+    (if (not (moccur-search-file-p dir))
+        (setq list nil)
+      (dolist (elt files)
+        (message "Listing %s ..." (file-name-directory elt))
+        (cond
+         ((and
+           (not (string-match "^[.]+$" (file-name-nondirectory elt)))
+           (file-directory-p elt))
+          (setq list (append (moccur-grep-find-subdir elt mask) list)))
+         ((string-match "^[.]+$" (file-name-nondirectory elt))
+          ())
+         ((string-match mask (file-name-nondirectory elt))
+          (push elt list))
+         (t ()))))
     list))
 
 (defun moccur-grep-find (dir inputs)
