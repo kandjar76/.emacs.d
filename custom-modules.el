@@ -231,6 +231,10 @@ if COUNT is nil, each number is increased by line number within the selection (s
 (setq ido-create-new-buffer 'always)               ; No more confirmation prompt when I explicitly request a new buffer
 (setq ido-enable-flex-matching t)                  ; Enable flex matching (sequence conserved)
 
+(when running-at-work
+  (setq ido-enable-flex-matching nil))             ; Sadly, currently this is way too slow and has to be disabled.
+
+
 ; (setq ido-execute-command-cache nil)
 (defun ido-execute-command ()
   "Provide M-x with command completion using ido"
@@ -426,7 +430,7 @@ Those dependency must be filled up during the previous loop!" t nil)
 	 (concat "make -j16 -C " (file-name-directory project-path) " -f " (file-name-nondirectory project-path) " " make-cmd)))))
 
 (defun fsproject-ice(root-folder)
-  (interactive "sRoot folder: ")
+  (interactive "DRoot Folder: ")
   (let ((regexp-project-name  "[Mm]akefile")
 	(regexp-file-filter   '("\\.cpp$" "\\.c$" "\\.h$" "\\.ddf$" "\\.inl$" "\\.spu$" "\\.spu.s$" "\\.mak$" "Makefile"))
 	(ignore-folders       '("build" "docs" "jobelf" "lib" "bin"))
