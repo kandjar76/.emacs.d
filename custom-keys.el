@@ -99,6 +99,11 @@
 (define-key Buffer-menu-mode-map [?r] 'Buffer-menu-mark-file-to-revert)
 (define-key Buffer-menu-mode-map [?=] 'Buffer-menu-diff-buffer-with-file)
 
+;; project-buffer-mode / iproject Keys:
+(define-key global-map [(control x) (?p) (?n)] 'iproject-new)
+(define-key global-map [(control x) (?p) (?f)] 'project-buffer-find-file)
+
+
 ;; Spu keys:
 (eval-after-load "spu-mode"
     '(progn
