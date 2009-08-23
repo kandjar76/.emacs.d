@@ -26,24 +26,34 @@
 ;;; Summary:
 ;;
 
-;; This is an add-on for project-buffer-mode.
+;; This is an extension for project-buffer-mode.
 
 ;;; Commentary:
 ;; 
 
-;; This extension provides commands to run the project-buffer actions:
-;; build/clean/run/debug and update while browsing the files belonging
-;; to the projects.
+;; It provides commands to run the project-buffer actions: such as
+;; build, clean, run, debug and update while browsing the files
+;; belonging to this project.
 ;;
-;; It also provide a command to directly go to the project-buffer
+;; It also provides a command to directly go to the project-buffer
 ;; attached to the current file.
 ;;
+;; How does it work?
+;;
+;; When you open a file from the project-buffer; it will attach the
+;; project-buffer to the file's buffer.
+;; The project-buffer is stored inside a local variable called:
+;;  `project-buffer-mode-p-attached-project-buffer'.
+;;
 ;; To install it:
+;;
+;; Put the following lines in your .emacs:
 ;;
 ;; (eval-after-load "project-buffer-mode"
 ;;  '(progn
 ;;     (require 'project-buffer-mode+)
 ;;     (project-buffer-mode-p-setup)))
+;;
 ;;
 ;; By default this bind the following keys:
 ;;  C-x p s    Go to the project-buffer attached to the current file
@@ -67,13 +77,32 @@
 
 
 ;;
+;;  Helper functions:
+;;
+
+(defun project-buffer-mode-p-attach-project-buffer(project-buffer file-buffer)
+  "Attach PROJECT-BUFFER buffer to the buffer FILE-BUFFER."
+  (with-current-buffer file-buffer
+    (unless (local-variable-p 'project-buffer-mode-p-attached-project-buffer)
+      (make-local-variable 'project-buffer-mode-p-attached-project-buffer))
+    (setq project-buffer-mode-p-attached-project-buffer project-buffer)))
+
+
+(defun project-buffer-mode-p-get-attached-project-buffer()
+  "Get the attached project-buffer."
+  (when (and (local-variable-p 'project-buffer-mode-p-attached-project-buffer)
+	     (bufferp project-buffer-mode-p-attached-project-buffer))
+    project-buffer-mode-p-attached-project-buffer))
+
+
+;;
 ;; Interactive commands:
 ;;
 
 (defun project-buffer-mode-p-run-project-buffer-build-action()
   "Kick the 'build action from the attached project-buffer."
   (interactive)
-  (let ((buffer (get 'project-buffer (current-buffer))))
+  (let ((buffer (project-buffer-mode-p-get-attached-project-buffer)))    
     (unless buffer (error "No project-buffer attached to this file"))
     (with-current-buffer buffer
       (project-buffer-perform-build-action))))
@@ -82,7 +111,7 @@
 (defun project-buffer-mode-p-run-project-buffer-clean-action()
   "Kick the 'clean action from the attached project-buffer."
   (interactive)
-  (let ((buffer (get 'project-buffer (current-buffer))))
+  (let ((buffer (project-buffer-mode-p-get-attached-project-buffer)))
     (unless buffer (error "No project-buffer attached to this file"))
     (with-current-buffer buffer
       (project-buffer-perform-clean-action))))
@@ -91,7 +120,7 @@
 (defun project-buffer-mode-p-run-project-buffer-run-action()
   "Kick the 'run action from the attached project-buffer."
   (interactive)
-  (let ((buffer (get 'project-buffer (current-buffer))))
+  (let ((buffer (project-buffer-mode-p-get-attached-project-buffer)))
     (unless buffer (error "No project-buffer attached to this file"))
     (with-current-buffer buffer
       (project-buffer-perform-run-action))))
@@ -100,7 +129,7 @@
 (defun project-buffer-mode-p-run-project-buffer-debug-action()
   "Kick the 'debug action from the attached project-buffer."
   (interactive)
-  (let ((buffer (get 'project-buffer (current-buffer))))
+  (let ((buffer (project-buffer-mode-p-get-attached-project-buffer)))
     (unless buffer (error "No project-buffer attached to this file"))
     (with-current-buffer buffer
       (project-buffer-perform-debug-action))))
@@ -109,7 +138,7 @@
 (defun project-buffer-mode-p-run-project-buffer-update-action()
   "Kick the 'update action from the attached project-buffer."
   (interactive)
-  (let ((buffer (get 'project-buffer (current-buffer))))
+  (let ((buffer (project-buffer-mode-p-get-attached-project-buffer)))
     (unless buffer (error "No project-buffer attached to this file"))
     (with-current-buffer buffer
       (project-buffer-perform-update-action))))
@@ -118,7 +147,7 @@
 (defun project-buffer-mode-p-go-to-attached-project-buffer()
   "Go to the project-buffer attached to the current file."
   (interactive)
-  (let ((buffer (get 'project-buffer (current-buffer))))
+  (let ((buffer (project-buffer-mode-p-get-attached-project-buffer)))
     (unless buffer (error "No project-buffer attached to this file"))
     (switch-to-buffer buffer)))
 
@@ -128,9 +157,9 @@
 ;;
 
 (defun project-buffer-mode-p-register-project-to-file(project-buffer file-buffer)
-  "Register the project-buffer to the opened file.
+  "Register the PROJECT-BUFFER to the FILE-BUFFER.
 This will allow to retrieve the buffer."
-  (put 'project-buffer file-buffer project-buffer))
+  (project-buffer-mode-p-attach-project-buffer project-buffer file-buffer))
 
 
 ;;
