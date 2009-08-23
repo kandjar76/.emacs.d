@@ -27,7 +27,10 @@
 ;;
 
 ;; This is an add-on for project-buffer-mode.
-;;
+
+;;; Commentary:
+;; 
+
 ;; This extension provides commands to run the project-buffer actions:
 ;; build/clean/run/debug and update while browsing the files belonging
 ;; to the projects.
@@ -51,6 +54,7 @@
 ;;  C-x p U    Kick the 'update action from the attached project-buffer.
 ;;
 
+
 ;;; History:
 ;;
 ;; v1.0: First official release.
@@ -61,16 +65,16 @@
 
 ;;; Code:
 
+
 ;;
 ;; Interactive commands:
 ;;
-
 
 (defun project-buffer-mode-p-run-project-buffer-build-action()
   "Kick the 'build action from the attached project-buffer."
   (interactive)
   (let ((buffer (get 'project-buffer (current-buffer))))
-    (unless buffer (error "No project-buffer attached to this file."))
+    (unless buffer (error "No project-buffer attached to this file"))
     (with-current-buffer buffer
       (project-buffer-perform-build-action))))
 
@@ -79,7 +83,7 @@
   "Kick the 'clean action from the attached project-buffer."
   (interactive)
   (let ((buffer (get 'project-buffer (current-buffer))))
-    (unless buffer (error "No project-buffer attached to this file."))
+    (unless buffer (error "No project-buffer attached to this file"))
     (with-current-buffer buffer
       (project-buffer-perform-clean-action))))
 
@@ -88,7 +92,7 @@
   "Kick the 'run action from the attached project-buffer."
   (interactive)
   (let ((buffer (get 'project-buffer (current-buffer))))
-    (unless buffer (error "No project-buffer attached to this file."))
+    (unless buffer (error "No project-buffer attached to this file"))
     (with-current-buffer buffer
       (project-buffer-perform-run-action))))
 
@@ -97,7 +101,7 @@
   "Kick the 'debug action from the attached project-buffer."
   (interactive)
   (let ((buffer (get 'project-buffer (current-buffer))))
-    (unless buffer (error "No project-buffer attached to this file."))
+    (unless buffer (error "No project-buffer attached to this file"))
     (with-current-buffer buffer
       (project-buffer-perform-debug-action))))
 
@@ -106,7 +110,7 @@
   "Kick the 'update action from the attached project-buffer."
   (interactive)
   (let ((buffer (get 'project-buffer (current-buffer))))
-    (unless buffer (error "No project-buffer attached to this file."))
+    (unless buffer (error "No project-buffer attached to this file"))
     (with-current-buffer buffer
       (project-buffer-perform-update-action))))
 
@@ -115,7 +119,7 @@
   "Go to the project-buffer attached to the current file."
   (interactive)
   (let ((buffer (get 'project-buffer (current-buffer))))
-    (unless buffer (error "No project-buffer attached to this file."))
+    (unless buffer (error "No project-buffer attached to this file"))
     (switch-to-buffer buffer)))
 
 
