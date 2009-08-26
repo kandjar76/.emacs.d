@@ -422,6 +422,12 @@ Those dependency must be filled up during the previous loop!" t nil)
 (autoload 'iproject-new "iproject"
   "Create a iproject buffer named NAME with a default-directory set to ROOT-FOLDER." t nil)
 
+(eval-after-load "project-buffer-mode"
+  '(progn
+     (require 'project-buffer-mode+)
+     (project-buffer-mode-p-setup)))
+
+;;
 
 (defun fsproject-ice-action-handler(action project-name project-path platform configuration)
   "fsproject-ice action handler."
