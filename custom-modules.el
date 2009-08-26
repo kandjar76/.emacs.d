@@ -460,6 +460,14 @@ Those dependency must be filled up during the previous loop!" t nil)
 
 
 ;;
+;; Module: mtp-chat
+;;
+
+(autoload 'mtpchat "mtpchat"
+  "Entry point to start the MtpChat client" t nil)
+
+
+;;
 ;; Module: color-occur
 ;;
 
