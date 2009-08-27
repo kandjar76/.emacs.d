@@ -111,7 +111,9 @@
        (define-key spu-mode-map [(control c) ?j] 'spu-highlight-latency-mode)
        (define-key spu-mode-map [(control c) ?s] 'spu-stall-check)
        (define-key spu-mode-map [(control c) ?n] 'spu-nopify)
-       (define-key spu-mode-map [(control c) ?l] 'spu-highlight-loop-mode)))
+       (define-key spu-mode-map [(control c) ?l] 'spu-highlight-loop-mode)
+       (define-key spu-mode-map [(f1)] 'spu-helper)
+       ))
 
 ;; Rectangle keys:
 (define-key global-map [(control ?x) (?r) (?i)]	'increase-numbers-on-rectangle)

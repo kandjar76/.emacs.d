@@ -2340,5 +2340,20 @@ instruction.")))
       (spu-find-register-definition (current-word)) 
       ""))
 
+(defun spu-helper()
+  (interactive)
+  (let ((help-str (th-spu-mode-handler)))
+    (if (= (length help-str) 0)
+	(message "No help available")
+	(let ((buffer (get-buffer-create "*SPU Helper*")))
+	  (with-current-buffer buffer
+	    (help-mode)
+	    (let ((inhibit-read-only t))
+	      (erase-buffer)
+	      (insert help-str)))
+	  (display-buffer buffer)
+	  ))))
+
+
 
 (provide 'spu-tooltip)
