@@ -21,8 +21,13 @@
       (yank arg)
       ad-do-it))
 
-;
-; don't display the wussy toolbar icons.
+;; Allow clipboard sharing with X
+(setq x-select-enable-clipboard t)
+
+;; Increase the size of the garbage collector to 3meg.
+(setq gc-cons-threshold (max 3000000 gc-cons-threshold))
+
+;; don't display the wussy toolbar icons.
 (when window-system
   (tool-bar-mode 0)  ;; slowww!
   (menu-bar-mode 0)) ;; slowww!
