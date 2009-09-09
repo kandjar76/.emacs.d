@@ -583,10 +583,13 @@ Assumes that the current line has / will have opcodes on it."
 	  (indent-to-column spu-odd-column)
 	  (spu-indent-args (current-column)))))
      )
+
     (if (spu-end-of-opcode (point))
-	(indent-to-column (+ (or (and (member (current-word) spu-even-opcodes) spu-even-column)
-				 spu-odd-column)
-			     1 spu-instr-max-length)))))
+	(let ((offset (+ (or (and (member (current-word) spu-even-opcodes) spu-even-column)
+			     spu-odd-column)
+			 1 spu-instr-max-length)))
+	  (move-to-column offset)
+	  (indent-to-column offset)))))
 
 (defun spu-indent-end-of-line()
   "Helper function for the indent function."
