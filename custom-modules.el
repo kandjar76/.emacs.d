@@ -425,7 +425,9 @@ Those dependency must be filled up during the previous loop!" t nil)
 (eval-after-load "project-buffer-mode"
   '(progn
      (require 'project-buffer-mode+)
-     (project-buffer-mode-p-setup)))
+     (require 'project-buffer-occur)
+     (project-buffer-mode-p-setup)
+     (define-key project-buffer-mode-map [(control ?f)] 'project-buffer-occur)))
 
 ;;
 
