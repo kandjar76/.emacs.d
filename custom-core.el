@@ -14,6 +14,9 @@
 ;; Customize various settings
 
 
+;; Disable VC.. 
+(setq vc-handled-backends nil)
+
 ;; Make sure yank-pop does at least a simple yank:
 (defadvice yank-pop (around anytime (arg) activate)
   "Modification of yank-pop: if last action isn't yank, do it."
