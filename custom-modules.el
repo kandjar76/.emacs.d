@@ -427,7 +427,9 @@ Those dependency must be filled up during the previous loop!" t nil)
      (require 'project-buffer-mode+)
      (require 'project-buffer-occur)
      (project-buffer-mode-p-setup)
-     (define-key project-buffer-mode-map [(control ?f)] 'project-buffer-occur)))
+     (define-key project-buffer-mode-map [(control ?f)] 'project-buffer-occur)
+     (define-key project-buffer-mode-map [(control ?F)] 'project-buffer-occur-case-sensitive)
+     ))
 
 ;;
 
