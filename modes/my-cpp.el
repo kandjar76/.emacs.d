@@ -242,6 +242,9 @@ This function just inhibate the extra indentation if that's the case."
 	      (cons 'other (cons 'align (cons 'column nil)))))
   
   (c++-update-fontification)
+
+  (make-local-variable 'dabbrev-case-fold-search)
+  (setq dabbrev-case-fold-search nil)
 )
 
 ;;(font-lock-add-keywords
