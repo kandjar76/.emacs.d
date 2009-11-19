@@ -19,6 +19,7 @@
 
 
 (require 'cl)
+(require 'record-type)
 (require 'tcp-client)
 
 ;;
@@ -824,10 +825,10 @@ Function added to `window-scroll-functions' by mtpchat-mode"
     ;; Clear the list of buffer... 
     (setq mtpchat--buffer-list nil)
     (switch-to-buffer (get-buffer mtpchat--main-buffer-name))
-    (save-excursion 
+    ;(save-excursion 
       ;(set-buffer mtpchat--main-buffer-name)
       ;; Setup the mtpchat-mode
       (mtpchat-mode)
-      (tcp-connect mtpchat--main-buffer-name mtpchat--connection mtpchat-hooks))))
+      (tcp-connect mtpchat--main-buffer-name mtpchat--connection mtpchat-hooks)))
 
 (provide 'mtpchat)
