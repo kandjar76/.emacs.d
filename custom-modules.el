@@ -20,6 +20,8 @@
 (autoload 'git-log-current-buffer "git+" "Display a log of changes to current buffer." t nil)
 (eval-after-load "git"
   '(progn
+     (when (eq window-system 'w32)
+       (require 'git-mswin))
      (require 'git-log-mode)
      (require 'git+)
      (require 'gitsum)))
