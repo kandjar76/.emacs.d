@@ -25,7 +25,7 @@
 (define-key global-map [(control ?x) (control ?d)]	'dired)
 
 (define-key global-map [(control ?x) (?+)]	        'increment-numbers-region)
-(define-key global-map [(control ?z)]                   nil)
+(define-key global-map [(control ?z)]                   'repeat)
 
 (define-key global-map [(control +)]                    'redo)
 (define-key global-map [(control f7)]                   'compile)
