@@ -103,6 +103,7 @@
 ;; Module: extra modes
 (autoload 'ddf-mode "ddf-mode" "Major mode for editing DDF files." t nil)
 (autoload 'idf-mode "idf-mode" "Major mode for editing IDF files." t nil)
+(autoload 'pm4-dump-mode "pm4-dump-mode" "Major mode for viewing PM4 Dump files." t nil)
 
 
 ;;
