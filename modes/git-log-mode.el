@@ -138,9 +138,9 @@
   (let* ((cur-rev    (git-log-get-current-commit-rev))
 	 (coding-system-for-read git-commits-coding-system)
 	 (file-name  (car git-log-files-list))
-	 (git-tree-name (car (split-string (git-call-process-env-string nil "ls-tree" "HEAD" file-name) "\n")))
+	 (git-tree-name (car (split-string (git-call-process-env-string nil "ls-tree" "--full-tree" "HEAD" file-name) "\n")))
 	 (git-file-name (cadr (split-string git-tree-name "\t")))
-	 (log-name   (concat "*" (file-name-nondirectory file-name) "@" (substring cur-rev 0 6) "*"))
+	 (log-name   (concat "*" (file-name-nondirectory file-name) " rev:" (substring cur-rev 0 6) "*"))
 	 (buffer     (git-run-command-buffer log-name "show" (concat cur-rev ":" git-file-name))))
     (with-current-buffer buffer
       (goto-char (point-min))
