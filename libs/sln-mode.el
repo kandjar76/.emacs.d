@@ -68,6 +68,7 @@
 ;; v1.02: Ask confirmation before cleaning the project.  
 ;;        Added refresh handler which reload the sln-file or the
 ;;        vcproj of the current project.
+;; v1.03: Adding support for VS2010.
 
 
 (require 'cl)
@@ -98,11 +99,20 @@
   )
 
 ;;
-;; Helper function:
+;; Local Variable:
 ;;
 
 (defvar sln-mode-solution-name nil
   "Local variable to store the solution name.")
+
+(defvar sln-mode-solution-version nil
+  "Local variable to store the solution major version number as string.")
+
+
+
+;;
+;; SLN Project -- Extract Files/Platforms/Configurations:
+;;
 
 
 (defun vcproj-extract-platforms (current-block)
@@ -238,21 +248,12 @@
       (list vc-platforms vc-configurations vc-files))))
 
 
-(defun vcproj-update-file-folders(vc-files folder)
-  "Update the folder of each files in VC-FILES adding FOLDER in front of them"
-  (mapcar '(lambda (item)
-	     (cons (car item)
-		   (if (file-name-absolute-p (cdr item))
-		       (cdr item)
-		       (let ((rela-path (file-relative-name (expand-file-name (concat folder (cdr item)))))
-			     (full-path (abbreviate-file-name (expand-file-name (concat folder (cdr item))))))
-			 (if (> (length rela-path) (length full-path))
-			     full-path
-			     rela-path)))))
-	  vc-files))
 
+;;
+;; SLN Project -- Extract Project:
+;;
 
-(defun sln-extract-projects(sln-file)
+(defun sln--extract-projects(sln-file)
   "Extract projects from the SLN file"
   (let (sln-version)
     (save-excursion
@@ -270,14 +271,46 @@
 	  (cons sln-version result)))
       )))
 
-(defun sln-file-p (filename)
+
+;;
+;; SLN Project Helper Function:
+;;
+
+(defun sln--sln-file-p (filename)
   "Check if FILENAME is a sln file."
   (or
    (null (file-name-extension filename))
    (string= (file-name-extension filename) "sln")))
 
 
-(defun sln-action-handler-2005(action project-name project-path platform configuration)
+(defun sln--update-vc-files-folder-paths(vc-files folder)
+  "Update the folder of each vc-files in VC-FILES considering FOLDER as a potential base directory"
+  (mapcar '(lambda (item)
+	     (cons (car item)
+		   (if (file-name-absolute-p (cdr item))
+		       (cdr item)
+		       (let ((rela-path (file-relative-name (expand-file-name (concat folder (cdr item)))))
+			     (full-path (abbreviate-file-name (expand-file-name (concat folder (cdr item))))))
+			 (if (> (length rela-path) (length full-path))
+			     full-path
+			     rela-path)))))
+	  vc-files))
+
+
+(defun sln--get-vcproj-extract-function(vcproj-ext)
+  "Return the project extract function based on VCPROJ-EXT."
+  (if (string-equal vcproj-ext "vcproj")
+      'vcproj-extract-data
+      'vcxproj-extract-data))
+
+
+
+;;
+;; Project-Buffer Handlers:
+;;
+
+
+(defun sln--project-buffer--action-handler-2005(action project-name project-path platform configuration)
   "Project-Buffer action handler."
   (let ((sln-cmd (cond ((eq action 'build) "Build")
 		       ((eq action 'clean) "Clean")
@@ -288,7 +321,8 @@
       (compile
        (concat sln-mode-devenv-2005 " \"" sln-mode-solution-name "\" /" sln-cmd " \""  (concat configuration "|" platform) "\" /project \"" project-path "\"")))))
 
-(defun sln-action-handler-2008(action project-name project-path platform configuration)
+
+(defun sln--project-buffer--action-handler-2008(action project-name project-path platform configuration)
   "Project-Buffer action handler."
   (let* ((prj-str (concat "/Project \"" project-name "\" "))
 	 (cfg-str (concat "\"" configuration "|" platform "\" "))
@@ -303,27 +337,7 @@
 	       prj-str sln-cmd)))))
 
 
-(defun sln-add-vcproj-project(project-name vcproj-file)
-  "Add a new project named PROJECT-NAME to the project bufffer,
-and use the content of VCPROJ-FILE to populate it."
-  (let* ((project-dir (file-name-directory vcproj-file))
-	 (project-data (and (file-exists-p vcproj-file)
-			    (vcproj-extract-data vcproj-file)))
-	 (platforms (car project-data))
-	 (configurations (cadr project-data)))
-    ;; Create a project node / update its platform and build configuration...
-    (project-buffer-insert project-name 'project vcproj-file project-name)
-    (project-buffer-set-project-platforms project-name platforms)
-    (project-buffer-set-project-build-configurations project-name configurations)
-    (when project-data
-      (let ((files (vcproj-update-file-folders (caddr project-data) project-dir)))
-	(while files
-	  (let ((file (pop files)))
-	    ;; then insert each project file into the buffer
-	    (project-buffer-insert (car file) 'file (cdr file) project-name)))))))
-
-
-(defun sln-refresh-handler(project-list content)
+(defun sln--project-buffer--refresh-handler(project-list content)
   "Refresh handler.
 Base on CONTENT, it will either reload the sln file and recreate
 the projects; or just refresh the selected projects."
@@ -335,25 +349,54 @@ the projects; or just refresh the selected projects."
     (if (and (eq content 'all)
 	     (file-exists-p sln-mode-solution-name))
 	;; Clear the whole buffer and recreate each projects:
-	(let* ((sln-ver-prj (sln-extract-projects sln-mode-solution-name))
+	(let* ((sln-ver-prj (sln--extract-projects sln-mode-solution-name))
 	       (sln-projects (cdr sln-ver-prj)))
 	  (project-buffer-erase-all project-buffer-status)
 	  (while sln-projects
 	    (let ((current (pop sln-projects)))
-	      (sln-add-vcproj-project (car current) (cdr current)))))
+	      (sln--add-new-project (car current) (cdr current)))))
 	;; Delete the specified projects and recreate them:
 	(while project-list
 	  (let* ((project-name (pop project-list))
 		 (vcproj-file  (project-buffer-get-project-path project-name)))
 	    (when (file-exists-p vcproj-file)
 	      (project-buffer-delete-project project-name)
-	      (sln-add-vcproj-project project-name vcproj-file)))))))
+	      (sln--add-new-project project-name vcproj-file)))))))
 
 
-(defun make-sln-project-buffer(sln-file)
+;;
+;; Project Builder -- Builder Functions:
+;;
+
+
+(defun sln--add-new-project(project-name vcproj-file)
+  "Add a new project named PROJECT-NAME to the project bufffer,
+and use the content of VCPROJ-FILE to populate it."
+  (let* ((project-dir (file-name-directory vcproj-file))
+	 (project-ext (file-name-extension vcproj-file))
+	 (vcp-ext-fct (sln--get-vcproj-extract-function project-ext))
+	 (project-data (and (file-exists-p vcproj-file)
+			    (apply vcp-ext-fct (list vcproj-file))))
+	 (platforms (car project-data))
+	 (configurations (cadr project-data)))
+    ;; Create a project node / update its platform and build configuration...
+    (project-buffer-insert project-name 'project vcproj-file project-name)
+    (project-buffer-set-project-platforms project-name platforms)
+    (project-buffer-set-project-build-configurations project-name configurations)
+    (when project-data
+      (let ((files (sln--update-vc-files-folder-paths (caddr project-data) project-dir)))
+	(while files
+	  (let ((file (pop files)))
+	    ;; then insert each project file into the buffer
+	    (project-buffer-insert (car file) 'file (cdr file) project-name)))))))
+
+
+
+
+(defun sln--make-project-buffer(sln-file)
   "Create a project buffer interpreting SLN-FILE to populate it."
   (let* ((buffer (generate-new-buffer (concat "ms:" (file-name-nondirectory sln-file))))
-	 (sln-ver-prj (sln-extract-projects sln-file))
+	 (sln-ver-prj (sln--extract-projects sln-file))
 	 (sln-version (car sln-ver-prj))
 	 (sln-projects (cdr sln-ver-prj)) ; list of proj-nane / project file
 	)
@@ -364,20 +407,22 @@ the projects; or just refresh the selected projects."
       ;; Turn on the project-buffer-mode
       (project-buffer-mode)
       (make-local-variable 'sln-mode-solution-name)
+      (make-local-variable 'sln-mode-solution-version)
       (add-to-list 'project-buffer-locals-to-save 'sln-mode-solution-name)
       (setq sln-mode-solution-name (file-name-nondirectory sln-file))
+      (setq sln-mode-solution-version sln-version)
       (cond
        ((string-equal sln-version "09") ; 2005 format
-	(add-hook 'project-buffer-action-hook 'sln-action-handler-2005 nil t))
+	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2005 nil t))
        ((string-equal sln-version "10") ; 2008 format
-	(add-hook 'project-buffer-action-hook 'sln-action-handler-2008 nil t))
+	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2008 nil t))
        (t (error "Unknown SLN file format!")))
-      (add-hook 'project-buffer-refresh-hook 'sln-refresh-handler)
+      (add-hook 'project-buffer-refresh-hook 'sln--project-buffer--refresh-handler)
       ;;
       (while sln-projects
 	;; For every project reference in the SLN file,
 	(let ((current (pop sln-projects)))
-	  (sln-add-vcproj-project (car current) (cdr current)))
+	  (sln--add-new-project (car current) (cdr current)))
 	))))
 
 
@@ -389,10 +434,10 @@ the projects; or just refresh the selected projects."
 (defun find-sln(solution-name)
   "Open an sln file and create a project buffer using the data in it."
   (interactive
-   (list (read-file-name "SLN file: " nil nil t nil 'sln-file-p)))
+   (list (read-file-name "SLN file: " nil nil t nil 'sln--sln-file-p)))
   (when (and solution-name
 	     (> (length solution-name) 0))
-    (make-sln-project-buffer solution-name)))
+    (sln--make-project-buffer solution-name)))
 
 
 ;;
