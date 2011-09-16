@@ -111,11 +111,11 @@
 
 
 ;;
-;; SLN Project -- Extract Files/Platforms/Configurations:
+;; SLN Project -- Extract Files/Platforms/Configurations from vcproj files
 ;;
 
 
-(defun vcproj-extract-platforms (current-block)
+(defun sln--vcproj-extract-platforms (current-block)
   "Extract a list of platform from CURRENT-BLOCK."
   (unless (eq (car current-block) 'Platforms) (error "Expected a list like '(Platforms ...)"))
   (let ((data (cdddr current-block))
@@ -129,7 +129,7 @@
     (reverse ret)))
 
 
-(defun vcproj-extract-configurations (current-block)
+(defun sln--vcproj-extract-configurations (current-block)
   "Extract a list of configuration from CURRENT-BLOCK."
   (unless (eq (car current-block) 'Configurations) (error "Expected a list like '(Configurations ...)"))
   (let ((data (cdddr current-block))
@@ -148,7 +148,7 @@
     (reverse ret)))
 
 
-(defun vcproj-extract-file(current-item)
+(defun sln--vcproj-extract-file(current-item)
   "Extract the relative path of the current file contain in CURRENT-ITEM"
   (unless (eq (car current-item) 'File) (error "Expected a list like '(File ...)"))
   (let ((data (cadr current-item))
@@ -159,7 +159,7 @@
     file))
 
 	      
-(defun vcproj-extract-filter-name(current-item)
+(defun sln--vcproj-extract-filter-name(current-item)
   "Extract the filter name of the CURRENT-ITEM"
   (unless (eq (car current-item) 'Filter) (error "Expected a list like '(Filter ...)"))
   (let ((data (cadr current-item))
@@ -170,13 +170,13 @@
     filter))
 
 
-(defun vcproj-extract-filter-list(current-item)
+(defun sln--vcproj-extract-filter-list(current-item)
   "Extract the files/filter list attach to the current filter in CURRENT-ITEM"
     (unless (eq (car current-item) 'Filter) (error "Expected a list like '(Filter ...)"))
   (cddr current-item))
 
 
-(defun vcproj-convert-file-list(file-list)
+(defun sln--vcproj-convert-file-list(file-list)
   "Convert FILE-LIST from a list '((\"virt-subfolder\" \"virt-subfolder\"...) \"full-path\") to a list '(\"virtual-folder\" \"full-path\")"
   (let (ret)
     (while file-list
@@ -192,7 +192,7 @@
     ret))
 
 
-(defun vcproj-extract-files(current-block)
+(defun sln--vcproj-extract-files(current-block)
   "Extract a list of files from CURRENT-BLOCK"
   (unless (eq (car current-block) 'Files) (error "Expected a list like '(Files ...)"))
   (let ((data (cdddr current-block))
@@ -206,16 +206,16 @@
 	    (when (listp item)
 	      (cond ((eq (car item) 'Filter)
 		     (push node stack)
-		     (push (vcproj-extract-filter-name item) folder)
-		     (setq node (vcproj-extract-filter-list item)))
+		     (push (sln--vcproj-extract-filter-name item) folder)
+		     (setq node (sln--vcproj-extract-filter-list item)))
 		    ((eq (car item) 'File)
-		     (push (cons folder (vcproj-extract-file item)) ret))
+		     (push (cons folder (sln--vcproj-extract-file item)) ret))
 		    (t (error "Unknown data - id: %S" (car item)))))))))
-    (vcproj-convert-file-list ret)))
+    (sln--vcproj-convert-file-list ret)))
  
   
 
-(defun vcproj-extract-data(vcproj-file)
+(defun sln--vcproj-extract-data(vcproj-file)
   "Extract files and directory from VCPROJ-FILE"
   (save-excursion
     (let* ((xml-tags (with-temp-buffer
@@ -235,13 +235,13 @@
 	  (when (listp cur-block)
 	    (let ((block-tag (car cur-block)))
 	      (cond ((eq block-tag 'Platforms)
-		     (setq vc-platforms (append (vcproj-extract-platforms cur-block) vc-platforms)))
+		     (setq vc-platforms (append (sln--vcproj-extract-platforms cur-block) vc-platforms)))
 		    ((eq block-tag 'ToolFiles))     ; Currently ignored
 		    ((eq block-tag 'Configurations)
-		     (setq vc-configurations (append (vcproj-extract-configurations cur-block) vc-configurations)))
+		     (setq vc-configurations (append (sln--vcproj-extract-configurations cur-block) vc-configurations)))
 		    ((eq block-tag 'References))    ; Currently ignored
 		    ((eq block-tag 'Files)
-		     (setq vc-files (append (vcproj-extract-files cur-block) vc-files)))
+		     (setq vc-files (append (sln--vcproj-extract-files cur-block) vc-files)))
 		    ((eq block-tag 'Globals))       ; Currently ignored
 		    (t (error (format "Unknown block tag: %S" block-tag))))
 	    ))))
@@ -300,8 +300,8 @@
 (defun sln--get-vcproj-extract-function(vcproj-ext)
   "Return the project extract function based on VCPROJ-EXT."
   (if (string-equal vcproj-ext "vcproj")
-      'vcproj-extract-data
-      'vcxproj-extract-data))
+      'sln--vcproj-extract-data
+      'sln--vcxproj-extract-data))
 
 
 
