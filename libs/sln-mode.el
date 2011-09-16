@@ -254,15 +254,21 @@
 
 (defun sln-extract-projects(sln-file)
   "Extract projects from the SLN file"
-  (save-excursion
-    (with-temp-buffer
-      (insert-file sln-file)
-      (goto-char (point-min))
-      (let ((result nil))
-	(while (re-search-forward "Project(\"{[-A-Z0-9]+}\")[ 	]+=[ 	]+\"\\([^\"]+\\)\"[ 	]*,[ 	]+\"\\([^\"]+\\)\""
-				  (point-max)  t)
-	  (add-to-list 'result (cons (match-string-no-properties 1) (replace-regexp-in-string "\\\\" "/" (match-string-no-properties 2))) t))
-	result))))
+  (let (sln-version)
+    (save-excursion
+      (with-temp-buffer
+	(insert-file sln-file)
+	(goto-char (point-min))
+	(when (not (looking-at "^Microsoft Visual Studio Solution File, Format Version [0-9][0-9]"))
+	  (forward-line 1)) ;; Case of the first line having a non-displayable character
+	(when (looking-at "^Microsoft Visual Studio Solution File, Format Version \\([0-9][0-9]\\)")
+	  (setq sln-version (match-string-no-properties 1)))
+	(let ((result nil))
+	  (while (re-search-forward "Project(\"{[-A-Z0-9]+}\")[ 	]+=[ 	]+\"\\([^\"]+\\)\"[ 	]*,[ 	]+\"\\([^\"]+\\)\""
+				    (point-max)  t)
+	    (add-to-list 'result (cons (match-string-no-properties 1) (replace-regexp-in-string "\\\\" "/" (match-string-no-properties 2))) t))
+	  (cons sln-version result)))
+      )))
 
 (defun sln-file-p (filename)
   "Check if FILENAME is a sln file."
@@ -329,7 +335,8 @@ the projects; or just refresh the selected projects."
     (if (and (eq content 'all)
 	     (file-exists-p sln-mode-solution-name))
 	;; Clear the whole buffer and recreate each projects:
-	(let ((sln-projects (sln-extract-projects sln-mode-solution-name)))
+	(let* ((sln-ver-prj (sln-extract-projects sln-mode-solution-name))
+	       (sln-projects (cdr sln-ver-prj)))
 	  (project-buffer-erase-all project-buffer-status)
 	  (while sln-projects
 	    (let ((current (pop sln-projects)))
@@ -343,10 +350,12 @@ the projects; or just refresh the selected projects."
 	      (sln-add-vcproj-project project-name vcproj-file)))))))
 
 
-(defun make-sln-project-buffer(sln-file &optional using2005)
+(defun make-sln-project-buffer(sln-file)
   "Create a project buffer interpreting SLN-FILE to populate it."
-  (let ((buffer (generate-new-buffer (concat "ms:" (file-name-nondirectory sln-file))))
-	(sln-projects (sln-extract-projects sln-file)) ; list of proj-nane / project file
+  (let* ((buffer (generate-new-buffer (concat "ms:" (file-name-nondirectory sln-file))))
+	 (sln-ver-prj (sln-extract-projects sln-file))
+	 (sln-version (car sln-ver-prj))
+	 (sln-projects (cdr sln-ver-prj)) ; list of proj-nane / project file
 	)
     (switch-to-buffer buffer)
     (with-current-buffer buffer
@@ -357,9 +366,12 @@ the projects; or just refresh the selected projects."
       (make-local-variable 'sln-mode-solution-name)
       (add-to-list 'project-buffer-locals-to-save 'sln-mode-solution-name)
       (setq sln-mode-solution-name (file-name-nondirectory sln-file))
-      (if using2005
-	  (add-hook 'project-buffer-action-hook 'sln-action-handler-2005 nil t)
-	  (add-hook 'project-buffer-action-hook 'sln-action-handler-2008 nil t))
+      (cond
+       ((string-equal sln-version "09") ; 2005 format
+	(add-hook 'project-buffer-action-hook 'sln-action-handler-2005 nil t))
+       ((string-equal sln-version "10") ; 2008 format
+	(add-hook 'project-buffer-action-hook 'sln-action-handler-2008 nil t))
+       (t (error "Unknown SLN file format!")))
       (add-hook 'project-buffer-refresh-hook 'sln-refresh-handler)
       ;;
       (while sln-projects
@@ -374,14 +386,13 @@ the projects; or just refresh the selected projects."
 ;;
 
 ;;;###autoload
-(defun find-sln(solution-name &optional using2005)
+(defun find-sln(solution-name)
   "Open an sln file and create a project buffer using the data in it."
   (interactive
-   (list (read-file-name "SLN file: " nil nil t nil 'sln-file-p)
-	 current-prefix-arg))
+   (list (read-file-name "SLN file: " nil nil t nil 'sln-file-p)))
   (when (and solution-name
 	     (> (length solution-name) 0))
-    (make-sln-project-buffer solution-name using2005)))
+    (make-sln-project-buffer solution-name)))
 
 
 ;;
