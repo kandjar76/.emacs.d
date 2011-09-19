@@ -98,6 +98,12 @@
   :group 'sln-mode
   )
 
+(defcustom sln-mode-devenv-2010 "Devenv"
+  "Path to Devenv 2010."
+  :type 'string
+  :group 'sln-mode
+  )
+
 ;;
 ;; Local Variable:
 ;;
@@ -248,6 +254,113 @@
       (list vc-platforms vc-configurations vc-files))))
 
 
+;;
+;; SLN Project -- Extract Files/Platforms/Configurations from vcxproj files
+;;
+
+
+(defun sln--vcxproj-get-attribute-from-block(current-block attribute)
+  "Extract ATTRIBUTE's value from CURRENT-BLOCK."
+  (let ((attr-list (cadr current-block))
+	ret-val)
+    (while attr-list
+      (let ((cur-attr (pop attr-list)))
+	(when (and (consp cur-attr)
+		   (equal (car cur-attr) attribute))
+	  (setq ret-val (cdr cur-attr)))))
+    ret-val))
+
+
+(defun sln--vcxproj-extract-projectconfiguration-data(current-block)
+  "Extract the configuration and the platform from CURRENT-BLOCK."
+  (let ((include     (sln--vcxproj-get-attribute-from-block current-block 'Include))
+	(block-list  (cdddr current-block))
+	configuration platform)
+    (while block-list
+      (let ((cur-block (pop block-list)))
+	(when (listp cur-block)
+	  (let ((block-tag (car cur-block)))
+	    ;(message "Block Tag: %S" block-tag)
+	    (cond ((equal block-tag 'Configuration)
+		   (setq configuration (caddr cur-block)))
+		  ((equal block-tag 'Platform)
+		   (setq platform (caddr cur-block))))))))
+    (when (not (string-equal include (concat configuration "|" platform)))
+      (message "Warning: ProjectConfiguration Label: %s doesn't match %s"
+	       include (concat configuration "|" platform)))
+    ;(message "extract-projectconfiguration-data: %S" (cons configuration platform))
+    (cons configuration platform)))
+
+(defun sln--vcxproj-extract-configurations-and-platforms(current-block)
+  "Extract configuration and platform from the CURRENT-BLOCK.
+Return a couple with both list."
+  (let ((block-list  (cdddr current-block))
+	configuration-list
+	platform-list)
+    (while block-list
+      (let ((cur-block (pop block-list)))
+	(when (and (listp cur-block)
+		   (equal (car cur-block) 'ProjectConfiguration))
+	  (let ((conf-plat (sln--vcxproj-extract-projectconfiguration-data cur-block)))
+	    (add-to-list 'configuration-list (car conf-plat) t)
+	    (add-to-list 'platform-list (cdr conf-plat) t)))))
+    ;(message "extract-configurations-and-platforms: %S" (cons configuration-list platform-list))
+    (cons configuration-list platform-list)))
+
+
+
+(defun sln--vcxproj-node-to-file(current-block)
+  "Convert a node into a sln file node.
+That is: '(virtual-name . file-path)"
+  (let* ((group     (car current-block))
+	 (file-path (sln--vcxproj-get-attribute-from-block current-block 'Include))
+	 (file-name (file-name-nondirectory file-path)))
+    (cons (format "%S/%s" group file-name) file-path)))
+
+(defun sln--vcxproj-extract-files(current-block)
+  "Extract file list from CURRENT-BLOCK."
+  (let ((block-list  (cdddr current-block))
+	files)
+    (while block-list
+      (let ((cur-block (pop block-list)))
+	(when (and (listp cur-block)
+		   (not (equal (car cur-block) 'ProjectReference)))
+	  (add-to-list 'files (sln--vcxproj-node-to-file cur-block) t))))
+    files))
+    
+
+(defun sln--vcxproj-extract-data(vcxproj-file)
+  "Extract files and directory from VCXPROJ-FILE"
+  (save-excursion
+    (let* ((xml-tags (with-temp-buffer
+		       (insert-file vcxproj-file)
+		       (xml-parse-region (point-min) (point-max))))
+	   (vs-data  (car xml-tags))
+	   (vs-tags  (and (eq (car vs-data) 'Project)
+			  (cdddr vs-data)))
+	   ;;
+	   vc-platforms
+	   vc-configurations
+	   vc-files
+	   )
+      ;; 
+      (while vs-tags
+	(let ((cur-block (pop vs-tags)))
+	  (when (listp cur-block)
+	    (let ((block-tag (car cur-block))
+		  (label (sln--vcxproj-get-attribute-from-block cur-block 'Label)))
+	      (cond ((and (eq block-tag 'ItemGroup)
+			  (string-equal label "ProjectConfigurations"))
+		     (let ((conf-plat (sln--vcxproj-extract-configurations-and-platforms cur-block)))
+		       (setq vc-configurations (car conf-plat))
+		       (setq vc-platforms      (cdr conf-plat))))
+		    ((and (eq block-tag 'ItemGroup)
+			  (null (cadr cur-block)))
+		     (let ((files (sln--vcxproj-extract-files cur-block)))
+		       (setq vc-files (append vc-files files))))
+		    )))))
+      (list vc-platforms vc-configurations vc-files))))
+
 
 ;;
 ;; SLN Project -- Extract Project:
@@ -337,6 +450,25 @@
 	       prj-str sln-cmd)))))
 
 
+(defun sln--project-buffer--action-handler-2010(action project-name project-path platform configuration)
+  "Project-Buffer action handler."
+  (let* ((prj-str (concat "/project \"" project-name "\" "))
+	 (cfg-str (concat "/projectconfig \"" configuration "|" platform "\" "))
+	 (sln-str (concat "\"" sln-mode-solution-name "\""))
+	 (sln-cmd (cond ((eq action 'build) (concat " " sln-str " /Build " project-path " " cfg-str))
+			((eq action 'clean) (concat " " sln-str " /Clean /Project " project-path " " cfg-str))
+			((eq action 'run)   (concat " /Run " project-path ))
+			((eq action 'debug) (concat " /RunExit " project-path )))))
+    (when (or (not (eq action 'clean))
+	      (funcall project-buffer-confirm-function (format "Clean the project %s " project-name)))
+      (compile
+       ;; Devenv SolutionName /build SolnConfigName [/project ProjName [/projectconfig ProjConfigName]]
+       ;; devenv FileName /Clean [ /project projectnameorfile [/projectconfig name ] ]
+       ;; devenv /runexit {SolutionName|ProjectName}
+       ;; devenv {/run|/r} {SolutionName|ProjectName}
+       (concat sln-mode-devenv-2010 sln-cmd)))))
+
+
 (defun sln--project-buffer--refresh-handler(project-list content)
   "Refresh handler.
 Base on CONTENT, it will either reload the sln file and recreate
@@ -416,6 +548,8 @@ and use the content of VCPROJ-FILE to populate it."
 	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2005 nil t))
        ((string-equal sln-version "10") ; 2008 format
 	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2008 nil t))
+       ((string-equal sln-version "11") ; 2010 format
+	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2010 nil t))
        (t (error "Unknown SLN file format!")))
       (add-hook 'project-buffer-refresh-hook 'sln--project-buffer--refresh-handler)
       ;;
