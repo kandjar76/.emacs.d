@@ -452,20 +452,18 @@ That is: '(virtual-name . file-path)"
 
 (defun sln--project-buffer--action-handler-2010(action project-name project-path platform configuration)
   "Project-Buffer action handler."
-  (let* ((prj-str (concat "/project \"" project-name "\" "))
-	 (cfg-str (concat "/projectconfig \"" configuration "|" platform "\" "))
+  (let* ((prj-str (concat "/project \"" project-name "\""))
+	 (cfg-str (concat "\"" configuration "|" platform "\""))
 	 (sln-str (concat "\"" sln-mode-solution-name "\""))
-	 (sln-cmd (cond ((eq action 'build) (concat " " sln-str " /Build " project-path " " cfg-str))
-			((eq action 'clean) (concat " " sln-str " /Clean /Project " project-path " " cfg-str))
-			((eq action 'run)   (concat " /Run " project-path ))
-			((eq action 'debug) (concat " /RunExit " project-path )))))
+	 (sln-cmd (cond ((eq action 'build) (concat " " sln-str " /Build " cfg-str " /Project " project-name ))
+			((eq action 'clean) (concat " " sln-str " /Clean " cfg-str " /Project " project-name))
+			((eq action 'run)   (concat " " sln-str " /RunExit " cfg-str " /Project " project-name ))
+			((eq action 'debug) (concat " " sln-str " /Run " cfg-str " /Project " project-name )))))
     (when (or (not (eq action 'clean))
 	      (funcall project-buffer-confirm-function (format "Clean the project %s " project-name)))
       (compile
-       ;; Devenv SolutionName /build SolnConfigName [/project ProjName [/projectconfig ProjConfigName]]
-       ;; devenv FileName /Clean [ /project projectnameorfile [/projectconfig name ] ]
-       ;; devenv /runexit {SolutionName|ProjectName}
-       ;; devenv {/run|/r} {SolutionName|ProjectName}
+       ;; Known issue: the Run and Run Exit command do not consider the active project but 
+       ;; rather use the default project set in the 'sln' file.
        (concat sln-mode-devenv-2010 sln-cmd)))))
 
 
