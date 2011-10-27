@@ -25,10 +25,10 @@
 
 
 ;;; Commentary:
-;; 
+;;
 
 ;; This is an add-on library for project-buffer-mode
-;; 
+;;
 ;; This library provides a function to create a project-buffer
 ;; extracting the project information from a SLN file.
 ;;
@@ -42,14 +42,14 @@
 ;;
 
 ;; Note about the build/clean/run/debug actions:
-;; 
+;;
 ;; The command line are different between a 2005 and a 2008 project;
 ;; by default it will use the 2005 configuration mode; use the prefix
 ;; argument to switch to the 2008 mode.
 ;;
 ;; -------
 
-;; Extra note: 
+;; Extra note:
 ;;
 ;; It doesn't currently support modifying the SLN file. It's currently
 ;; just a 'viewer'.  Note that it doens't have to stay that way if
@@ -62,10 +62,10 @@
 
 
 ;;; History:
-;; 
+;;
 ;; v1.00: First official release.
 ;; v1.01: Register the project local variable in `project-buffer-locals-to-save'
-;; v1.02: Ask confirmation before cleaning the project.  
+;; v1.02: Ask confirmation before cleaning the project.
 ;;        Added refresh handler which reload the sln-file or the
 ;;        vcproj of the current project.
 ;; v1.03: Adding support for VS2010.
@@ -164,7 +164,7 @@
 	(setq file (and (eq (car cur) 'RelativePath) (cdr cur)))))
     file))
 
-	      
+
 (defun sln--vcproj-extract-filter-name(current-item)
   "Extract the filter name of the CURRENT-ITEM"
   (unless (eq (car current-item) 'Filter) (error "Expected a list like '(Filter ...)"))
@@ -218,8 +218,8 @@
 		     (push (cons folder (sln--vcproj-extract-file item)) ret))
 		    (t (error "Unknown data - id: %S" (car item)))))))))
     (sln--vcproj-convert-file-list ret)))
- 
-  
+
+
 
 (defun sln--vcproj-extract-data(vcproj-file)
   "Extract files and directory from VCPROJ-FILE"
@@ -235,7 +235,7 @@
 	   vc-configurations
 	   vc-files
 	   )
-      ;; 
+      ;;
       (while vs-tags
 	(let ((cur-block (pop vs-tags)))
 	  (when (listp cur-block)
@@ -327,7 +327,7 @@ That is: '(virtual-name . file-path)"
 		   (not (equal (car cur-block) 'ProjectReference)))
 	  (add-to-list 'files (sln--vcxproj-node-to-file cur-block) t))))
     files))
-    
+
 
 (defun sln--vcxproj-extract-data(vcxproj-file)
   "Extract files and directory from VCXPROJ-FILE"
@@ -343,7 +343,7 @@ That is: '(virtual-name . file-path)"
 	   vc-configurations
 	   vc-files
 	   )
-      ;; 
+      ;;
       (while vs-tags
 	(let ((cur-block (pop vs-tags)))
 	  (when (listp cur-block)
@@ -378,7 +378,7 @@ That is: '(virtual-name . file-path)"
 	(when (looking-at "^Microsoft Visual Studio Solution File, Format Version \\([0-9][0-9]\\)")
 	  (setq sln-version (match-string-no-properties 1)))
 	(let ((result nil))
-	  (while (re-search-forward "Project(\"{[-A-Z0-9]+}\")[ 	]+=[ 	]+\"\\([^\"]+\\)\"[ 	]*,[ 	]+\"\\([^\"]+\\)\""
+	  (while (re-search-forward "^Project(\"{[-A-Z0-9]+}\")[ 	]+=[ 	]+\"\\([^\"]+\\)\"[ 	]*,[ 	]+\"\\([^\"]+\\)\""
 				    (point-max)  t)
 	    (add-to-list 'result (cons (match-string-no-properties 1) (replace-regexp-in-string "\\\\" "/" (match-string-no-properties 2))) t))
 	  (cons sln-version result)))
@@ -457,12 +457,12 @@ That is: '(virtual-name . file-path)"
 	 (sln-str (concat "\"" sln-mode-solution-name "\""))
 	 (sln-cmd (cond ((eq action 'build) (concat " " sln-str " /Build " cfg-str " /Project " project-name ))
 			((eq action 'clean) (concat " " sln-str " /Clean " cfg-str " /Project " project-name))
-			((eq action 'run)   (concat " " sln-str " /RunExit " cfg-str " /Project " project-name ))
+			((eq action 'run)   (concat " " project-path " /RunExit " cfg-str)) ;; (concat " " sln-str " /RunExit " cfg-str " /Project " project-name ))
 			((eq action 'debug) (concat " " sln-str " /Run " cfg-str " /Project " project-name )))))
     (when (or (not (eq action 'clean))
 	      (funcall project-buffer-confirm-function (format "Clean the project %s " project-name)))
       (compile
-       ;; Known issue: the Run and Run Exit command do not consider the active project but 
+       ;; Known issue: the Run and Run Exit command do not consider the active project but
        ;; rather use the default project set in the 'sln' file.
        (concat sln-mode-devenv-2010 sln-cmd)))))
 
@@ -472,7 +472,7 @@ That is: '(virtual-name . file-path)"
 Base on CONTENT, it will either reload the sln file and recreate
 the projects; or just refresh the selected projects."
   (when (and project-list
-	     (funcall project-buffer-confirm-function 
+	     (funcall project-buffer-confirm-function
 		      (if (eq content 'all)
 			  (format "Reload %s " sln-mode-solution-name)
 			  (format "Reload %s " (project-buffer-get-project-path (car project-list))))))
@@ -506,6 +506,7 @@ and use the content of VCPROJ-FILE to populate it."
 	 (project-ext (file-name-extension vcproj-file))
 	 (vcp-ext-fct (sln--get-vcproj-extract-function project-ext))
 	 (project-data (and (file-exists-p vcproj-file)
+			    (not (file-directory-p vcproj-file))
 			    (apply vcp-ext-fct (list vcproj-file))))
 	 (platforms (car project-data))
 	 (configurations (cadr project-data)))
