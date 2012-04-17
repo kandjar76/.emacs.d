@@ -1,7 +1,7 @@
 ;;; project-buffer-mode.el --- Generic mode to browse project file
 ;;
 ;; Author:      Cedric Lallain <kandjar76@hotmail.com>
-;; Version:     1.22
+;; Version:     1.50
 ;; Keywords:    project mode buffer viewer generic
 ;; Description: Generic mode to handle projects.
 ;; Tested with: GNU Emacs 22.x and GNU Emacs 23.x
