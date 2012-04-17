@@ -78,11 +78,12 @@
 ;;
 ;; FOUR DIFFERENT VIEW-MODE:
 ;;
-;; Four different view-modes are currently supported:
+;; Five different view-modes are currently supported:
 ;; - folder-view (<default>)
 ;; - flat-view
 ;; - folder-hidden-view
 ;; - marked-view
+;; - non-existing-file-view
 ;;
 ;; It's possible to switch between them using 'c v'.
 ;;
@@ -92,8 +93,11 @@
 ;; - folder-hidden-view shows the list of just the file names, next
 ;; to it, it displays the real path for each of them.
 ;;
-;; The final view mode named marked-view shows only the list of marked
+;; The fourth view mode named marked-view shows only the list of marked
 ;; files, prefixed by their project and folders.
+;;
+;; The final view mode named non-existing-file-view shows only the files
+;; which are in the project but do not exists.
 ;;
 ;;
 ;; MARKING FILE MATCHING A REGEXP:
@@ -204,6 +208,7 @@
 ;;    2    -> Switch to flat-view mode
 ;;    3    -> Switch to folder-hidden-view mode
 ;;    4    -> Switch to marked-view mode
+;;    5    -> Switch to non-existing-file-view mode
 ;;
 ;;
 ;; Future improvement:
@@ -350,8 +355,7 @@
 ;;        - `project-buffer-add-dependency-to-project'              to add a dependency to a project
 ;;        - `project-buffer-remove-dependency-from-project'         to remove a dependency from a project
 ;;        - `project-buffer-get-project-dependency-list'            to get the list of dependency attached to a project
-;;
-
+;; v1.50: Adding non-existing-file-view in order to quickly get the list of the files which do not exist.
 
 (require 'cl)
 (require 'ewoc)
@@ -376,7 +380,7 @@
 ;; Constants:
 ;;
 
-(defconst project-buffer-mode-version "1.22"
+(defconst project-buffer-mode-version "1.50"
   "Version numbers of this version of `project-buffer-mode'.")
 
 
@@ -695,6 +699,7 @@ check if any files should be added or remove from the proejct."
     (define-key project-buffer-mode-map [?2] 'project-buffer-set-flat-view-mode)
     (define-key project-buffer-mode-map [?3] 'project-buffer-set-folder-hidden-view-mode)
     (define-key project-buffer-mode-map [?4] 'project-buffer-set-marked-view-mode)
+    (define-key project-buffer-mode-map [?5] 'project-buffer-set-non-existing-file-view-mode)
 
     (define-key project-buffer-mode-map [(meta ?n)] 'project-buffer-go-to-next-project)
     (define-key project-buffer-mode-map [(meta ?p)] 'project-buffer-go-to-previous-project)
@@ -834,6 +839,15 @@ check if any files should be added or remove from the proejct."
 			       'mouse-face 'highlight
 			       'help-echo file-help
 			       )))
+	  ((eq project-buffer-view-mode 'non-existing-file-view)
+	   (concat (propertize " - " 'face 'project-buffer-indent-face)
+		   (and (file-name-directory node-name)
+			(propertize (file-name-directory node-name) 'face 'project-buffer-folder-face))
+		   (propertize (file-name-nondirectory node-name)
+			       'face file-color
+			       'mouse-face 'highlight
+			       'help-echo file-help
+			       )))
 	  (t (format "Unknown view mode: %S" project-buffer-view-mode) ))))
 
 
@@ -852,64 +866,76 @@ check if any files should be added or remove from the proejct."
 			       (if (project-buffer-node->collapsed node) "expand" "collapse")
 			       " project "
 			       (project-buffer-node->name node))))
-    (if (eq project-buffer-view-mode 'marked-view)
-	(when (and (eq node-type 'file)
-		   (or node-marked node-matching))
-	  (insert (concat " "
-			  (if node-marked (propertize "*" 'face 'project-buffer-mark-face) " ")
-			  " "
-			  (propertize (if (> (length node-project) 16)
-					  (substring node-project 0 16)
-					  node-project)
-				      'face 'project-buffer-project-face)))
-   	  (indent-to-column 19)
-	  (insert (concat (project-buffer-convert-name-for-display node)
-			  "\n")))
-	(when (or (and (eq project-buffer-view-mode 'folder-view)
-		       (or (not node-hidden)
-			   node-matching))
-		  (and (not (eq project-buffer-view-mode 'folder-view))
-		       (not (eq node-type 'folder))
-		       (or (not node-prjcol)
-			   node-matching))
-		  (eq node-type 'project))
-	  (insert (concat " "
-			  (if node-marked (propertize "*" 'face 'project-buffer-mark-face)" ")
-			  " "
-			  (cond ((not (eq node-type 'project)) "   ")
-				(node-collapsed                (propertize "[+]"
-									   'face 'project-buffer-project-button-face
-									   'mouse-face 'highlight
-									   'help-echo project-help))
-				(t                             (propertize "[-]"
-									   'face 'project-buffer-project-button-face
-									   'mouse-face 'highlight
-									   'help-echo project-help)))
-			  " "
-			  (or (and (eq node-type 'project)
-				   (propertize node-name
-					       'face (or (and project-buffer-master-project
-							      (string= node-name (car project-buffer-master-project))
-							      'project-buffer-master-project-face)
-							 'project-buffer-project-face)
-					       'mouse-face 'highlight
-					       'help-echo project-help))
-			      (project-buffer-convert-name-for-display node))))
-	  (when (and (eq project-buffer-view-mode 'folder-hidden-view)
-		     (project-buffer-node->filename node)
-		     (eq (project-buffer-node->type node) 'file))
-	    (indent-to-column 40)
-	    (insert (concat " " (propertize (project-buffer-node->filename node)
-					    'face 'project-buffer-filename-face))))
-	  (when (and (eq node-type 'project)
-		     node-deps)
-	    (insert " ")
-	    (indent-to-column 30)
-	    (insert (propertize (concat "<" 
-					(reduce (lambda (str item) (concat str ", " item)) node-deps) 
-					">")
-				'face 'project-buffer-dependent-list-face)))
-	  (insert "\n"))
+    (cond ((eq project-buffer-view-mode 'marked-view)
+	   (when (and (eq node-type 'file)
+		      (or node-marked node-matching))
+	     (insert (concat " "
+			     (if node-marked (propertize "*" 'face 'project-buffer-mark-face) " ")
+			     " "
+			     (propertize (if (> (length node-project) 16)
+					     (substring node-project 0 16)
+					     node-project)
+					 'face 'project-buffer-project-face)))
+	     (indent-to-column 19)
+	     (insert (concat (project-buffer-convert-name-for-display node)
+			     "\n"))))
+	  ((eq project-buffer-view-mode 'non-existing-file-view)
+	   (when (and (eq node-type 'file)
+		      (not (file-exists-p (project-buffer-node->filename node))))
+	     (insert (concat "   "
+			     (propertize (if (> (length node-project) 16)
+					     (substring node-project 0 16)
+					     node-project)
+					 'face 'project-buffer-project-face)))
+	     (indent-to-column 19)
+	     (insert (concat (project-buffer-convert-name-for-display node)
+			     "\n"))))
+	  (t
+	   (when (or (and (eq project-buffer-view-mode 'folder-view)
+			  (or (not node-hidden)
+			      node-matching))
+		     (and (not (eq project-buffer-view-mode 'folder-view))
+			  (not (eq node-type 'folder))
+			  (or (not node-prjcol)
+			      node-matching))
+		     (eq node-type 'project))
+	     (insert (concat " "
+			     (if node-marked (propertize "*" 'face 'project-buffer-mark-face)" ")
+			     " "
+			     (cond ((not (eq node-type 'project)) "   ")
+				   (node-collapsed                (propertize "[+]"
+									      'face 'project-buffer-project-button-face
+									      'mouse-face 'highlight
+									      'help-echo project-help))
+				   (t                             (propertize "[-]"
+									      'face 'project-buffer-project-button-face
+									      'mouse-face 'highlight
+									      'help-echo project-help)))
+			     " "
+			     (or (and (eq node-type 'project)
+				      (propertize node-name
+						  'face (or (and project-buffer-master-project
+								 (string= node-name (car project-buffer-master-project))
+								 'project-buffer-master-project-face)
+							    'project-buffer-project-face)
+						  'mouse-face 'highlight
+						  'help-echo project-help))
+				 (project-buffer-convert-name-for-display node))))
+	     (when (and (eq project-buffer-view-mode 'folder-hidden-view)
+			(project-buffer-node->filename node)
+			(eq (project-buffer-node->type node) 'file))
+	       (indent-to-column 40)
+	       (insert (concat " " (propertize (project-buffer-node->filename node)
+					       'face 'project-buffer-filename-face))))
+	     (when (and (eq node-type 'project)
+			node-deps)
+	       (insert " ")
+	       (indent-to-column 30)
+	       (insert (propertize (concat "<" 
+					   (reduce (lambda (str item) (concat str ", " item)) node-deps) 
+					   ">")
+				   'face 'project-buffer-dependent-list-face)))
+	     (insert "\n")))
 	)))
 
 
@@ -2585,12 +2611,17 @@ If the cursor is on a file - nothing will be done."
   (unless project-buffer-status (error "Not in project-buffer buffer"))
   (project-buffer-set-view-mode project-buffer-status 'folder-hidden-view))
 
-
 (defun project-buffer-set-marked-view-mode()
   "Set the view mode to marked-view."
   (interactive)
   (unless project-buffer-status (error "Not in project-buffer buffer"))
   (project-buffer-set-view-mode project-buffer-status 'marked-view))
+
+(defun project-buffer-set-non-existing-file-view-mode()
+  "Set the view mode to non-existing-file-view."
+  (interactive)
+  (unless project-buffer-status (error "Not in project-buffer buffer"))
+  (project-buffer-set-view-mode project-buffer-status 'non-existing-file-view))
 
 
 (defun project-buffer-toggle-view-mode ()
@@ -2599,10 +2630,11 @@ If the cursor is on a file - nothing will be done."
   (unless project-buffer-status (error "Not in project-buffer buffer"))
   (let ((node (ewoc-locate project-buffer-status)))
     (setq project-buffer-view-mode
-	  (cond ((eq project-buffer-view-mode 'folder-view)        'flat-view)
-		((eq project-buffer-view-mode 'flat-view)          'folder-hidden-view)
-		((eq project-buffer-view-mode 'folder-hidden-view) 'marked-view)
-		((eq project-buffer-view-mode 'marked-view)        'folder-view)
+	  (cond ((eq project-buffer-view-mode 'folder-view)           'flat-view)
+		((eq project-buffer-view-mode 'flat-view)             'folder-hidden-view)
+		((eq project-buffer-view-mode 'folder-hidden-view)    'marked-view)
+		((eq project-buffer-view-mode 'marked-view)           'non-existing-file-view)
+		((eq project-buffer-view-mode 'non-existing-file-view 'folder-view))
 		))
     (let ((status project-buffer-status))
       (message "View mode set to: %s" project-buffer-view-mode)
