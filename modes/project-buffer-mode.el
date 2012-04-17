@@ -356,6 +356,7 @@
 ;;        - `project-buffer-remove-dependency-from-project'         to remove a dependency from a project
 ;;        - `project-buffer-get-project-dependency-list'            to get the list of dependency attached to a project
 ;; v1.50: Adding non-existing-file-view in order to quickly get the list of the files which do not exist.
+;;        `project-buffer-mark-files-containing-regexp' now always search in the disk version of the file regardless if the file is already open.
 
 (require 'cl)
 (require 'ewoc)
@@ -1395,7 +1396,7 @@ The function returns the number of files whose marked-flag field changed"
 			       (file-readable-p filename)
 			       (let ((fbuf (get-file-buffer filename)))
 				 (message "Project '%s' -- Searching in '%s'" (project-buffer-node->project node) (project-buffer-node->name node))
-				 (if fbuf
+				 (if (and nil fbuf) ;; Always search in disk version of the file.
 				     (with-current-buffer fbuf
 				       (save-excursion
 					 (goto-char (point-min))
@@ -1428,7 +1429,7 @@ Note: if no files are marked, the search will occur in all existing files of the
 			       (file-readable-p filename)
 			       (let ((found (let ((fbuf (get-file-buffer filename)))
 					      (message "Project '%s' -- Searching in '%s'" (project-buffer-node->project node) (project-buffer-node->name node))
-					      (if fbuf
+					      (if (and nil fbuf) ;; Always search in disk version of the file.
 						  (with-current-buffer fbuf
 						    (save-excursion
 						      (goto-char (point-min))
