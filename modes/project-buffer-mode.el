@@ -881,8 +881,11 @@ check if any files should be added or remove from the proejct."
 			     "\n"))))
 	  ((eq project-buffer-view-mode 'non-existing-file-view)
 	   (when (and (eq node-type 'file)
-		      (not (file-exists-p (project-buffer-node->filename node))))
-	     (insert (concat "   "
+		      (or (not (file-exists-p (project-buffer-node->filename node)))
+			  node-matching))
+	     (insert (concat  " "
+			     (if node-marked (propertize "*" 'face 'project-buffer-mark-face) " ")
+			     " "
 			     (propertize (if (> (length node-project) 16)
 					     (substring node-project 0 16)
 					     node-project)
