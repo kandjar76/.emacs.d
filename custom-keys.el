@@ -31,6 +31,8 @@
 (define-key global-map [(control f7)]                   'compile)
 
 (define-key global-map [(insert)]                       nil)
+(define-key global-map [deletechar]                     'delete-backward-char)
+
 
 ;; Disable mouse-2 default behavior which is "kill" or "yank" something like that... 
 (define-key global-map [(mouse-2)]               	nil)
