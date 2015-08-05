@@ -6,7 +6,7 @@
 (setq load-path
       (append
        (list 
-         "~/.emacs.d"
+         "~/.emacs.d/custom"
          "~/.emacs.d/external"
          "~/.emacs.d/libs"
          "~/.emacs.d/modes"
