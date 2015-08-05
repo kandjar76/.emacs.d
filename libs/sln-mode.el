@@ -549,6 +549,8 @@ and use the content of VCPROJ-FILE to populate it."
 	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2008 nil t))
        ((string-equal sln-version "11") ; 2010 format
 	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2010 nil t))
+       ((string-equal sln-version "12") ; 2010 format
+	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2010 nil t))
        (t (error "Unknown SLN file format!")))
       (add-hook 'project-buffer-refresh-hook 'sln--project-buffer--refresh-handler)
       ;;
