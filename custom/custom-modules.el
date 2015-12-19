@@ -208,6 +208,14 @@ if COUNT is nil, each number is increased by line number within the selection (s
 
 
 ;;
+;; Module: ag
+;;
+
+(autoload 'ag-occur "ag-occur"
+  "Silver Searcher Regexp." t nil)
+
+
+;;
 ;; Module: highlight-current-word
 ;;
 

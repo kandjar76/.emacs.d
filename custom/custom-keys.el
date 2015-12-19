@@ -15,6 +15,7 @@
 (define-key global-map [(control tab)]                  'dabbrev-expand)
 
 (define-key global-map [(control f)]             	'list-matching-lines)
+(define-key global-map [(control meta f)]             	'ag-occur)
 (define-key global-map [(control ?`)]			'highlight-current-word)
 
 (define-key global-map [(meta left)]                    'backward-sexp)
