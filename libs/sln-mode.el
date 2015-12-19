@@ -104,6 +104,12 @@
   :group 'sln-mode
   )
 
+(defcustom sln-mode-devenv-2012 "Devenv"
+  "Path to Devenv 2012."
+  :type 'string
+  :group 'sln-mode
+  )
+
 ;;
 ;; Local Variable:
 ;;
@@ -466,6 +472,22 @@ That is: '(virtual-name . file-path)"
        ;; rather use the default project set in the 'sln' file.
        (concat sln-mode-devenv-2010 sln-cmd)))))
 
+(defun sln--project-buffer--action-handler-2012(action project-name project-path platform configuration)
+  "Project-Buffer action handler."
+  (let* ((prj-str (concat "/project \"" project-name "\""))
+	 (cfg-str (concat "\"" configuration "|" platform "\""))
+	 (sln-str (concat "\"" sln-mode-solution-name "\""))
+	 (sln-cmd (cond ((eq action 'build) (concat " " sln-str " /Build " cfg-str " /project " project-name ))
+			((eq action 'clean) (concat " " sln-str " /Clean /project " project-name "/projectconfig " cfg-str))
+			((eq action 'run)   (concat " " project-path " /Runexit " cfg-str)) ;; (concat " " sln-str " /RunExit " cfg-str " /Project " project-name ))
+			((eq action 'debug) (concat " " sln-str " /Run " cfg-str " /Project " project-name )))))
+    (when (or (not (eq action 'clean))
+	      (funcall project-buffer-confirm-function (format "Clean the project %s " project-name)))
+      (compile
+       ;; Known issue: the Run and Run Exit command do not consider the active project but
+       ;; rather use the default project set in the 'sln' file.
+       (concat sln-mode-devenv-2012 sln-cmd)))))
+
 
 (defun sln--project-buffer--refresh-handler(project-list content)
   "Refresh handler.
@@ -549,8 +571,8 @@ and use the content of VCPROJ-FILE to populate it."
 	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2008 nil t))
        ((string-equal sln-version "11") ; 2010 format
 	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2010 nil t))
-       ((string-equal sln-version "12") ; 2010 format
-	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2010 nil t))
+       ((string-equal sln-version "12") ; 2012 format
+	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2012 nil t))
        (t (error "Unknown SLN file format!")))
       (add-hook 'project-buffer-refresh-hook 'sln--project-buffer--refresh-handler)
       ;;
