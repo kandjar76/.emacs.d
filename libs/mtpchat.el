@@ -600,8 +600,7 @@ This function may create new buffers."
     (when (and nick msg-eol)
       (when (not buffer)
 	(setq buffer (get-buffer-create buf-name))
-	(save-excursion 
-	  (set-buffer buffer)
+	(with-current-buffer buffer
 	  ;; Setup the mtpchat-mode
 	  (mtpchat-mode "PRIV> " (concat "tell " nick " "))))
       (delete-region (point-min) (point-max))

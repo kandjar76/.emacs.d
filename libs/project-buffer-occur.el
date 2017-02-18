@@ -638,8 +638,7 @@ Commands:
 	  (project      (nth 2 project-buffer-occur-saved-regexp))
 	  (occur-buffer (current-buffer)))
       ;; Fill the occur buffer with all occurrences:
-      (save-excursion
-	(set-buffer project-buffer-occur-saved-project-buffer)
+      (with-current-buffer project-buffer-occur-saved-project-buffer
 	(if all-files
 	    (project-buffer-apply-to-each-file 'project-buffer-occur-research regexp occur-buffer)
 	    (unless (project-buffer-apply-to-marked-files 'project-buffer-occur-research regexp occur-buffer)

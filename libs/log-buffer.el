@@ -48,7 +48,7 @@
 If BUFFER-NAME already exist, the function will just set the read-only flag.
 The log buffer is returned as a result of this call."
   (let ((buffer (get-buffer-create buffer-name)))
-    (save-excursion (set-buffer buffer)
+    (with-current-buffer buffer
 		    (toggle-read-only 1)
 		    buffer)))
     
