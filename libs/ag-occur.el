@@ -4,7 +4,7 @@
 ;; Version:     0.1
 ;; Keywords:    occur ag
 ;; Description: Occur Functionality for AG tool (a.k.a Silver Searcher)
-;; Tested with: GNU Emacs 22.x and GNU Emacs 23.x
+;; Tested with: GNU Emacs 23.x and GNU Emacs 24.x
 ;;
 ;; This file is *NOT* part of GNU Emacs.
 ;;
@@ -36,29 +36,29 @@
 
 ;; HOW TO USE IT:
 ;;
-;; Call the command `project-buffer-occur' in a project-buffer-mode buffer.
-;;
-;; The research will occur in all marked files; or in all files
-;; belonging to the current project if there are no files.  Using the
-;; prefix argument, the research will be done in all files.
+;; Call the command `ag-occur'
+;; Specify the regular expression to search, and the root folder to start the search.
 ;;
 ;;
 ;; TO INSTALL IT:
 ;;
-;; Put the following lines in your .emacs:
+;; You need to first install 'ag' the silver searcher.
+;; Then put the following lines in your .emacs:
 ;;
-;; (eval-after-load "project-buffer-mode"
-;;  '(progn
-;;    (require 'project-buffer-occur)
-;;    (define-key project-buffer-mode-map [(control ?f)] 'project-buffer-occur)
-;;    (define-key project-buffer-mode-map [(control ?F)] 'project-buffer-occur-case-sensitive)))
+;; (autoload 'ag-occur "ag-occur" "Silver Searcher Regexp." t nil)
 ;;
+;; If 'ag' is not accessible from your 'PATH', you will also need to set the following
+;; variable: (setq ag-occur-executable "<path-to-ag>/ag")
 ;;
 ;; KEY BINDINGS:
 ;;
 ;; <RET> - goto-occurrence
 ;;  o    - goto-occurrence other window
 ;;  v    - display occurrence
+
+
+
+;; Not yet supported:
 ;;  n    - next occurrence / prev search occurrence
 ;;  p    - prev occurrence / next search occurrence
 ;;  M-n  - go to next file
@@ -74,13 +74,7 @@
 
 ;;; History:
 ;;
-;; v1.0: First official release.
-;; v1.1: Bugs fixed:
-;;       - (goto-char (point-min)) was not working.
-;;       - file-name weren't attached properly to the occurrences
-;;       - non-existing files were stopping the research / they are now skipped.
-;; v1.2: New command:
-;;       - `project-buffer-occur-case-sensitive' to enforce the case sensitive while researching a regexp
+;; v0.1: First un-official release. :P
 ;;
 
 
