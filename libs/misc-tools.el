@@ -58,6 +58,14 @@
 ;;    (if (not (null matching-text))
 ;;        (message matching-text))))
 
+
+;;;###autoload
+(defun apply-ansii-color(&optional arg)
+  "Split current window into two window side by side, move the cursor to the new created window"
+  (interactive)
+  (ansi-color-apply-on-region (point-min) (point-max)))
+
+
 ;;;###autoload
 (defun electric-split-window-horizontally(&optional arg)
   "Split current window into two window side by side, move the cursor to the new created window"
