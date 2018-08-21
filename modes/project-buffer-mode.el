@@ -357,6 +357,7 @@
 ;;        - `project-buffer-get-project-dependency-list'            to get the list of dependency attached to a project
 ;; v1.50: Adding non-existing-file-view in order to quickly get the list of the files which do not exist.
 ;;        `project-buffer-mark-files-containing-regexp' now always search in the disk version of the file regardless if the file is already open.
+;; v1.51: Introduce a customization variable to display the 'directories' in the hidden view mode (default: 50, up from hard-coded 40)
 
 (require 'cl)
 (require 'ewoc)
@@ -440,6 +441,12 @@ exists."
   :type 'boolean
   :group 'project-buffer)
 
+(defcustom project-buffer-folder-hidden-view-mode-directories-column 50
+  "When set, the displayed files will be displayed with
+'project-buffer-file-doesnt-exist' font if the file doesn't
+exists."
+  :type 'integer
+  :group 'project-buffer)
 
 
 ;;
@@ -928,7 +935,7 @@ check if any files should be added or remove from the proejct."
 	     (when (and (eq project-buffer-view-mode 'folder-hidden-view)
 			(project-buffer-node->filename node)
 			(eq (project-buffer-node->type node) 'file))
-	       (indent-to-column 40)
+	       (indent-to-column project-buffer-folder-hidden-view-mode-directories-column)
 	       (insert (concat " " (propertize (project-buffer-node->filename node)
 					       'face 'project-buffer-filename-face))))
 	     (when (and (eq node-type 'project)
