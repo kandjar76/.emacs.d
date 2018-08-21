@@ -219,13 +219,15 @@ This function just inhibate the extra indentation if that's the case."
 
   (setq tab-width 4)
   (setq c-basic-offset 4)
-  (c-set-offset 'case-label 1 nil)
-  (c-set-offset 'statement-case-intro 3 nil)
+  (c-set-offset 'case-label 4 nil)
+  (c-set-offset 'statement-case-open 0 nil)
+  (c-set-offset 'statement-case-intro 4 nil)
   (c-set-offset 'statement-block-intro 4 nil)
   (c-set-offset 'substatement-open 0 nil)
   (c-set-offset 'defun-block-intro 4 nil)
   (c-set-offset 'brace-list-open 0 nil)
-;  (c-set-offset 'statement-cont 'c-lineup-math)
+  (c-set-offset 'brace-list-intro 4 nil)
+  ;;(c-set-offset 'statement-cont 'c-lineup-math)
   (c-set-offset 'statement-cont 'c-lineup-inline-asm )
   (c-set-offset 'comment-intro 'c-lineup-comment)
 
