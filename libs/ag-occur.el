@@ -75,6 +75,10 @@
 ;;; History:
 ;;
 ;; v0.1: First un-official release. :P
+;; v0.2: Fix function name string-to-int -> string-to-number
+;;       Improve default search values:
+;;       - will now select the "selected text" or the "symbol"-at-point as default value.
+;;       - the default directory will be a vcs folder if found (git -> svn -> hg) as opposed to just the default directory.
 ;;
 
 
@@ -208,6 +212,21 @@
 ;;    (define-key ag-occur-map [??] 'ag-occur-help)
     (define-key ag-occur-map [mouse-2] 'ag-occur-mouse-find-file)
     ag-occur-map))
+
+
+;;
+;; Special function which can be user overwritten:
+;;
+
+
+;; Only define ag-occur-find-vc-root *if* the user hasn't overwrote it
+(unless (functionp 'ag-occur-default-root-dir)
+  (defun ag-occur-default-root-dir(dir-path)
+    (or (vc-git-root dir-path)
+	(vc-svn-root dir-path)
+	(vc-hg-root dir-path)
+	dir-path))
+  )
 
 
 ;;
@@ -684,13 +703,23 @@ Commands:
 ;; Utility
 ;;
 
+(defun ag-occur-string-at-point ()
+  "Return 'default value' for regexp read:
+If a region is selected, make a regexp and return that value.
+If the cursor is pointing at a 'symbol' return it."
+  (cond ((use-region-p)
+         (regexp-quote (buffer-substring-no-properties (region-beginning) (region-end))))
+        ((symbol-at-point)
+         (regexp-quote (substring-no-properties (symbol-name (symbol-at-point)))))))
+
+
 (defun ag-occur-read-regexp(prompt)
   "Read a regular expression from the minibuffer."
-  (read-from-minibuffer prompt nil nil nil 'ag-occur-regexp-history))
+  (read-from-minibuffer prompt (ag-occur-string-at-point) nil nil 'ag-occur-regexp-history))
 
 (defun ag-occur-read-root-folder(prompt)
   "Read a regular expression from the minibuffer."
-  (read-directory-name prompt nil nil t))
+  (read-directory-name prompt (ag-occur-default-root-dir default-directory) nil t))
 
 
 ;;
@@ -705,7 +734,7 @@ Commands:
     (cond
      ((string-match "\\:\\([0-9]+\\)\\:" line) ;; Parsing matching string:
       (let ((file-name (substring line 0 (1- (match-beginning 1))))
-	    (line-num  (string-to-int (substring line (match-beginning 1) (match-end 1))))
+	    (line-num  (string-to-number (substring line (match-beginning 1) (match-end 1))))
 	    (line-str  (substring line (1+ (match-end 1) ))))
 	;;(insert (concat file-name "(" line-num ") : " line-str))))
 	(when (not (string-equal ag-occur-process-current-file file-name))
