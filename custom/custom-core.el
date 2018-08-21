@@ -117,11 +117,13 @@
 (pending-delete-mode 1)
 
 ;; Toggle truncate lines:
-(setq default-truncate-lines t)
+;;(setq default-truncate-lines t)
+(set-default 'truncate-lines t)
 
 ;; Enable shift+key to select a region:
-(when (fboundp 'pc-selection-mode)
-  (pc-selection-mode)) ;; Could be disabled if CUA mode is activated
+(if (fboundp 'pc-selection-mode)
+    (pc-selection-mode);; Could be disabled if CUA mode is activated
+)
 
 ;; Smaller delay before showing the tooltip.
 (setq tooltip-delay 0.3)

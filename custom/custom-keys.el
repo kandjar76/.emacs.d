@@ -37,7 +37,7 @@
 
 ;; Disable mouse-2 default behavior which is "kill" or "yank" something like that...
 (define-key global-map [(mouse-2)]               	nil)
-(define-key global-map [(drag-mouse-1)]                 nil)
+;;(define-key global-map [(drag-mouse-1)]                 nil)
 
 ;; Electric split window / buffer window:
 (define-key global-map [(control ?x)(?2)]               'electric-split-window-vertically)
