@@ -25,6 +25,9 @@
 (defvar running-at-work    (not (eq (or (and (boundp 'string-match-p)
 					     (string-match-p  "naughtydog\\|magic-dog" system-name))
 					(string-match "naughtydog\\|magic-dog" system-name)) nil)))
+(defvar running-at-4k      (not (eq (or (and (boundp 'string-match-p) (string-match-p  "CHINO" system-name))
+					(string-match "CHINO" system-name)) nil)))
+
 (defvar running-from-homedir (string= "~/" (symbol-value 'command-line-default-directory)))
 
 
@@ -43,10 +46,13 @@
 	  (set-face-font 'default "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*"))
 	 ))))
  ((eq window-system 'w32)
-  (if running-at-work
-      (set-default-font "016x13")
-      (set-default-font "Courier"))))
-
+  (cond
+   (running-at-work
+    (set-default-font "016x13"))
+   (running-at-4k
+    (set-default-font "-raster-Courier-normal-normal-normal-mono-25-*-*-*-c-*-iso8859-1"))
+   (t (set-default-font "Courier"))
+   )))
 
 (load-library "custom-core")                       ; must be loaded before -- setup the core emacs
 (load-library "custom-modules")                    ; load the external modules
