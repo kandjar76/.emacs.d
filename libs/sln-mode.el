@@ -379,9 +379,9 @@ That is: '(virtual-name . file-path)"
       (with-temp-buffer
 	(insert-file sln-file)
 	(goto-char (point-min))
-	(when (not (looking-at "^Microsoft Visual Studio Solution File, Format Version [0-9][0-9]"))
+	(when (not (looking-at "^Microsoft Visual Studio Solution File, Format Version [0-9]?[0-9]"))
 	  (forward-line 1)) ;; Case of the first line having a non-displayable character
-	(when (looking-at "^Microsoft Visual Studio Solution File, Format Version \\([0-9][0-9]\\)")
+	(when (looking-at "^Microsoft Visual Studio Solution File, Format Version \\([0-9]?[0-9]\\)")
 	  (setq sln-version (match-string-no-properties 1)))
 	(let ((result nil))
 	  (while (re-search-forward "^Project(\"{[-A-Z0-9]+}\")[ 	]+=[ 	]+\"\\([^\"]+\\)\"[ 	]*,[ 	]+\"\\([^\"]+\\)\""
@@ -565,7 +565,7 @@ and use the content of VCPROJ-FILE to populate it."
       (setq sln-mode-solution-name (file-name-nondirectory sln-file))
       (setq sln-mode-solution-version sln-version)
       (cond
-       ((string-equal sln-version "09") ; 2005 format
+       ((or (string-equal sln-version "09") (string-equal sln-version "9")); 2005 format
 	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2005 nil t))
        ((string-equal sln-version "10") ; 2008 format
 	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2008 nil t))
@@ -573,7 +573,7 @@ and use the content of VCPROJ-FILE to populate it."
 	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2010 nil t))
        ((string-equal sln-version "12") ; 2012 format
 	(add-hook 'project-buffer-action-hook 'sln--project-buffer--action-handler-2012 nil t))
-       (t (error "Unknown SLN file format!")))
+       (t (error "Unknown SLN file format (%s)!" sln-version) ))
       (add-hook 'project-buffer-refresh-hook 'sln--project-buffer--refresh-handler)
       ;;
       (while sln-projects
