@@ -115,6 +115,8 @@
 ;; Activate the pending delete mode: 
 ;;   In Pending Delete mode, typed text replaces the selected region.
 (pending-delete-mode 1)
+;; Allow deletion of "selected text."
+(delete-selection-mode 1)
 
 ;; Toggle truncate lines:
 ;;(setq default-truncate-lines t)
