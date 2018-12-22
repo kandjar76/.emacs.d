@@ -220,6 +220,9 @@
 
 
 ;; Only define ag-occur-find-vc-root *if* the user hasn't overwrote it
+(autoload 'vc-git-root "vc-git")
+(autoload 'vc-hg-root "vc-hg")
+(autoload 'vc-svn-root "vc-svn")
 (unless (functionp 'ag-occur-default-root-dir)
   (defun ag-occur-default-root-dir(dir-path)
     (or (vc-git-root dir-path)
@@ -708,7 +711,10 @@ Commands:
 If a region is selected, make a regexp and return that value.
 If the cursor is pointing at a 'symbol' return it."
   (cond ((use-region-p)
-         (regexp-quote (buffer-substring-no-properties (region-beginning) (region-end))))
+         (let ((emacs-regexp (regexp-quote (buffer-substring-no-properties (region-beginning) (region-end)))))
+	   (replace-regexp-in-string ")" "\\)"
+				     (replace-regexp-in-string "(" "\\(" emacs-regexp nil t)
+				     nil t)))
         ((symbol-at-point)
          (regexp-quote (substring-no-properties (symbol-name (symbol-at-point)))))))
 
