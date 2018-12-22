@@ -17,7 +17,7 @@
         )
        load-path))
 
-(require 'tramp) ;; To prevent 'recursive load error in emacs 23.1
+;(require 'tramp) ;; To prevent 'recursive load error in emacs 23.1
 
 (defvar running-on-windows (memq system-type '(windows-nt cygwin)))
 (defvar running-on-linux   (not running-on-windows))
