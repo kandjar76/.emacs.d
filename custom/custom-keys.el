@@ -56,16 +56,16 @@
 (define-key global-map [(shift f3)]			'repeat-quick-search-backward)
 
 ;; Cscope keys:
-(define-key global-map [(f10)]                          'cscope-find-this-symbol-no-prompting-no-updates)
-(define-key global-map [(f12)]                          'cscope-find-global-definition-no-prompting-no-updates)
-(define-key global-map [(control f9)]                   'cscope-find-this-text-string-no-updates)
-(define-key global-map [(control f10)]                  'cscope-find-this-symbol-no-updates)
-(define-key global-map [(control f11)]                  'cscope-find-functions-calling-this-function-no-updates)
-(define-key global-map [(control f12)]                  'cscope-find-global-definition-no-updates)
-(define-key global-map [(control shift f9)]             'cscope-find-this-text-string)
-(define-key global-map [(control shift f10)]            'cscope-find-this-symbol)
-(define-key global-map [(control shift f11)]            'cscope-find-functions-calling-this-function)
-(define-key global-map [(control shift f12)]            'cscope-find-global-definition)
+(define-key global-map [(f10)]                          'cscope-find-this-symbol-no-prompting)
+(define-key global-map [(f12)]                          'cscope-find-global-definition-no-prompting)
+(define-key global-map [(control f9)]                   'cscope-find-this-text-string)
+(define-key global-map [(control f10)]                  'cscope-find-this-symbol)
+(define-key global-map [(control f11)]                  'cscope-find-functions-calling-this-function)
+(define-key global-map [(control f12)]                  'cscope-find-global-definition)
+(define-key global-map [(control shift f9)]             'cscope-find-this-text-string-no-updates)
+(define-key global-map [(control shift f10)]            'cscope-find-this-symbol-no-updates)
+(define-key global-map [(control shift f11)]            'cscope-find-functions-calling-this-function-no-updates)
+(define-key global-map [(control shift f12)]            'cscope-find-global-definition-no-updates)
 (define-key global-map [(control ?*)]                   'cscope-pop-mark)
 
 ;; lisp-interaction-mode:

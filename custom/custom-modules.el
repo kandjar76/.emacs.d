@@ -81,6 +81,10 @@
   "Find a symbol's global definition." t nil)
 (autoload 'cscope-pop-mark                                        "xcscope"
   "Pop back to where cscope was last invoked." t nil)
+(autoload 'cscope-find-global-definition-no-prompting             "xcscope+"
+  "Find a symbol's global definition without prompting." t nil)
+(autoload 'cscope-find-this-symbol-no-prompting                   "xcscope+"
+  "Locate a symbol in source code [no database update performed -- no user prompting]." t nil)
 
 
 

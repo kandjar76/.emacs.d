@@ -121,6 +121,17 @@
 		 (list "-1" symbol) nil 'cscope-process-filter
 		 'cscope-process-sentinel)))
 
+(defun cscope-find-global-definition-no-prompting ()
+  "Find a symbol's global definition without prompting."
+  (interactive)
+  (let ((symbol (cscope-extract-symbol-at-cursor nil))
+	(cscope-do-not-update-database nil)
+	(cscope-adjust t))	 ;; Use fuzzy matching.
+    (setq cscope-symbol symbol)
+    (cscope-call (format "Finding global definition: %s" symbol)
+		 (list "-1" symbol) nil 'cscope-process-filter
+		 'cscope-process-sentinel)))
+
 (defun cscope-find-this-symbol-no-prompting-no-updates()
   "Locate a symbol in source code [no database update performed -- no user prompting]."
   (interactive)
@@ -132,5 +143,15 @@
 		 (list "-0" symbol) nil 'cscope-process-filter
 		 'cscope-process-sentinel)))
 
+(defun cscope-find-this-symbol-no-prompting()
+  "Locate a symbol in source code [no database update performed -- no user prompting]."
+  (interactive)
+  (let ((symbol (cscope-extract-symbol-at-cursor nil))
+	(cscope-do-not-update-database nil)
+	(cscope-adjust t))
+    (setq cscope-symbol symbol)
+    (cscope-call (format "Finding symbol: %s" symbol)
+		 (list "-0" symbol) nil 'cscope-process-filter
+		 'cscope-process-sentinel)))
 
 (provide 'xcscope+)
